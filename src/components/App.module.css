@@ -1,0 +1,144 @@
+.app-container {
+  width: 100%;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  letter-spacing: -0.05em;
+}
+
+/* Welcome container */
+.welcome-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.welcome-message {
+  text-align: center;
+  padding: 3.5rem;
+  background: var(--surface-dark);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 700px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: var(--blur-bg);
+  -webkit-backdrop-filter: var(--blur-bg);
+}
+
+.welcome-message::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent, 
+    transparent, 
+    transparent, 
+    var(--primary-color)
+  );
+  animation: rotate 6s linear infinite;
+  z-index: -1;
+}
+
+.welcome-message::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(var(--radius-xl) - 1px);
+  background: var(--surface-dark);
+  z-index: -1;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.welcome-message h2 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.03em;
+}
+
+.welcome-message p {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.center-wallet-connect {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+/* Step Container */
+.step-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Back Button */
+.back-button-container {
+  margin-bottom: 1.5rem;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-speed);
+}
+
+.back-button:hover {
+  color: var(--primary-color);
+  background: rgba(108, 92, 231, 0.1);
+}
