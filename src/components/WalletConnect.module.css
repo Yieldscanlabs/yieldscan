@@ -66,7 +66,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.connect-button-large {
+.large-connect-button {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
   color: white;
   padding: 0.9rem 2.5rem;
@@ -83,7 +83,7 @@
   overflow: hidden;
 }
 
-.connect-button-large::after {
+.large-connect-button::after {
   content: '';
   position: absolute;
   top: 0;
@@ -99,15 +99,15 @@
   transition: 0.5s;
 }
 
-.connect-button-large:hover::after {
+.large-connect-button:hover::after {
   left: 100%;
 }
 
-.connect-button-large:hover {
+.large-connect-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 7px 30px var(--glow-primary);
 }
 
-.connect-button-large:active {
+.large-connect-button:active {
   transform: translateY(0);
 }

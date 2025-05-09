@@ -168,3 +168,113 @@
 .loading-assets {
   position: relative;
 }
+
+.asset-list {
+  margin-bottom: 2rem;
+}
+
+.asset-list h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.asset-card {
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.asset-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(108, 92, 231, 0.3);
+}
+
+.asset-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color), var(--shadow-md);
+  background-color: rgba(108, 92, 231, 0.05);
+}
+
+.asset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.asset-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--surface-light);
+  padding: 0.3rem;
+  border: 1px solid var(--border-color);
+}
+
+.asset-chain {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background-color: var(--surface-medium);
+  box-shadow: var(--shadow-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.asset-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.asset-balance {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.asset-balance-usd {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-tertiary);
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.no-assets {
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  font-style: italic;
+  border: 1px dashed var(--border-color);
+}

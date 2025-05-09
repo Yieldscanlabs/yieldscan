@@ -1,25 +1,41 @@
 import React from 'react';
 import useWallet from '../hooks/useWallet';
 import { shortenAddress } from '../utils/helpers';
+import styles from './WalletConnect.module.css';
 
-const WalletConnect: React.FC = () => {
+interface WalletConnectProps {
+  large?: boolean;
+}
+
+const WalletConnect: React.FC<WalletConnectProps> = ({ large = false }) => {
   const { wallet, connectWallet, disconnectWallet } = useWallet();
   
+  if (large && !wallet.isConnected) {
+    return (
+      <button 
+        onClick={connectWallet}
+        className={styles['large-connect-button']}
+      >
+        Connect Wallet
+      </button>
+    );
+  }
+  
   return (
-    <div className="wallet-connect">
+    <div className={styles['wallet-connect']}>
       {!wallet.isConnected ? (
         <button 
           onClick={connectWallet}
-          className="connect-button"
+          className={styles['connect-button']}
         >
           Connect Wallet
         </button>
       ) : (
-        <div className="wallet-info">
-          <span className="wallet-address">{shortenAddress(wallet.address)}</span>
+        <div className={styles['wallet-info']}>
+          <span className={styles['wallet-address']}>{shortenAddress(wallet.address)}</span>
           <button 
             onClick={disconnectWallet}
-            className="disconnect-button"
+            className={styles['disconnect-button']}
           >
             Disconnect
           </button>

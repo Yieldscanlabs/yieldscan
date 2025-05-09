@@ -1,0 +1,655 @@
+.deposit-container {
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.deposit-form {
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: var(--blur-bg);
+  -webkit-backdrop-filter: var(--blur-bg);
+}
+
+.deposit-form h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.amount-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.amount-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.amount-token {
+  display: inline-block;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.amount-usd {
+  font-size: 1rem;
+  color: var(--text-tertiary);
+}
+
+.balance-info {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.slider-container {
+  position: relative;
+  margin: 2.5rem 0;
+  padding: 0 1rem;
+}
+
+.apy-badge {
+  position: absolute;
+  right: 1rem;
+  top: -2rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.4);
+  z-index: 2;
+}
+
+.slider-track {
+  position: relative;
+  height: 16px;
+  margin: 1.5rem 0;
+}
+
+.amount-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  z-index: 3;
+}
+
+.amount-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.amount-slider::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.slider-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--surface-medium);
+  border-radius: 8px;
+}
+
+.slider-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transition: width 0.1s ease;
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+}
+
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 3px solid var(--primary-color);
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.slider-percentage {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.percentage-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+}
+
+.percentage-buttons button {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: var(--surface-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.percentage-buttons button:hover {
+  background-color: var(--surface-light);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.percentage-buttons button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(108, 92, 231, 0.3);
+}
+
+.slider-track:hover .slider-thumb {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.4);
+}
+
+.action-buttons {
+  position: relative;
+  margin-top: 2rem;
+  min-height: 68px;
+}
+
+.is-approved .approve-button {
+  display: none;
+}
+
+.not-approved .deposit-button {
+  display: none;
+}
+
+.approve-button,
+.deposit-button {
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  min-height: 60px;
+}
+
+.approve-button {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+}
+
+.approve-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.6s;
+}
+
+.approve-button:hover::after {
+  left: 100%;
+}
+
+.approve-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(108, 92, 231, 0.5);
+  background: linear-gradient(135deg, var(--primary-color) 30%, var(--primary-hover) 100%);
+}
+
+.approve-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+}
+
+.deposit-button {
+  background: linear-gradient(135deg, var(--success-color) 0%, #00C866 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 230, 121, 0.3);
+}
+
+.deposit-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.6s;
+}
+
+.deposit-button:hover::after {
+  left: 100%;
+}
+
+.deposit-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 230, 121, 0.4);
+  background: linear-gradient(135deg, var(--success-color) 30%, #00C866 100%);
+}
+
+.deposit-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(0, 230, 121, 0.35);
+}
+
+.deposit-button:disabled,
+.approve-button:disabled {
+  background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.deposit-button:disabled::after,
+.approve-button:disabled::after {
+  display: none;
+}
+
+.button-icon {
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+  display: inline-flex;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 230, 121, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 230, 121, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 230, 121, 0);
+  }
+}
+
+.is-approved .deposit-button {
+  animation: pulse 2s infinite;
+}
+
+.lockup-info-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  margin: 0.5rem 0 1.5rem;
+  background-color: rgba(255, 179, 68, 0.08);
+  border-radius: var(--radius-md);
+  color: var(--warning-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.lockup-info-compact .lockup-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.yield-preview {
+  margin-bottom: 2rem;
+}
+
+.usd-earnings-highlight {
+  background: linear-gradient(135deg, var(--surface-medium), var(--surface-dark));
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.usd-earnings-highlight::before {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, var(--success-color), transparent 70%);
+  top: -100px;
+  right: -100px;
+  opacity: 0.1;
+  filter: blur(40px);
+}
+
+.usd-earnings-title {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.usd-earnings-amount {
+  font-size: 3.25rem;
+  font-weight: 800;
+  color: var(--success-color);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+  text-shadow: 0 0 20px rgba(0, 230, 121, 0.3);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  position: relative;
+  display: inline-block;
+}
+
+.usd-earnings-amount::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--success-color), transparent);
+}
+
+.usd-earnings-period {
+  font-size: 0.95rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+/* Loading state for buttons */
+.approve-button.loading,
+.deposit-button.loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.approve-button.loading::before,
+.deposit-button.loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: white;
+  animation: spin 1s infinite linear;
+  z-index: 10;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Hide button content when loading */
+.approve-button.loading > *,
+.deposit-button.loading > * {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Success screen styling */
+.deposit-success {
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: var(--blur-bg);
+  -webkit-backdrop-filter: var(--blur-bg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.deposit-success::before {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, var(--success-color), transparent 70%);
+  top: -175px;
+  right: -175px;
+  opacity: 0.1;
+  filter: blur(60px);
+  z-index: 0;
+}
+
+.success-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background-color: rgba(0, 230, 121, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(0, 230, 121, 0.2);
+  box-shadow: 0 0 30px rgba(0, 230, 121, 0.2);
+  animation: scale-in 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+  z-index: 1;
+}
+
+.success-icon-inner {
+  font-size: 2.5rem;
+  color: var(--success-color);
+  transform: scale(0);
+  animation: check-animation 0.5s cubic-bezier(0.5, 1.8, 0.8, 1.2) 0.3s forwards;
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes check-animation {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.success-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.success-message {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 400px;
+  position: relative;
+  z-index: 1;
+}
+
+.deposit-details {
+  background-color: var(--surface-medium);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  width: 100%;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
+}
+
+.deposit-detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.deposit-detail-row:last-child {
+  margin-bottom: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.deposit-detail-label {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.deposit-detail-value {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.return-button {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.return-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.6s;
+}
+
+.return-button:hover::after {
+  left: 100%;
+}
+
+.return-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(108, 92, 231, 0.5);
+}
+
+.return-button:active {
+  transform: translateY(-1px);
+}
+
+.success-animation {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.success-animation:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.success-animation:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.success-animation:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.success-animation:nth-child(4) {
+  animation-delay: 0.8s;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

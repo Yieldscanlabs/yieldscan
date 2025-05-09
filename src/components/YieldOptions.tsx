@@ -2,6 +2,7 @@ import React from 'react';
 import type { YieldOption } from '../types';
 import { CHAIN_NAMES } from '../utils/constants';
 import { getChainColor } from '../utils/helpers';
+import styles from './YieldOptions.module.css';
 
 interface YieldOptionsProps {
   options: YieldOption[];
@@ -17,44 +18,44 @@ const YieldOptions: React.FC<YieldOptionsProps> = ({
   selectedOption
 }) => {
   if (loading) {
-    return <div className="loading">Loading yield options...</div>;
+    return <div className={styles.loading}>Loading yield options...</div>;
   }
   
   if (options.length === 0) {
-    return <div className="no-options">No yield options available for this asset</div>;
+    return <div className={styles['no-options']}>No yield options available for this asset</div>;
   }
   
   return (
-    <div className="yield-options">
+    <div className={styles['yield-options']}>
       <h2>Yield Options</h2>
-      <div className="options-list">
+      <div className={styles['options-list']}>
         {options.map((option) => (
           <div 
             key={option.id}
-            className={`option-card ${selectedOption?.id === option.id ? 'selected' : ''}`}
+            className={`${styles['option-card']} ${selectedOption?.id === option.id ? styles.selected : ''}`}
             onClick={() => onSelectOption(option)}
           >
-            <div className="option-header">
+            <div className={styles['option-header']}>
               <h3>{option.protocol}</h3>
               <div 
-                className="chain-badge" 
+                className={styles['chain-badge']} 
                 style={{ backgroundColor: getChainColor(option.chain) }}
               >
                 {CHAIN_NAMES[option.chain]}
               </div>
             </div>
-            <div className="option-details">
-              <div className="option-apy">
-                <span className="label">APY:</span>
-                <span className="value">{option.apy}%</span>
+            <div className={styles['option-details']}>
+              <div className={styles['option-apy']}>
+                <span className={styles.label}>APY:</span>
+                <span className={styles.value}>{option.apy}%</span>
               </div>
-              <div className="option-tvl">
-                <span className="label">TVL:</span>
-                <span className="value">{option.tvl}</span>
+              <div className={styles['option-tvl']}>
+                <span className={styles.label}>TVL:</span>
+                <span className={styles.value}>{option.tvl}</span>
               </div>
-              <div className="option-risk">
-                <span className="label">Risk:</span>
-                <span className={`risk-badge risk-${option.risk.toLowerCase()}`}>
+              <div className={styles['option-risk']}>
+                <span className={styles.label}>Risk:</span>
+                <span className={`${styles['risk-badge']} ${styles[`risk-${option.risk.toLowerCase()}`]}`}>
                   {option.risk}
                 </span>
               </div>
