@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import './App.css';
-import WalletConnect from './components/WalletConnect';
+import WalletModal from './components/WalletModal';
 import AssetList from './components/AssetList';
 import DepositForm from './components/DepositForm';
-import useWallet from './hooks/useWallet';
+import useWalletConnection from './hooks/useWalletConnection';
 import useAssets from './hooks/useAssets';
 import useYieldOptions from './hooks/useYieldOptions';
 import type { Asset, YieldOption } from './types';
 import { getBestYieldOptionForAsset, getCoinColor, shortenAddress, formatNumber, calculateDailyYield } from './utils/helpers';
 
 function App() {
-  const { wallet, connectWallet, disconnectWallet } = useWallet();
+  const { wallet, isModalOpen, openConnectModal, closeConnectModal, disconnectWallet } = useWalletConnection();
   const { assets, loading: assetsLoading } = useAssets(wallet.address);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const { yieldOptions, loading: optionsLoading } = useYieldOptions(selectedAsset);
@@ -70,7 +70,7 @@ function App() {
    
             <div className="center-wallet-connect">
               <button 
-                onClick={connectWallet}
+                onClick={openConnectModal}
                 className="connect-button-large"
               >
                 Connect Wallet
@@ -83,7 +83,6 @@ function App() {
     } else if (selectedAsset && showDepositForm) {
       // Step 3: Deposit form with slider
       const selectedYieldOption = yieldOptions[0];
-      const hasLockup = selectedYieldOption?.lockupDays > 0;
       
       return (
         <div className="step-container">
@@ -116,7 +115,6 @@ function App() {
       return (
         <div className="step-container">
           <div className="assets-with-yield-container">
-            <h2>Your Assets</h2>
             {assetsLoading ? (
               <div className="loading">
                 <div className="loading-spinner"></div>
@@ -124,54 +122,12 @@ function App() {
                 <div className="loading-subtitle">Scanning blockchain for your tokens...</div>
               </div>
             ) : (
-              <div className="assets-with-yield-grid">
-                {assetsWithBestYield.map(asset => (
-                  <div 
-                    key={`${asset.token}-${asset.chain}`}
-                    className="asset-with-yield-card"
-                    onClick={() => handleSelectAsset(asset)}
-                  >
-                    <div className="asset-section">
-                      <div className="asset-header">
-                        <img src={asset.icon} alt={asset.token} className="asset-icon" />
-                        <div className="asset-chain-badge" style={{ backgroundColor: getCoinColor(asset.token) }}>
-                          {asset.token}
-                        </div>
-                      </div>
-                      <div className="asset-balance">
-                        <div className="asset-balance-amount">{asset.balance}</div>
-                        <div className="asset-balance-usd">${formatNumber(asset.balanceUsd)}</div>
-                      </div>
-                    </div>
-                    <div className="best-yield-section">
-                      <div className="best-yield-header">Best Yield</div>
-                      <div className="best-yield-protocol">{asset.bestOption?.protocol || 'No options'}</div>
-                      <div className="best-yield-apy-row">
-                        <span className="best-yield-apy">{asset.bestOption?.apy || 0}% APY</span>
-                        {asset.bestOption?.lockupDays > 0 && (
-                          <span className="lockup-badge">
-                            <span className="lockup-icon">🔒</span>
-                            {asset.bestOption.lockupDays}d
-                          </span>
-                        )}
-                      </div>
-                      
-                      {asset.bestOption && (
-                        <div className="best-yield-earnings">
-                          <div className="earnings-daily">
-                            <span className="earnings-label">Daily</span>
-                            <span className="earnings-value">${formatNumber(asset.dailyEarningsUsd, 2)}</span>
-                          </div>
-                          <div className="earnings-yearly">
-                            <span className="earnings-label">Yearly</span>
-                            <span className="earnings-value">${formatNumber(asset.yearlyEarningsUsd, 2)}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <AssetList 
+                assets={assets} 
+                loading={assetsLoading}
+                onSelectAsset={handleSelectAsset}
+                selectedAsset={selectedAsset}
+              />
             )}
           </div>
         </div>
@@ -188,11 +144,19 @@ function App() {
             <span className="wallet-address-header">
               {shortenAddress(wallet.address)}
             </span>
+            <button onClick={disconnectWallet} className="disconnect-button">
+              Disconnect
+            </button>
           </div>
         )}
       </header>
 
       {renderContent()}
+      
+      <WalletModal 
+        isOpen={isModalOpen}
+        onClose={closeConnectModal}
+      />
     </div>
   );
 }
