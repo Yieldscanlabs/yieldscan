@@ -18,11 +18,22 @@ const AssetList: React.FC<AssetListProps> = ({
   selectedAsset 
 }) => {
   if (loading) {
-    return <div className={styles.loading}>Loading assets...</div>;
+    return (
+      <div className={styles.loading}>
+        <div className={styles['loading-spinner']}></div>
+        <div className={styles['loading-text']}>Loading your assets...</div>
+        <div className={styles['loading-subtext']}>Fetching balances from the blockchain</div>
+      </div>
+    );
   }
   
   if (assets.length === 0) {
-    return <div className={styles['no-assets']}>No assets found in your wallet</div>;
+    return (
+      <div className={styles['no-assets']}>
+        <p>No assets found in your wallet</p>
+        <p className={styles['no-assets-subtext']}>We're looking for USDC and USDT on Ethereum and Arbitrum</p>
+      </div>
+    );
   }
   
   return (
@@ -41,7 +52,7 @@ const AssetList: React.FC<AssetListProps> = ({
             </div>
             <div className={styles['asset-name']}>{TOKEN_NAMES[asset.token]}</div>
             <div className={styles['asset-balance']}>
-              <div>{formatNumber(asset.balance)} {asset.token}</div>
+              <div className={styles['asset-balance-amount']}>{formatNumber(asset.balance)} {asset.token}</div>
               <div className={styles['asset-balance-usd']}>${formatNumber(asset.balanceUsd)}</div>
             </div>
           </div>
