@@ -27,7 +27,7 @@ const tokens = [
     token: 'USDC' as const,
     chain: 'ETH' as const,
     address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDC
-    icon: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
     chainId: 1, // mainnet
     decimals: 6,
     usdPrice: 1 // Stablecoin pegged to USD
@@ -36,7 +36,7 @@ const tokens = [
     token: 'USDT' as const,
     chain: 'ETH' as const, 
     address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum USDT
-    icon: 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
     chainId: 1, // mainnet
     decimals: 6,
     usdPrice: 1 // Stablecoin pegged to USD
@@ -45,7 +45,7 @@ const tokens = [
     token: 'USDC' as const,
     chain: 'ARBITRUM_ONE' as const,
     address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', // Arbitrum USDC
-    icon: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8/logo.png',
     chainId: 42161, // arbitrum
     decimals: 6,
     usdPrice: 1 // Stablecoin pegged to USD
@@ -54,7 +54,7 @@ const tokens = [
     token: 'USDT' as const,
     chain: 'ARBITRUM_ONE' as const,
     address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // Arbitrum USDT
-    icon: 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9/logo.png',
     chainId: 42161, // arbitrum
     decimals: 6,
     usdPrice: 1 // Stablecoin pegged to USD
