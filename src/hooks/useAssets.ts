@@ -86,7 +86,7 @@ export default function useAssets(walletAddress: string) {
   if (data && !isLoading) {
     tokens.forEach((token, index) => {
       if (data[index]?.result) {
-        const rawBalance = data[index].result as bigint;
+        const rawBalance = BigInt(data[index]?.result || 0);
         if (rawBalance > 0n) {
           const balance = formatUnits(rawBalance, token.decimals);
           const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
