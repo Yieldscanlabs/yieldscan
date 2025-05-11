@@ -4,6 +4,7 @@ export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH';
 
 export interface Asset {
   token: SupportedToken;
+  address: string;
   chain: SupportedChain;
   balance: string;
   balanceUsd: string;

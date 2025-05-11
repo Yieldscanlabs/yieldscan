@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
 import { CHAIN_NAMES, TOKEN_NAMES } from '../utils/constants';
 import { formatNumber, getBestYieldOptionForAsset, calculateDailyYield } from '../utils/helpers';
+import YieldOptionComponent from './YieldOption';
 import styles from './AssetList.module.css';
 
 interface AssetListProps {
@@ -136,26 +137,12 @@ const AssetList: React.FC<AssetListProps> = ({
                 </div>
                 
                 <div className={styles['yield-info']}>
-                  {yieldInfo?.loading ? (
-                    <div className={styles['yield-loading']}>
-                      <div className={styles['yield-loading-spinner']}></div>
-                    </div>
-                  ) : yieldInfo?.option ? (
-                    <>
-                      <div className={styles['yield-apy']}>
-                        {yieldInfo.option.apy}% APY
-                        {yieldInfo.option.lockupDays > 0 && (
-                          <span className={styles['lock-icon']} title={`${yieldInfo.option.lockupDays} days lockup`}>🔒</span>
-                        )}
-                      </div>
-                      <div className={styles['yield-details']}>
-                        <span className={styles['yield-protocol']}>{yieldInfo.option.protocol}</span>
-                        <span className={styles['yield-earning']}>${yieldInfo.yearlyYieldUsd}/year</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className={styles['no-yield']}>No yield options</div>
-                  )}
+                  <YieldOptionComponent 
+                    loading={yieldInfo?.loading || false}
+                    option={yieldInfo?.option}
+                    yearlyYieldUsd={yieldInfo?.yearlyYieldUsd || '0.00'}
+                    asset={asset} // Add this prop
+                  />
                 </div>
               </div>
           

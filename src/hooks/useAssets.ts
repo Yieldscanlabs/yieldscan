@@ -44,7 +44,7 @@ const tokens = [
   {
     token: 'USDC' as const,
     chain: 'ARBITRUM_ONE' as const,
-    address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', // Arbitrum USDC
+    address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum USDC
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8/logo.png',
     chainId: 42161, // arbitrum
     decimals: 6,
@@ -93,6 +93,7 @@ export default function useAssets(walletAddress: string) {
           
           assets.push({
             token: token.token,
+            address: token.address,
             chain: token.chain,
             balance,
             balanceUsd,
