@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
-import { CHAIN_NAMES, TOKEN_NAMES } from '../utils/constants';
 import { formatNumber, getBestYieldOptionForAsset, calculateDailyYield } from '../utils/helpers';
-import YieldOptionComponent from './YieldOption';
+import AssetComponent from './AssetComponent';
 import styles from './AssetList.module.css';
 
 interface AssetListProps {
   assets: Asset[];
   loading: boolean;
-  onSelectAsset: (asset: Asset) => void;
+  onSelectAsset: (asset: Asset, bestApyData?: any) => void;
   selectedAsset: Asset | null;
 }
 
@@ -24,6 +23,11 @@ const AssetList: React.FC<AssetListProps> = ({
     option?: YieldOption;
     yearlyYieldUsd: string;
   }>>({});
+
+  // Handler for asset selection that passes along the bestApy data
+  const handleSelectAsset = (asset: Asset, bestApyData?: any) => {
+    onSelectAsset(asset, bestApyData);
+  };
 
   // Fetch best yield options when assets are loaded
   useEffect(() => {
@@ -117,36 +121,13 @@ const AssetList: React.FC<AssetListProps> = ({
           const yieldInfo = assetYields[assetKey];
           
           return (
-            <div 
-              key={assetKey} 
-              className={`${styles['asset-card']} ${selectedAsset === asset ? styles.selected : ''}`}
-              onClick={() => onSelectAsset(asset)}
-            >
-              <div className={styles['asset-main']}>
-                <div className={styles['asset-info']}>
-                  <img src={asset.icon} alt={asset.token} className={styles['asset-icon']} />
-                  <div>
-                    <div className={styles['asset-name-row']}>
-                      <span className={styles['asset-name']}>{asset.token}</span>
-                      <span className={styles['asset-chain']}>{CHAIN_NAMES[asset.chain]}</span>
-                    </div>
-                    <div className={styles['asset-balance']}>
-                      {formatNumber(asset.balance)} <span className={styles['asset-balance-usd']}>(${formatNumber(asset.balanceUsd)})</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={styles['yield-info']}>
-                  <YieldOptionComponent 
-                    loading={yieldInfo?.loading || false}
-                    option={yieldInfo?.option}
-                    yearlyYieldUsd={yieldInfo?.yearlyYieldUsd || '0.00'}
-                    asset={asset} // Add this prop
-                  />
-                </div>
-              </div>
-          
-            </div>
+            <AssetComponent
+              key={assetKey}
+              asset={asset}
+              yieldInfo={yieldInfo}
+              isSelected={selectedAsset === asset}
+              onSelect={handleSelectAsset}
+            />
           );
         })}
       </div>

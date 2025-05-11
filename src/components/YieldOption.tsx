@@ -2,49 +2,49 @@ import React, { useMemo } from 'react';
 import type { YieldOption as YieldOptionType } from '../types';
 import type { Asset } from '../types';
 import styles from './AssetList.module.css';
-import useBestApy from '../hooks/useBestApy';
+import type { BestApyResult } from '../hooks/useBestApy';
 
 interface YieldOptionProps {
   loading: boolean;
   option?: YieldOptionType;
   yearlyYieldUsd: string;
   asset?: Asset;
+  bestApyData: BestApyResult;
 }
 
 const YieldOption: React.FC<YieldOptionProps> = ({ 
   loading, 
   option, 
   yearlyYieldUsd,
-  asset 
+  asset,
+  bestApyData
 }) => {
-  // Get the best APY data across protocols
+  // Extract bestApy data from props instead of using the hook directly
   const { 
     bestApy,
     bestProtocol,
-    aaveApy,
-    compoundApy,
     loading: apyLoading,
     error: apyError
-  } = useBestApy(asset);
-  console.log(bestApy, bestProtocol)
+  } = bestApyData;
+  
   // Calculate the best APY to display (either from option or real-time data)
-const displayApy = useMemo(() => {
+  const displayApy = useMemo(() => {
     if (bestApy !== null) {
-        // Use the best APY across protocols if available
-        return bestApy.toFixed(2);
+      // Use the best APY across protocols if available
+      return bestApy.toFixed(2);
     }
     return option?.apy;
-}, [bestApy, option]);
+  }, [bestApy, option]);
 
-// Calculate yearly yield using the best APY
-const calculatedYearlyYieldUsd = useMemo(() => {
+  // Calculate yearly yield using the best APY
+  const calculatedYearlyYieldUsd = useMemo(() => {
     if (asset && displayApy) {
-        const balanceNum = parseFloat(asset.balance || '0');
-        const apyDecimal = parseFloat(displayApy.toString()) / 100;
-        return (balanceNum * apyDecimal).toFixed(2);
+      const balanceNum = parseFloat(asset.balance || '0');
+      const apyDecimal = parseFloat(displayApy.toString()) / 100;
+      return (balanceNum * apyDecimal).toFixed(2);
     }
     return yearlyYieldUsd;
-}, [asset, displayApy, yearlyYieldUsd]);
+  }, [asset, displayApy, yearlyYieldUsd]);
 
   if (loading || apyLoading) {
     return (
@@ -66,7 +66,7 @@ const calculatedYearlyYieldUsd = useMemo(() => {
         {displayApy}% APY
         {apyLoading && <span className={styles['updating-icon']} title="Updating APY...">⟳</span>}
         {bestProtocol && bestProtocol !== option?.protocol && (
-          <span className={styles['best-rate-icon']} title={`${bestProtocol} offers better rates`}></span>
+          <span className={styles['best-rate-icon']} title={`${bestProtocol} offers better rates`}>★</span>
         )}
         {/* {option.lockupDays > 0 && (
           <span className={styles['lock-icon']} title={`${option.lockupDays} days lockup`}>🔒</span>

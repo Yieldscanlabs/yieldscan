@@ -7,55 +7,40 @@ import useWalletConnection from './hooks/useWalletConnection';
 import useAssets from './hooks/useAssets';
 import useYieldOptions from './hooks/useYieldOptions';
 import type { Asset, YieldOption } from './types';
-import { getBestYieldOptionForAsset, getCoinColor, shortenAddress, formatNumber, calculateDailyYield } from './utils/helpers';
+import { shortenAddress } from './utils/helpers';
+import type { BestApyResult } from './hooks/useBestApy';
 
 function App() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal, disconnectWallet } = useWalletConnection();
   const { assets, loading: assetsLoading } = useAssets(wallet.address);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
-  const { yieldOptions, loading: optionsLoading } = useYieldOptions(selectedAsset);
+  const [bestApyData, setBestApyData] = useState<BestApyResult | null>(null);
+  const { yieldOptions } = useYieldOptions(selectedAsset);
   const [showDepositForm, setShowDepositForm] = useState(false);
   
-  // Calculate best yield options for each asset with earnings in USD
-  const assetsWithBestYield = assets.map(asset => {
-    const bestOption = getBestYieldOptionForAsset(asset.token, asset.chain);
-    
-    // Calculate daily USD earnings
-    const balanceNum = parseFloat(asset.balance);
-    const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
-    
-    let dailyEarningsUsd = 0;
-    let yearlyEarningsUsd = 0;
-    
-    if (bestOption) {
-      const dailyEarningsToken = calculateDailyYield(balanceNum, bestOption.apy);
-      dailyEarningsUsd = dailyEarningsToken * usdPrice;
-      yearlyEarningsUsd = dailyEarningsUsd * 365;
-    }
-    
-    return { 
-      ...asset, 
-      bestOption,
-      usdPrice,
-      dailyEarningsUsd,
-      yearlyEarningsUsd
-    };
-  });
-
-  const handleSelectAsset = (asset: Asset) => {
+  // Updated to handle bestApyData from asset selection
+  const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
     setSelectedAsset(asset);
+    // Store the best APY data if provided
+    if (apyData) {
+      setBestApyData(apyData);
+    } else {
+      setBestApyData(null);
+    }
     // Skip yield options selection and go directly to deposit form
     setShowDepositForm(true);
   };
 
   const handleBackToAssets = () => {
     setSelectedAsset(null);
+    setBestApyData(null);
     setShowDepositForm(false);
   };
 
   const handleDeposit = (amount: string) => {
     // In a real implementation, you would call a smart contract function
-    console.log(`Depositing ${amount} ${selectedAsset?.token} into ${yieldOptions[0]?.protocol}`);
+    const protocol = bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
+    console.log(`Depositing ${amount} ${selectedAsset?.token} into ${protocol}`);
   };
 
   // We'll make a cleaner rendering based on the app state
@@ -82,7 +67,33 @@ function App() {
       );
     } else if (selectedAsset && showDepositForm) {
       // Step 3: Deposit form with slider
-      const selectedYieldOption = yieldOptions[0];
+      
+      // Create a yield option from bestApyData or use the first yield option from the hook
+      let selectedYieldOption: YieldOption;
+      
+      if (bestApyData && bestApyData.bestApy && bestApyData.bestProtocol) {
+        selectedYieldOption = {
+          id: '0',
+          protocol: bestApyData.bestProtocol,
+          token: selectedAsset.token,
+          chain: selectedAsset.chain,
+          apy: bestApyData.bestApy,
+          tvl: '$0', // We might not have this from bestApyData
+          risk: 'Low', // Default value
+          lockupDays: 0  // Default value
+        };
+      } else {
+        selectedYieldOption = yieldOptions[0] || {
+          id: '0',
+          protocol: 'Loading...',
+          token: selectedAsset.token,
+          chain: selectedAsset.chain,
+          apy: 0,
+          tvl: '$0',
+          risk: 'Low',
+          lockupDays: 0
+        };
+      }
       
       return (
         <div className="step-container">
@@ -94,18 +105,10 @@ function App() {
           <div className="deposit-container">
             <DepositForm 
               asset={selectedAsset}
-              yieldOption={selectedYieldOption || {
-                id: '0',
-                protocol: 'Loading...',
-                token: selectedAsset.token,
-                chain: selectedAsset.chain,
-                apy: 0,
-                tvl: '$0',
-                risk: 'Low',
-                lockupDays: 0
-              }}
+              yieldOption={selectedYieldOption}
               onDeposit={handleDeposit}
               usdPrice={parseFloat(selectedAsset.balanceUsd) / parseFloat(selectedAsset.balance)}
+              isApyLoading={bestApyData?.loading || false}
             />
           </div>
         </div>

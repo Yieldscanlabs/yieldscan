@@ -9,13 +9,17 @@ interface DepositFormProps {
   yieldOption: YieldOption;
   onDeposit: (amount: string) => void;
   usdPrice: number;
+  bestApyData?: {
+    loading?: boolean;
+  };
 }
 
 const DepositForm: React.FC<DepositFormProps> = ({
   asset,
   yieldOption,
   onDeposit,
-  usdPrice
+  usdPrice,
+  bestApyData
 }) => {
   const [amount, setAmount] = useState('0');
   const [percentage, setPercentage] = useState(0);
