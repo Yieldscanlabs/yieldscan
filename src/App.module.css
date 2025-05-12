@@ -1,0 +1,187 @@
+.appWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.appContainer {
+  flex: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.stepContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.backButtonContainer {
+  margin-bottom: 1.5rem;
+}
+
+.backButton {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-speed);
+}
+
+.backButton:hover {
+  color: var(--primary-color);
+  background: rgba(108, 92, 231, 0.1);
+}
+
+.welcomeContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.welcomeMessage {
+  text-align: center;
+  padding: 3.5rem;
+  background: var(--surface-dark);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 700px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: var(--blur-bg);
+  -webkit-backdrop-filter: var(--blur-bg);
+}
+
+.welcomeMessage::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent, 
+    transparent, 
+    transparent, 
+    var(--primary-color)
+  );
+  animation: rotate 6s linear infinite;
+  z-index: -1;
+}
+
+.welcomeMessage::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(var(--radius-xl) - 1px);
+  background: var(--surface-dark);
+  z-index: -1;
+}
+
+.welcomeMessage h2 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.03em;
+}
+
+.welcomeMessage p {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.centerWalletConnect {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.connectButtonLarge {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  padding: 0.9rem 2.5rem;
+  font-size: 1.25rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.connectButtonLarge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.connectButtonLarge:hover::after {
+  left: 100%;
+}
+
+.connectButtonLarge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 30px var(--glow-primary);
+}
+
+.connectButtonLarge:active {
+  transform: translateY(0);
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.assetsWithYieldContainer {
+  width: 100%;
+}
+
+.depositContainer {
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

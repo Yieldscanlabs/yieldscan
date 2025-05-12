@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import './App.css';
+import styles from './App.module.css';
 import WalletModal from './components/WalletModal';
 import AssetList from './components/AssetList';
 import DepositForm from './components/DepositForm';
 import DepositSuccess from './components/DepositSuccess';
-import Footer from './components/Footer';
-import Header from './components/Header'; // Import the new Header component
 import useWalletConnection from './hooks/useWalletConnection';
 import useAssets from './hooks/useAssets';
 import useYieldOptions from './hooks/useYieldOptions';
@@ -28,13 +26,11 @@ function App() {
   // Updated to handle bestApyData from asset selection
   const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
     setSelectedAsset(asset);
-    // Store the best APY data if provided
     if (apyData) {
       setBestApyData(apyData);
     } else {
       setBestApyData(null);
     }
-    // Skip yield options selection and go directly to deposit form
     setShowDepositForm(true);
     setShowDepositSuccess(false);
   };
@@ -47,51 +43,45 @@ function App() {
   };
 
   const handleDeposit = ({ amount, dailyYield, yearlyYield }: { amount: string; dailyYield: string; yearlyYield: string }) => {
-    // In a real implementation, you would call a smart contract function
     const protocol = bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
     console.log(`Depositing ${amount} ${selectedAsset?.token} into ${protocol}`);
     
-    // Store deposit details for success screen
     setDepositAmount(amount);
     setDepositDailyYield(dailyYield);
     setDepositYearlyYield(yearlyYield);
     
-    // Show success screen
     setShowDepositForm(false);
     setShowDepositSuccess(true);
   };
 
-  // We'll make a cleaner rendering based on the app state
   const renderContent = () => {
     if (!wallet.isConnected) {
-      // Step 1: Connect wallet screen
       return (
-        <div className="welcome-container">
-          <div className="welcome-message">
+        <div className={styles.welcomeContainer}>
+          <div className={styles.welcomeMessage}>
             <h2>Welcome to Yieldscan</h2>
             <p>Find the best yield opportunities for your assets across multiple chains</p>
    
-            <div className="center-wallet-connect">
+            <div className={styles.centerWalletConnect}>
               <button 
                 onClick={openConnectModal}
-                className="connect-button-large"
+                className={styles.connectButtonLarge}
               >
                 Connect Wallet
               </button>
             </div>
-            <p className="subtitle">Connect your wallet to get started</p>
+            <p className={styles.subtitle}>Connect your wallet to get started</p>
           </div>
         </div>
       );
     } else if (selectedAsset && showDepositSuccess) {
-      // Step 4: Deposit success screen
       const protocol = bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
       const usdPrice = parseFloat(selectedAsset.balanceUsd) / parseFloat(selectedAsset.balance);
       const amountUsd = (parseFloat(depositAmount) * usdPrice).toFixed(2);
       
       return (
-        <div className="step-container">
-          <div className="deposit-container">
+        <div className={styles.stepContainer}>
+          <div className={styles.depositContainer}>
             <DepositSuccess
               asset={selectedAsset}
               amount={depositAmount}
@@ -105,9 +95,6 @@ function App() {
         </div>
       );
     } else if (selectedAsset && showDepositForm) {
-      // Step 3: Deposit form with slider
-      
-      // Create a yield option from bestApyData or use the first yield option from the hook
       let selectedYieldOption: YieldOption;
       
       if (bestApyData && bestApyData.bestApy && bestApyData.bestProtocol) {
@@ -117,9 +104,9 @@ function App() {
           token: selectedAsset.token,
           chain: selectedAsset.chain,
           apy: bestApyData.bestApy,
-          tvl: '$0', // We might not have this from bestApyData
-          risk: 'Low', // Default value
-          lockupDays: 0  // Default value
+          tvl: '$0', 
+          risk: 'Low',
+          lockupDays: 0
         };
       } else {
         selectedYieldOption = yieldOptions[0] || {
@@ -135,13 +122,13 @@ function App() {
       }
       
       return (
-        <div className="step-container">
-          <div className="back-button-container">
-            <button onClick={handleBackToAssets} className="back-button">
+        <div className={styles.stepContainer}>
+          <div className={styles.backButtonContainer}>
+            <button onClick={handleBackToAssets} className={styles.backButton}>
               &larr; Back to Assets
             </button>
           </div>
-          <div className="deposit-container">
+          <div className={styles.depositContainer}>
             <DepositForm 
               asset={selectedAsset}
               yieldOption={selectedYieldOption}
@@ -153,10 +140,9 @@ function App() {
         </div>
       );
     } else {
-      // Step 2: Assets list with best yield options
       return (
-        <div className="step-container">
-          <div className="assets-with-yield-container">
+        <div className={styles.stepContainer}>
+          <div className={styles.assetsWithYieldContainer}>
             {assetsLoading ? (
               <Loading
                 message="Loading your assets"
@@ -177,14 +163,8 @@ function App() {
   };
 
   return (
-    <div className="app-wrapper">
-      <div className="app-container">
-        <Header 
-          isConnected={wallet.isConnected}
-          address={wallet.address}
-          disconnectWallet={disconnectWallet}
-        />
-
+    <div className={styles.appWrapper}>
+      <div className={styles.appContainer}>
         {renderContent()}
         
         <WalletModal 
@@ -192,8 +172,6 @@ function App() {
           onClose={closeConnectModal}
         />
       </div>
-      
-      <Footer />
     </div>
   );
 }

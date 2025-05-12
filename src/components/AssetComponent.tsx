@@ -23,7 +23,6 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
   isSelected,
   onSelect
 }) => {
-  const assetKey = `${asset.token}-${asset.chain}`;
   
   // Move useBestApy here from YieldOption component
   const bestApyData = useBestApy(asset);

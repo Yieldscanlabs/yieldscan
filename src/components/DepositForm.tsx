@@ -19,7 +19,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
   yieldOption,
   onDeposit,
   usdPrice,
-  bestApyData
 }) => {
   const [amount, setAmount] = useState('0');
   const [percentage, setPercentage] = useState(0);

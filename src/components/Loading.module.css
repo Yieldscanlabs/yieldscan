@@ -12,7 +12,7 @@
   min-height: 250px;
 }
 
-.loading-spinner {
+.loadingSpinner {
   width: 50px;
   height: 50px;
   border: 4px solid rgba(255, 255, 255, 0.1);
@@ -22,14 +22,14 @@
   margin-bottom: 1.5rem;
 }
 
-.loading-message {
+.loadingMessage {
   font-size: 1rem;
   color: var(--text-secondary);
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
-.loading-subtitle {
+.loadingSubtitle {
   font-size: 0.85rem;
   color: var(--text-tertiary);
   max-width: 250px;
