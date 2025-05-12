@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { formatUnits, parseUnits, type Address } from 'viem';
 
-// ABI for the CompoundYieldScanner contract
-const compoundYieldScannerAbi = [
+// ABI for the CompoundYieldscan contract
+const compoundYieldscanAbi = [
   {
     inputs: [{ name: 'amount', type: 'uint256' }],
     name: 'supply',
@@ -82,7 +82,7 @@ export default function useCompoundYield({
   // Get fee percentage
   const { data: feePercentage } = useReadContract({
     address: contractAddress,
-    abi: compoundYieldScannerAbi,
+    abi: compoundYieldscanAbi,
     functionName: 'feePercentage',
     chainId
   });
@@ -90,7 +90,7 @@ export default function useCompoundYield({
   // Get user's compound address
   const { data: userCompoundAddress } = useReadContract({
     address: contractAddress,
-    abi: compoundYieldScannerAbi,
+    abi: compoundYieldscanAbi,
     functionName: 'getCompoundAddress',
     args: [address as Address],
     chainId,
@@ -171,7 +171,7 @@ export default function useCompoundYield({
       
       const hash = await writeContractAsync({
         address: contractAddress,
-        abi: compoundYieldScannerAbi,
+        abi: compoundYieldscanAbi,
         functionName: 'supply',
         args: [amountInWei],
         chainId
@@ -197,7 +197,7 @@ export default function useCompoundYield({
       
       const hash = await writeContractAsync({
         address: contractAddress,
-        abi: compoundYieldScannerAbi,
+        abi: compoundYieldscanAbi,
         functionName: 'withdraw',
         args: [amountInWei],
         chainId

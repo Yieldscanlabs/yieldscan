@@ -51,7 +51,7 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => {
         </div>
         <div className={styles.modalContent}>
           <p className={styles.modalDescription}>
-            Connect your wallet to access YieldScanner features
+            Connect your wallet to access Yieldscan features
           </p>
 
           <div className={styles.walletList}>

@@ -3,6 +3,7 @@ import './App.css';
 import WalletModal from './components/WalletModal';
 import AssetList from './components/AssetList';
 import DepositForm from './components/DepositForm';
+import Footer from './components/Footer';
 import useWalletConnection from './hooks/useWalletConnection';
 import useAssets from './hooks/useAssets';
 import useYieldOptions from './hooks/useYieldOptions';
@@ -50,7 +51,7 @@ function App() {
       return (
         <div className="welcome-container">
           <div className="welcome-message">
-            <h2>Welcome to YieldScanner</h2>
+            <h2>Welcome to Yieldscan</h2>
             <p>Find the best yield opportunities for your assets across multiple chains</p>
    
             <div className="center-wallet-connect">
@@ -139,27 +140,31 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1>YieldScanner</h1>
-        {wallet.isConnected && (
-          <div className="wallet-info-header">
-            <span className="wallet-address-header">
-              {shortenAddress(wallet.address)}
-            </span>
-            <button onClick={disconnectWallet} className="disconnect-button">
-              Disconnect
-            </button>
-          </div>
-        )}
-      </header>
+    <div className="app-wrapper">
+      <div className="app-container">
+        <header className="app-header">
+          <h1>Yieldscan</h1>
+          {wallet.isConnected && (
+            <div className="wallet-info-header">
+              <span className="wallet-address-header">
+                {shortenAddress(wallet.address)}
+              </span>
+              <button onClick={disconnectWallet} className="disconnect-button">
+                Disconnect
+              </button>
+            </div>
+          )}
+        </header>
 
-      {renderContent()}
+        {renderContent()}
+        
+        <WalletModal 
+          isOpen={isModalOpen}
+          onClose={closeConnectModal}
+        />
+      </div>
       
-      <WalletModal 
-        isOpen={isModalOpen}
-        onClose={closeConnectModal}
-      />
+      <Footer />
     </div>
   );
 }

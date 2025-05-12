@@ -1,0 +1,120 @@
+.footer {
+  background-color: var(--surface-dark);
+  border-top: 1px solid var(--border-color);
+  padding: 3rem 2rem 2rem;
+  margin-top: 5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.footerContent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1280px;
+  margin: 0 auto;
+  gap: 2rem;
+}
+
+.footerSection {
+  flex: 1;
+  min-width: 180px;
+}
+
+.footerSection h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.footerSection h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+.footerDescription {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.footerLinks {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footerLinks li {
+  margin-bottom: 0.75rem;
+}
+
+.footerLinks a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-speed);
+  font-size: 0.95rem;
+}
+
+.footerLinks a:hover {
+  color: var(--primary-color);
+}
+
+.socialLinks {
+  display: flex;
+  gap: 1rem;
+}
+
+.socialLinks a {
+  color: var(--text-secondary);
+  transition: color var(--transition-speed), transform var(--transition-speed);
+}
+
+.socialLinks a:hover {
+  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.footerBottom {
+  max-width: 1280px;
+  margin: 3rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.footerBottom p {
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.disclaimerText {
+  max-width: 800px;
+  margin: 1rem auto;
+  line-height: 1.5;
+}
+
+.buildInfo {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .footerContent {
+    flex-direction: column;
+  }
+
+  .footerSection {
+    margin-bottom: 2rem;
+  }
+}
