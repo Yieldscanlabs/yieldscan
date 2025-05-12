@@ -8,9 +8,10 @@
 export interface CompoundApyData {
   apy: number | null;          // Supply APY
   borrowApy: number | null;    // Borrow APY
+  rewardApy: number | null;  // Added this field
   loading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => void;
 }
 
 /**

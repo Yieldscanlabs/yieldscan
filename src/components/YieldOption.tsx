@@ -65,9 +65,7 @@ const YieldOption: React.FC<YieldOptionProps> = ({
       <div className={styles['yield-apy']}>
         {displayApy}% APY
         {apyLoading && <span className={styles['updating-icon']} title="Updating APY...">⟳</span>}
-        {bestProtocol && bestProtocol !== option?.protocol && (
-          <span className={styles['best-rate-icon']} title={`${bestProtocol} offers better rates`}>★</span>
-        )}
+    
         {/* {option.lockupDays > 0 && (
           <span className={styles['lock-icon']} title={`${option.lockupDays} days lockup`}>🔒</span>
         )} */}

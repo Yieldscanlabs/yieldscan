@@ -52,6 +52,23 @@ const SUPPORTED_TOKENS_TO_MARKETS: Record<string, { chainId: number, market: str
 
 const SECONDS_PER_YEAR = 31536000; // 365 * 24 * 60 * 60
 
+// Mock wallet address for fetching rewards
+// In production, this should be the user's actual wallet address
+const WALLET_ADDRESS = '0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6';
+const COMPOUND_REWARDS_API_URL = `https://v3-api.compound.finance/account/${WALLET_ADDRESS}/rewards`;
+
+interface CompoundReward {
+  chain_id: number;
+  comet: {
+    address: string;
+  };
+  base_asset: {
+    symbol: string;
+  };
+  earn_rewards_apr: string;
+  borrow_rewards_apr: string;
+}
+
 /**
  * Custom hook to fetch APY data from Compound protocol for a specific token
  * @param tokenAddress The token address to get APY for
@@ -60,6 +77,7 @@ const SECONDS_PER_YEAR = 31536000; // 365 * 24 * 60 * 60
 export default function useCompoundApy(tokenAddress: string): CompoundApyData {
   const [apy, setApy] = useState<number | null>(null);
   const [borrowApy, setBorrowApy] = useState<number | null>(null);
+  const [rewardApy, setRewardApy] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -101,14 +119,14 @@ export default function useCompoundApy(tokenAddress: string): CompoundApyData {
         return;
       }
 
-      // First get utilization from the market
+      // 1. First get utilization from the market via contract call
       const utilization = await clientToUse.readContract({
         address: marketAddress as `0x${string}`,
         abi: compoundV3ABI,
         functionName: 'getUtilization',
       });
 
-      // Then get supply and borrow rates based on utilization
+      // 2. Then get supply rate based on utilization via contract call
       const supplyRate = await clientToUse.readContract({
         address: marketAddress as `0x${string}`,
         abi: compoundV3ABI,
@@ -129,6 +147,29 @@ export default function useCompoundApy(tokenAddress: string): CompoundApyData {
         return;
       }
 
+      // 3. Fetch rewards data from Compound API
+      const rewardsResponse = await fetch(COMPOUND_REWARDS_API_URL);
+      if (!rewardsResponse.ok) {
+        throw new Error(`Failed to fetch Compound rewards: ${rewardsResponse.statusText}`);
+      }
+      
+      const rewardsData: CompoundReward[] = await rewardsResponse.json();
+      
+      // Find the matching reward for our market
+      const marketReward = rewardsData.find(
+        reward => reward.comet.address.toLowerCase() === marketAddress.toLowerCase() && 
+                 reward.chain_id === marketInfo.chainId
+      );
+      
+      // Extract earn rewards APR if available
+      let earnRewardsApr = 0;
+      if (marketReward) {
+        earnRewardsApr = parseFloat(marketReward.earn_rewards_apr);
+      }
+      
+      // Set reward APY state
+      setRewardApy(earnRewardsApr * 100); // Convert from decimal to percentage
+      
       // Convert rates from per-second to APY
       // Compound V3 returns rates in 1e18 scale
       const rateDecimal = Number(formatUnits(supplyRate, 18));
@@ -172,7 +213,10 @@ export default function useCompoundApy(tokenAddress: string): CompoundApyData {
         }
       }
       
-      setApy(supplyApy);
+      // Add reward APY to supply APY for total APY
+      const totalSupplyApy = supplyApy + earnRewardsApr * 100;
+      
+      setApy(totalSupplyApy);
       setBorrowApy(borrowApyValue);
     } catch (err: any) {
       console.error('Error fetching Compound APY:', err);
@@ -197,6 +241,7 @@ export default function useCompoundApy(tokenAddress: string): CompoundApyData {
   return {
     apy,
     borrowApy,
+    rewardApy,  // Add the reward APY to the return object
     loading,
     error,
     refetch: fetchApy
