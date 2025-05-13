@@ -92,7 +92,7 @@ const LitepaperPage: React.FC = () => {
         
         <section 
           id="exec-summary"
-          ref={(el) => sectionRefs.current['exec-summary'] = el}
+          ref={(el) => { sectionRefs.current['exec-summary'] = el; }}
           className={styles.section}
         >
           <div className={`${styles.stickyTitle} ${activeSection === 'exec-summary' ? styles.active : ''}`}>
@@ -123,7 +123,7 @@ const LitepaperPage: React.FC = () => {
         
         <section 
           id="problem" 
-          ref={(el) => sectionRefs.current['problem'] = el}
+          ref={(el) => { sectionRefs.current['problem'] = el; }}
           className={styles.section}
         >
           <div className={`${styles.stickyTitle} ${activeSection === 'problem' ? styles.active : ''}`}>
@@ -149,7 +149,7 @@ const LitepaperPage: React.FC = () => {
         
         <section 
           id="solution"
-          ref={(el) => sectionRefs.current['solution'] = el}
+          ref={(el) => { sectionRefs.current['solution'] = el; }}
           className={styles.section}
         >
           <div className={`${styles.stickyTitle} ${activeSection === 'solution' ? styles.active : ''}`}>
@@ -184,7 +184,7 @@ const LitepaperPage: React.FC = () => {
         
         <section 
           id="tech-architecture"
-          ref={(el) => sectionRefs.current['tech-architecture'] = el}
+          ref={(el) => { sectionRefs.current['tech-architecture'] = el; }}
           className={styles.section}
         >
           <div className={`${styles.stickyTitle} ${activeSection === 'tech-architecture' ? styles.active : ''}`}>
@@ -320,7 +320,7 @@ const LitepaperPage: React.FC = () => {
         </section>
         <section 
           id="conclusion"
-          ref={(el) => sectionRefs.current['conclusion'] = el}
+          ref={(el) => { sectionRefs.current['conclusion'] = el; }}
           className={styles.section}
         >
           <div className={`${styles.stickyTitle} ${activeSection === 'conclusion' ? styles.active : ''}`}>
