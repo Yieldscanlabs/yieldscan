@@ -123,7 +123,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
         </div>
         
         <div className={styles['slider-container']}>
-          <div className={styles['apy-badge']}>{yieldOption.apy}% APY</div>
+          <div className={styles['apy-badge']}>{yieldOption.apy.toFixed(2)}% APY</div>
           
           <div className={styles['slider-track']}>
             <input

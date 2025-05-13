@@ -2,9 +2,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3rem;
-  padding-bottom: 1rem;
+  margin: 0 auto 0rem auto;
+  padding: 1rem 2rem;
+  max-width: 1200px;
+  width: 100%;
   border-bottom: 1px solid var(--border-color);
+  box-sizing: border-box;
 }
 
 .title {
@@ -16,6 +19,11 @@
   -webkit-text-fill-color: transparent;
   margin: 0;
   letter-spacing: -0.05em;
+}
+
+.titleLink {
+  text-decoration: none;
+  color: inherit;
 }
 
 .walletInfo {

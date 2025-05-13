@@ -4,6 +4,8 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
+import LitepaperPage from './pages/LitepaperPage';
+import CalculatorPage from './pages/CalculatorPage';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -20,9 +22,17 @@ const router = createBrowserRouter([
         path: 'terms',
         element: <TermsPage />,
       },
+    {
+        path: 'calculator',
+        element: <CalculatorPage />,
+      },
       {
         path: 'privacy',
         element: <PrivacyPage />,
+      },
+      {
+        path: 'litepaper',
+        element: <LitepaperPage />,
       },
     ],
   },

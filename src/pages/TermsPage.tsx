@@ -4,122 +4,115 @@ import styles from './TermsPage.module.css';
 const TermsPage: React.FC = () => {
   return (
     <div className={styles.termsPage}>
-      <h1>Terms and Conditions</h1>
-      <div className={styles.effectiveDate}>Effective Date: May  12, 2025</div>
+      <h1>Yieldscan Terms and Conditions</h1>
+      <div className={styles.effectiveDate}>Effective Date: May 13, 2025</div>
       
       <p className={styles.intro}>
-        These Terms and Conditions ("Terms") constitute a legally binding agreement between you ("User", "you", or "your") 
-        and YieldScan ("Company", "we", "our", or "us") regarding your access and use of the YieldScan platform, 
-        including our website, APIs, web applications, mobile services, browser extensions, and other related services 
-        (collectively, the "Services").
+        These Terms and Conditions ("Terms") govern your use of the Yieldscan platform ("Yieldscan," "we," "us," or "our"), 
+        including access to our website, smart contracts, and any associated services. By accessing or using Yieldscan, 
+        you agree to be bound by these Terms. If you do not agree, do not use Yieldscan.
       </p>
       
-      <p>
-        By accessing or using the Services, you agree that you have read, understood, and accept these Terms. 
-        If you do not agree, do not access or use the Services.
-      </p>
+      <hr className={styles.divider} />
       
       <section className={styles.section}>
-        <h2>1. Eligibility and Compliance</h2>
-        <p>1.1. You must be at least 18 years old and have the legal capacity to enter into these Terms.</p>
+        <h2>1. Eligibility</h2>
         <p>
-          1.2. You represent that you are not located in, under the control of, or a national or resident of any country 
-          or territory subject to United States or other sovereign sanctions or embargoes.
-        </p>
-        <p>
-          1.3. You are solely responsible for ensuring that your use of the Services complies with all applicable laws, 
-          regulations, and third-party agreements.
+          You must be at least 18 years old or the age of majority in your jurisdiction to use Yieldscan. 
+          By using the platform, you represent and warrant that you meet these requirements.
         </p>
       </section>
       
       <section className={styles.section}>
-        <h2>2. Nature of the Services</h2>
-        <p>
-          2.1. <span className={styles.highlight}>Informational Only:</span> YieldScan is a non-custodial yield data aggregator. 
-          We provide access to publicly available blockchain data and protocol metrics to help users discover and compare 
-          yield opportunities in decentralized finance ("DeFi").
-        </p>
-        <p>
-          2.2. <span className={styles.highlight}>No Custody or Asset Management:</span> YieldScan does not hold or manage user assets. 
-          You retain full control of your funds through your self-custodial wallets.
-        </p>
-        <p>
-          2.3. <span className={styles.highlight}>No Financial Advice or Offerings:</span> Nothing on the Platform constitutes financial, 
-          investment, tax, or legal advice. We do not offer or facilitate the purchase or sale of securities, 
-          derivatives, or any financial instruments.
-        </p>
-        <p>
-          2.4. <span className={styles.highlight}>Third-Party Protocols:</span> YieldScan indexes data from third-party DeFi protocols 
-          (e.g., Aave, Compound, Morpho, Pendle). We do not operate or audit these protocols, and are not responsible 
-          for any interactions you undertake with them.
-        </p>
-      </section>
-      
-      <section className={styles.section}>
-        <h2>3. Risk Disclosure</h2>
-        <p>
-          3.1. <span className={styles.highlight}>Use at Your Own Risk:</span> Interacting with DeFi protocols involves significant risks including, but not 
-          limited to, smart contract bugs, oracle failures, loss of peg in stablecoins, protocol insolvency, rug pulls, 
-          and extreme volatility. You acknowledge that you assume full responsibility for any and all losses that may arise 
-          from using such protocols.
-        </p>
-        <p>
-          3.2. <span className={styles.highlight}>No Guarantees:</span> Yield estimates, token performance, and APYs displayed on YieldScan are subject to 
-          change and are not guaranteed. We do not guarantee uptime, accuracy, or completeness of any data presented.
-        </p>
-        <p>
-          3.3. <span className={styles.highlight}>Tax and Regulatory Responsibility:</span> You are solely responsible for any tax reporting and compliance 
-          required in your jurisdiction in connection with any DeFi activity.
-        </p>
-      </section>
-      
-      <section className={styles.section}>
-        <h2>4. Prohibited Uses</h2>
-        <p>You agree not to use the Services to:</p>
+        <h2>2. User Responsibilities</h2>
         <ul>
-          <li>Violate any applicable law or regulation.</li>
-          <li>Commit fraud, money laundering, terrorist financing, or other illicit financial activity.</li>
-          <li>Attempt to reverse engineer, decompile, scrape, or otherwise misuse the Services or associated smart contracts.</li>
-          <li>Interfere with or disrupt the integrity or performance of the Platform.</li>
-          <li>Infringe upon our intellectual property or the rights of any third party.</li>
+          <li><span className={styles.highlight}>Self-Custody:</span> All actions on Yieldscan are user-initiated. There are no oracles, validators, or background automation.</li>
+          <li><span className={styles.highlight}>Wallet Access:</span> You are solely responsible for the security of your wallet and private keys. Yieldscan does not have access to or custody over your assets.</li>
+          <li><span className={styles.highlight}>Risk Assumption:</span> You acknowledge that DeFi investments carry risk, including potential loss of principal, protocol failure, and smart contract bugs. You accept full responsibility for all actions and outcomes.</li>
         </ul>
+      </section>
+      
+      <section className={styles.section}>
+        <h2>3. Platform Functionality</h2>
+        <ul>
+          <li><span className={styles.highlight}>Yield Aggregation:</span> Yieldscan identifies and displays yield opportunities across integrated DeFi protocols. Users can deploy capital using their own dedicated smart contracts ("YieldBox").</li>
+          <li><span className={styles.highlight}>Strategy Execution:</span> Users choose strategies and initiate transactions. Yieldscan does not execute any actions without user approval.</li>
+          <li><span className={styles.highlight}>AI Monitoring:</span> Risk alerts are generated using AI analysis of on-chain and off-chain data. These alerts are informational and not financial advice.</li>
+        </ul>
+      </section>
+      
+      <section className={styles.section}>
+        <h2>4. Fees</h2>
+        <ul>
+          <li><span className={styles.highlight}>Performance Fees:</span> Fees are charged only on earned yield at the time of withdrawal. The current fee is 10% of generated yield.</li>
+          <li><span className={styles.highlight}>Transparency:</span> All fees are clearly shown before deposit and at withdrawal. No hidden fees or automated charges.</li>
+        </ul>
+      </section>
+      
+      <section className={styles.section}>
+        <h2>5. Vaults and Security</h2>
+        <ul>
+          <li><span className={styles.highlight}>Isolated Vaults:</span> Each user receives a unique smart contract vault to isolate funds and prevent asset mingling.</li>
+          <li><span className={styles.highlight}>Third-Party Protocols:</span> Yieldscan only integrates with audited, high TVL DeFi protocols. However, we do not control these protocols and cannot guarantee their performance.</li>
+          <li><span className={styles.highlight}>Smart Contract Risks:</span> While Yieldscan follows best practices in smart contract development, all contracts carry inherent risk. Use at your own risk.</li>
+        </ul>
+      </section>
+      
+      <section className={styles.section}>
+        <h2>6. Disclaimers</h2>
+        <ul>
+          <li><span className={styles.highlight}>No Financial Advice:</span> Yieldscan does not provide investment advice. All information is for educational and informational purposes only.</li>
+          <li><span className={styles.highlight}>No Guarantees:</span> We do not guarantee returns, uptime, or the accuracy of AI-generated alerts.</li>
+          <li><span className={styles.highlight}>Third-Party Services:</span> Yieldscan is not responsible for external links, third-party services, or integrated DeFi protocols.</li>
+        </ul>
+      </section>
+      
+      <section className={styles.section}>
+        <h2>7. Privacy</h2>
         <p>
-          We reserve the right to report illegal activity to law enforcement and block or restrict access accordingly.
+          Yieldscan respects your privacy. We do not collect personal data unless voluntarily provided 
+          (e.g., for receiving alerts via WhatsApp or Telegram). See our <a href="/privacy">Privacy Policy</a> for more details.
         </p>
       </section>
       
       <section className={styles.section}>
-        <h2>5. Account and Wallet Use</h2>
+        <h2>8. Prohibited Uses</h2>
+        <p>You agree not to use Yieldscan for:</p>
+        <ul>
+          <li>Engaging in illegal or fraudulent activities</li>
+          <li>Circumventing access controls or attempting to exploit vulnerabilities</li>
+          <li>Interfering with the functionality or integrity of the platform</li>
+        </ul>
+      </section>
+      
+      <section className={styles.section}>
+        <h2>9. Modification and Termination</h2>
         <p>
-          5.1. <span className={styles.highlight}>No Account Required:</span> We do not require you to create an account to use the Platform. 
-          However, you may connect a Web3 wallet (e.g., MetaMask) for transactional purposes.
-        </p>
-        <p>
-          5.2. <span className={styles.highlight}>Wallets Are User-Controlled:</span> We do not control your private keys. 
-          You are solely responsible for managing your wallet and ensuring its security.
+          We reserve the right to modify or terminate the platform or these Terms at any time. 
+          Continued use constitutes acceptance of any modifications.
         </p>
       </section>
       
       <section className={styles.section}>
-        <h2>6. Intellectual Property</h2>
+        <h2>10. Governing Law</h2>
         <p>
-          6.1. All content on YieldScan, including logos, designs, text, code, analytics, and other proprietary information, 
-          is owned by or licensed to us and is protected by copyright, trademark, and other laws.
-        </p>
-        <p>
-          6.2. You may not copy, modify, distribute, perform, display, sublicense, or reverse-engineer any part of the 
-          Services without our prior written consent.
+          These Terms are governed by the laws of the State of Delaware. Any disputes shall be resolved 
+          in the competent courts of that jurisdiction.
         </p>
       </section>
-      
-      {/* Additional sections removed for brevity */}
       
       <section className={styles.section}>
-        <h2>14. Contact Us</h2>
-        <p>For any inquiries related to these Terms or the Services, contact us at:</p>
-        <p className={styles.contactInfo}>📧 legal@yieldscan.io</p>
-        <p className={styles.contactInfo}>🌐 www.yieldscan.io</p>
+        <h2>11. Contact</h2>
+        <p>For support or questions, contact:</p>
+        <p className={styles.contactInfo}>📧 support@yieldscan.io</p>
+        <p className={styles.contactInfo}>🌐 t.me/yieldscan_support</p>
       </section>
+      
+      <hr className={styles.divider} />
+      
+      <p className={styles.closing}>
+        By using Yieldscan, you affirm that you have read, understood, and agreed to these Terms and Conditions.
+      </p>
     </div>
   );
 };

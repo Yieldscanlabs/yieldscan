@@ -39,7 +39,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
           
           <p className={styles.intro}>
             These Terms and Conditions ("Terms") constitute a legally binding agreement between you ("User", "you", or "your") 
-            and YieldScan ("Company", "we", "our", or "us") regarding your access and use of the YieldScan platform, 
+            and Yieldscan ("Company", "we", "our", or "us") regarding your access and use of the Yieldscan platform, 
             including our website, APIs, web applications, mobile services, browser extensions, and other related services 
             (collectively, the "Services").
           </p>
@@ -65,12 +65,12 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
           <section className={styles.section}>
             <h3>2. Nature of the Services</h3>
             <p>
-              2.1. <span className={styles.highlight}>Informational Only:</span> YieldScan is a non-custodial yield data aggregator. 
+              2.1. <span className={styles.highlight}>Informational Only:</span> Yieldscan is a non-custodial yield data aggregator. 
               We provide access to publicly available blockchain data and protocol metrics to help users discover and compare 
               yield opportunities in decentralized finance ("DeFi").
             </p>
             <p>
-              2.2. <span className={styles.highlight}>No Custody or Asset Management:</span> YieldScan does not hold or manage user assets. 
+              2.2. <span className={styles.highlight}>No Custody or Asset Management:</span> Yieldscan does not hold or manage user assets. 
               You retain full control of your funds through your self-custodial wallets.
             </p>
             <p>
@@ -79,7 +79,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
               derivatives, or any financial instruments.
             </p>
             <p>
-              2.4. <span className={styles.highlight}>Third-Party Protocols:</span> YieldScan indexes data from third-party DeFi protocols 
+              2.4. <span className={styles.highlight}>Third-Party Protocols:</span> Yieldscan indexes data from third-party DeFi protocols 
               (e.g., Aave, Compound, Morpho, Pendle). We do not operate or audit these protocols, and are not responsible 
               for any interactions you undertake with them.
             </p>
@@ -94,7 +94,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
               from using such protocols.
             </p>
             <p>
-              3.2. <span className={styles.highlight}>No Guarantees:</span> Yield estimates, token performance, and APYs displayed on YieldScan are subject to 
+              3.2. <span className={styles.highlight}>No Guarantees:</span> Yield estimates, token performance, and APYs displayed on Yieldscan are subject to 
               change and are not guaranteed. We do not guarantee uptime, accuracy, or completeness of any data presented.
             </p>
             <p>
@@ -133,7 +133,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
           <section className={styles.section}>
             <h3>6. Intellectual Property</h3>
             <p>
-              6.1. All content on YieldScan, including logos, designs, text, code, analytics, and other proprietary information, 
+              6.1. All content on Yieldscan, including logos, designs, text, code, analytics, and other proprietary information, 
               is owned by or licensed to us and is protected by copyright, trademark, and other laws.
             </p>
             <p>
@@ -146,11 +146,11 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
             <h3>7. Token and Protocol Listings</h3>
             <p>
               7.1. <span className={styles.highlight}>No Endorsement:</span> The appearance of any token, yield opportunity, or DeFi protocol on 
-              YieldScan is not an endorsement or recommendation.
+              Yieldscan is not an endorsement or recommendation.
             </p>
             <p>
               7.2. <span className={styles.highlight}>Third-Party Logos:</span> All third-party trademarks, logos, and names are the property of their 
-              respective owners. Their appearance on YieldScan is for informational purposes only.
+              respective owners. Their appearance on Yieldscan is for informational purposes only.
             </p>
           </section>
           
@@ -161,7 +161,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
               Our collection and use of data is governed by our Privacy Policy.
             </p>
             <p>
-              8.2. YieldScan may display analytics, rankings, and comparative metrics. These are generated using algorithmic 
+              8.2. Yieldscan may display analytics, rankings, and comparative metrics. These are generated using algorithmic 
               models and are not verified, guaranteed, or exhaustive.
             </p>
           </section>
@@ -179,7 +179,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
                 fitness for a particular purpose, and non-infringement.
               </li>
               <li>
-                You use YieldScan "as is" and "as available".
+                You use Yieldscan "as is" and "as available".
               </li>
             </ul>
           </section>
@@ -187,7 +187,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
           <section className={styles.section}>
             <h3>10. Indemnification</h3>
             <p>
-              You agree to indemnify and hold harmless YieldScan, its officers, directors, affiliates, and employees from any 
+              You agree to indemnify and hold harmless Yieldscan, its officers, directors, affiliates, and employees from any 
               and all claims, liabilities, damages, losses, or expenses (including attorneys' fees) arising out of your use of 
               the Services, your violation of these Terms, or your violation of any third-party rights.
             </p>
@@ -196,7 +196,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
           <section className={styles.section}>
             <h3>11. Termination</h3>
             <p>
-              We may suspend or terminate your access to YieldScan at any time and without notice if we believe you have 
+              We may suspend or terminate your access to Yieldscan at any time and without notice if we believe you have 
               violated these Terms or engaged in unlawful activity.
             </p>
           </section>

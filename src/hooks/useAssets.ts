@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useReadContracts, useAccount } from 'wagmi';
 import { formatUnits } from 'viem';
 import type { Asset } from '../types';
+import tokens from '../utils/tokens';
 
 // ERC20 ABI (minimal for balance checking)
 const erc20ABI = [
@@ -22,44 +23,7 @@ const erc20ABI = [
 ] as const;
 
 // Token information
-const tokens = [
-  {
-    token: 'USDC' as const,
-    chain: 'ETH' as const,
-    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDC
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
-    chainId: 1, // mainnet
-    decimals: 6,
-    usdPrice: 1 // Stablecoin pegged to USD
-  },
-  {
-    token: 'USDT' as const,
-    chain: 'ETH' as const, 
-    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum USDT
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
-    chainId: 1, // mainnet
-    decimals: 6,
-    usdPrice: 1 // Stablecoin pegged to USD
-  },
-  {
-    token: 'USDC' as const,
-    chain: 'ARBITRUM_ONE' as const,
-    address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum USDC
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8/logo.png',
-    chainId: 42161, // arbitrum
-    decimals: 6,
-    usdPrice: 1 // Stablecoin pegged to USD
-  },
-  {
-    token: 'USDT' as const,
-    chain: 'ARBITRUM_ONE' as const,
-    address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // Arbitrum USDT
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9/logo.png',
-    chainId: 42161, // arbitrum
-    decimals: 6,
-    usdPrice: 1 // Stablecoin pegged to USD
-  }
-];
+
 
 export default function useAssets(walletAddress: string) {
   const { address: connectedAddress } = useAccount();

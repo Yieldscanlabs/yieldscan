@@ -1,6 +1,6 @@
 export type SupportedChain = 'ETH' | 'BSC' | 'ARBITRUM_ONE';
 
-export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH';
+export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH' | 'aUSDC' | 'aUSDT' | 'cUSDC' | 'cUSDT';
 
 export interface Asset {
   token: SupportedToken;
