@@ -4,6 +4,8 @@ import { formatNumber } from '../utils/helpers';
 import type { Asset, SupportedToken } from '../types';
 import useERC20 from '../hooks/useERC20';
 import { COMPOUND_V3_MARKETS } from '../hooks/useCompoundApy';
+import type {SupportedProtocol} from '../hooks/useUnifiedYield';
+import useUnifiedYield from '../hooks/useUnifiedYield';
 
 const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     console.log(protocol, token, chainId);
@@ -54,6 +56,14 @@ const DepositModal: React.FC<DepositModalProps> = ({
     spenderAddress: protocolAddress,
   });
 
+  const { supply, isSupplying, isConfirmed } = useUnifiedYield({
+    protocol: protocol as SupportedProtocol, // or 'Aave'
+    contractAddress: protocolAddress, // Protocol contract address
+    tokenAddress: asset.address as `0x${string}`, // Token address
+    tokenDecimals: asset.decimals, // optional, defaults to 18
+    chainId: asset.chainId // optional 
+    });
+
   // Check if we need approval or already have enough allowance
   useEffect(() => {
     if (isOpen) {
@@ -62,12 +72,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
       const hasEnough = hasEnoughAllowance(amount);
       // Check if we already have approval
       if (hasEnough) {
-        // If already approved, skip to step 2
-        setStep(2);
-        // Move to complete after a brief delay
-        setTimeout(() => {
-          onComplete(true);
-        }, 1500);
+        handleSupply();
       } else {
         // Start approval process
         handleApprove();
@@ -89,11 +94,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
       const success = await approve(amount, protocolAddress);
       
       if (success) {
-        setStep(2);
-        // Move to complete after a brief delay
-        setTimeout(() => {
-          onComplete(true);
-        }, 1500);
+        handleSupply()
       } else {
         setError("Approval failed. Please try again.");
         setIsLoading(false);
@@ -104,6 +105,30 @@ const DepositModal: React.FC<DepositModalProps> = ({
       setIsLoading(false);
     }
   };
+
+  const handleSupply = async () => {
+    setStep(2)
+    setIsLoading(true);
+    setError(null);
+    try {
+      const success = await supply(amount);
+      
+      if (success) {
+        setStep(3);
+        // Move to complete after a brief delay
+        setTimeout(() => {
+          onComplete(true);
+        }, 1500);
+      } else {
+        setError("Deposit failed. Please try again.");
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.error("Error during deposit:", err);
+      setError("An error occurred during deposit. Please try again.");
+      setIsLoading(false);
+    }
+  }
   
   // Handle retry if approval fails
   const handleRetry = () => {
