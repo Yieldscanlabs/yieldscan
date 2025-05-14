@@ -88,17 +88,17 @@ const tokens = [
     decimals: 8, // Note: cTokens typically have 8 decimals
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
-  {
-    token: 'cUSDT' as const,
-    chain: 'ARBITRUM_ONE' as const,
-    address: '0x202e8d15BEa502bF92E2E2336E308c502445bbbB', // Compound cUSDT v3 on Arbitrum
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9/logo.png', // Using Ethereum icon
-    chainId: 42161, // arbitrum
-    yieldBearingToken: true,
+  // {
+  //   token: 'cUSDT' as const,
+  //   chain: 'ARBITRUM_ONE' as const,
+  //   address: '0x202e8d15BEa502bF92E2E2336E308c502445bbbB', // Compound cUSDT v3 on Arbitrum
+  //   icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9/logo.png', // Using Ethereum icon
+  //   chainId: 42161, // arbitrum
+  //   yieldBearingToken: true,
 
-    decimals: 8, // Note: cTokens typically have 8 decimals
-    usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
-  }
+  //   decimals: 8, // Note: cTokens typically have 8 decimals
+  //   usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
+  // }
 ];
 
 export default tokens

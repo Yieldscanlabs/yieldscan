@@ -29,7 +29,7 @@ const compoundV3ABI = [
 ] as const;
 
 // Compound V3 markets (Comet) addresses
-const COMPOUND_V3_MARKETS: Record<number, Record<string, string>> = {
+export const COMPOUND_V3_MARKETS: Record<number, Record<string, string>> = {
   // Ethereum Mainnet
   1: {
     'USDC': '0xc3d688B66703497DAA19211EEdff47f25384cdc3',

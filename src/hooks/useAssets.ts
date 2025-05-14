@@ -60,6 +60,8 @@ export default function useAssets(walletAddress: string) {
             address: token.address,
             chain: token.chain,
             balance,
+            chainId: token.chainId,
+            decimals: token.decimals,
             balanceUsd,
             icon: token.icon
           });

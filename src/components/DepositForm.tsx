@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
 import { calculateDailyYield, formatNumber } from '../utils/helpers';
 import styles from './DepositForm.module.css';
-import DepositSuccess from './DepositSuccess';
+import DepositModal from './DepositModal';
 
 interface DepositFormProps {
   asset: Asset;
   yieldOption: YieldOption;
-  onDeposit: (amount: string) => void;
+  onDeposit: ({ amount, dailyYield, yearlyYield }: { amount: string; dailyYield: string; yearlyYield: string }) => void;
   usdPrice: number;
   bestApyData?: {
     loading?: boolean;
@@ -24,11 +24,8 @@ const DepositForm: React.FC<DepositFormProps> = ({
   const [percentage, setPercentage] = useState(0);
   const [dailyYieldUsd, setDailyYieldUsd] = useState('0');
   const [yearlyYieldUsd, setYearlyYieldUsd] = useState('0');
-  const [isApproved, setIsApproved] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
-  const [isDepositing, setIsDepositing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [activePercentage, setActivePercentage] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Calculate max amount based on asset balance
   const maxAmount = parseFloat(asset.balance);
@@ -51,32 +48,21 @@ const DepositForm: React.FC<DepositFormProps> = ({
     setAmount(calculatedAmount);
   };
   
-  // Handle token approval with loading state
-  const handleApprove = () => {
-    setIsApproving(true);
-    // Simulate approval transaction
-    setTimeout(() => {
-      setIsApproved(true);
-      setIsApproving(false);
-    }, 2000);
-  };
-  
-  // Handle deposit with loading and success states
+  // Handle deposit by showing modal
   const handleDeposit = () => {
-    setIsDepositing(true);
-    // Simulate deposit transaction
-    setTimeout(() => {
-      setIsDepositing(false);
-      setShowSuccess(true);
-      // Call the parent's onDeposit callback
-      onDeposit(amount);
-    }, 2500);
+    setIsModalOpen(true);
   };
   
-  // Handle return to assets
-  const handleReturnToAssets = () => {
-    // This function will be called by the success screen's "Return to Assets" button
-    window.location.reload(); // Simple reload for demo
+  // Handle modal completion
+  const handleModalComplete = (success: boolean) => {
+    setIsModalOpen(false);
+    if (success) {
+      onDeposit({ 
+        amount, 
+        dailyYield: dailyYieldUsd, 
+        yearlyYield: yearlyYieldUsd 
+      });
+    }
   };
   
   useEffect(() => {
@@ -94,20 +80,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
       setYearlyYieldUsd('0');
     }
   }, [amount, yieldOption.apy, usdPrice]);
-  
-  if (showSuccess) {
-    return (
-      <DepositSuccess
-        asset={asset}
-        amount={amount}
-        amountUsd={amountUsd}
-        dailyYieldUsd={dailyYieldUsd}
-        yearlyYieldUsd={yearlyYieldUsd}
-        protocol={yieldOption.protocol}
-        onReturn={handleReturnToAssets}
-      />
-    );
-  }
   
   return (
     <div className={styles['deposit-container']}>
@@ -133,7 +105,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
               value={percentage}
               onChange={handleSliderChange}
               className={styles['amount-slider']}
-              disabled={isApproving || isDepositing}
             />
             <div 
               className={styles['slider-progress']} 
@@ -151,22 +122,18 @@ const DepositForm: React.FC<DepositFormProps> = ({
             <button 
               onClick={() => handleQuickPercentage(25)}
               className={activePercentage === 25 ? styles.active : ''}
-              disabled={isApproving || isDepositing}
             >25%</button>
             <button 
               onClick={() => handleQuickPercentage(50)}
               className={activePercentage === 50 ? styles.active : ''}
-              disabled={isApproving || isDepositing}
             >50%</button>
             <button 
               onClick={() => handleQuickPercentage(75)}
               className={activePercentage === 75 ? styles.active : ''}
-              disabled={isApproving || isDepositing}
             >75%</button>
             <button 
               onClick={() => handleQuickPercentage(100)}
               className={activePercentage === 100 ? styles.active : ''}
-              disabled={isApproving || isDepositing}
             >Max</button>
           </div>
         </div>
@@ -186,27 +153,29 @@ const DepositForm: React.FC<DepositFormProps> = ({
           </div>
         )}
         
-        
-        <div className={`${styles['action-buttons']} ${isApproved ? styles['is-approved'] : styles['not-approved']}`}>
+        <div className={styles['action-buttons']}>
           <button 
-            className={`${styles['approve-button']} ${isApproving ? styles.loading : ''}`}
-            onClick={handleApprove}
-            disabled={parseFloat(amount) <= 0 || isApproving}
-          >
-            <span className={styles['button-icon']}>✓</span>
-            Approve {asset.token}
-          </button>
-          
-          <button 
-            className={`${styles['deposit-button']} ${isDepositing ? styles.loading : ''}`}
+            className={styles['deposit-button']}
             onClick={handleDeposit}
-            disabled={parseFloat(amount) <= 0 || isDepositing}
+            disabled={parseFloat(amount) <= 0}
           >
             <span className={styles['button-icon']}>↗</span>
             Deposit Now
           </button>
         </div>
       </div>
+      
+      <DepositModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onComplete={handleModalComplete}
+        asset={asset}
+        amount={amount}
+        amountUsd={amountUsd}
+        protocol={yieldOption.protocol}
+        dailyYieldUsd={dailyYieldUsd}
+        yearlyYieldUsd={yearlyYieldUsd}
+      />
     </div>
   );
 };

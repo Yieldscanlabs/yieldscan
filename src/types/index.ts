@@ -7,6 +7,8 @@ export interface Asset {
   address: string;
   chain: SupportedChain;
   balance: string;
+  decimals: number;
+  chainId: number;
   balanceUsd: string;
   icon: string;
 }
