@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, ScrollRestoration } from 'react-router-dom';
 import App from './App';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -14,7 +14,6 @@ import FaqPage from './pages/FaqPage';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
     errorElement: <NotFound />,
     children: [
       {
@@ -37,7 +36,7 @@ const router = createBrowserRouter([
         path: 'litepaper',
         element: <LitepaperPage />,
       },
-            {
+      {
         path: 'faq',
         element: <FaqPage />,
       },
@@ -46,6 +45,13 @@ const router = createBrowserRouter([
         element: <MyYieldsPage />,
       },
     ],
+    // Add ScrollRestoration to handle scroll position
+    element: (
+      <>
+        <Layout />
+        <ScrollRestoration />
+      </>
+    ),
   },
 ]);
 

@@ -37,20 +37,20 @@ const Footer: React.FC = () => {
           <ul className={styles.footerLinks}>
             <li><a href="/litepaper">Litepaper</a></li>
             <li><a href="/calculator">Calculator</a></li>
+            <li><a href="/faq">FAQ</a></li>
           </ul>
         </div>
         
-        <div className={styles.footerSection}>
+        {/* <div className={styles.footerSection}>
           <h4>Resources</h4>
           <ul className={styles.footerLinks}>
             <li><a href="/guides">User Guides</a></li>
-            <li><a href="/faq">FAQ</a></li>
             <li><a href="/security">Security</a></li>
             <li><a href="/supported-assets">Supported Assets</a></li>
           </ul>
-        </div>
+        </div> */}
         
-        <div className={styles.footerSection}>
+        {/* <div className={styles.footerSection}>
           <h4>Company</h4>
           <ul className={styles.footerLinks}>
             <li><a href="/about">About</a></li>
@@ -58,15 +58,13 @@ const Footer: React.FC = () => {
             <li><a href="/careers">Careers</a></li>
             <li><a href="/contact">Contact</a></li>
           </ul>
-        </div>
+        </div> */}
         
         <div className={styles.footerSection}>
-          <h4>Legal</h4>
+            <h4>Policies</h4>
           <ul className={styles.footerLinks}>
             <li><Link to="/terms">Terms of Service</Link></li>
             <li><Link to="/privacy">Privacy Policy</Link></li>
-            <li><a href="/disclaimer">Risk Disclaimer</a></li>
-            <li><a href="/cookies">Cookie Policy</a></li>
           </ul>
         </div>
       </div>

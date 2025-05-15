@@ -163,8 +163,11 @@ const LitepaperPage: React.FC = () => {
               <li>
                 <strong>Simple Strategy Execution:</strong> Users are shown the most profitable yield paths available, and with a single click Yieldscan handles all routing and execution.
               </li>
-              <li>
+              {/* <li>
                 <strong>Separate User Vaults:</strong> Using gas optimized deployment, each deposit deploys a personal smart contract (YieldBox) to ensure asset isolation and risk containment.
+              </li> */}
+              <li>
+                <strong>Direct Protocol Interaction:</strong> {`Yieldscan allows users to interact directly with supported protocols, keeping the user's funds secure, without the need for intermediaries.`}.
               </li>
               <li>
                 <strong>Transparent Fee Structure:</strong> Fees are only applied to earned yield. Clearly shown on deposit and withdrawal.
@@ -330,7 +333,7 @@ const LitepaperPage: React.FC = () => {
           <div className={styles.sectionContent}>
             <p>
               Yieldscan offers an easy way to access DeFi yields without the complexity of managing multiple protocols. 
-              The platform simplifies strategy selection, isolates user risk through dedicated vaults, 
+              The platform simplifies strategy selection, isolates user risk by interacting with protocols directly, 
               and provides clear, predictable returns. With a focus on security and transparency, Yieldscan is built for everyone, 
               from first-time users to seasoned whales. Offering simplicity, security, and control.
             </p>
