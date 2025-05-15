@@ -35,10 +35,8 @@ const Footer: React.FC = () => {
         <div className={styles.footerSection}>
           <h4>Product</h4>
           <ul className={styles.footerLinks}>
-            <li><a href="/roadmap">Roadmap</a></li>
             <li><a href="/litepaper">Litepaper</a></li>
-            <li><a href="https://docs.yieldscan.app" target="_blank" rel="noopener noreferrer">Documentation</a></li>
-            <li><a href="/changelog">Changelog</a></li>
+            <li><a href="/calculator">Calculator</a></li>
           </ul>
         </div>
         
