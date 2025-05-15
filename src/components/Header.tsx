@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { shortenAddress } from '../utils/helpers';
 import styles from './Header.module.css';
 
@@ -14,11 +14,37 @@ const Header: React.FC<HeaderProps> = ({
   address, 
   disconnectWallet 
 }) => {
+  const location = useLocation();
+
   return (
     <header className={styles.header}>
-      <Link to="/" className={styles.titleLink}>
-        <h1 className={styles.title}>Yieldscan</h1>
-      </Link>
+      <div className={styles.headerLeft}>
+        <Link to="/" className={styles.titleLink}>
+          <h1 className={styles.title}>Yieldscan</h1>
+        </Link>
+        
+        {/* Navigation Links */}
+        <nav className={styles.navigation}>
+          {/* Always show Home */}
+          <Link 
+            to="/" 
+            className={`${styles.navLink} ${location.pathname === '/' ? styles.activeLink : ''}`}
+          >
+            Home
+          </Link>
+          
+          {/* Only show My Yields when connected */}
+          {isConnected && (
+            <Link 
+              to="/my-yields" 
+              className={`${styles.navLink} ${location.pathname === '/my-yields' ? styles.activeLink : ''}`}
+            >
+              My Yields
+            </Link>
+          )}
+        </nav>
+      </div>
+      
       {isConnected && address && (
         <div className={styles.walletInfo}>
           <span className={styles.walletAddress}>

@@ -51,47 +51,7 @@ const AssetList: React.FC<AssetListProps> = ({
     setAssetYields(initialYieldState);
     
     // Fetch yield options
-    const fetchYieldOptions = async () => {
-      const updatedYields = { ...initialYieldState };
-      
-      for (const asset of assets) {
-        const assetKey = `${asset.token}-${asset.chain}`;
-        
-        // Simulate API call with delay
-        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-        
-        // Get best yield option for this asset
-        const bestOption = getBestYieldOptionForAsset(asset.token, asset.chain);
-        
-        if (bestOption) {
-          // Calculate earnings
-          const balanceNum = parseFloat(asset.balance);
-          const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
-          const dailyEarningsToken = calculateDailyYield(balanceNum, bestOption.apy);
-          const dailyEarningsUsd = dailyEarningsToken * usdPrice;
-          const yearlyEarningsUsd = dailyEarningsUsd * 365;
-          
-          updatedYields[assetKey] = {
-            loading: false,
-            option: bestOption,
-            yearlyYieldUsd: formatNumber(yearlyEarningsUsd, 2)
-          };
-        } else {
-          updatedYields[assetKey] = {
-            loading: false,
-            yearlyYieldUsd: '0.00'
-          };
-        }
-        
-        // Update state after each asset's data is fetched
-        setAssetYields(prev => ({
-          ...prev,
-          [assetKey]: updatedYields[assetKey]
-        }));
-      }
-    };
-    
-    fetchYieldOptions();
+ 
   }, [assets]);
 
   if (loading) {

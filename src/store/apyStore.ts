@@ -12,9 +12,30 @@ export interface ProtocolApys {
   // Add other protocols as needed
 }
 
+// The API response structure:
+// {
+//   1: { // Ethereum Mainnet
+//     '0x1234abcd...': {
+//       compound: 4.5,
+//       aave: 3.8
+//     },
+//     '0xabcd1234...': {
+//       compound: 5.2,
+//       aave: 4.1
+//     }
+//   },
+//   137: { // Polygon
+//     '0x5678efgh...': {
+//       compound: 3.7,
+//       aave: 4.0
+//     }
+//   }
+// }
+export type ApiResponseStructure = Record<number, Record<string, ProtocolApys>>;
+
 export interface ApyStore {
   // Data structure: [chainId][tokenAddress] = { protocol: apy }
-  apyData: Record<number, Record<string, ProtocolApys>>;
+  apyData: ApiResponseStructure;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
@@ -29,7 +50,7 @@ export interface ApyStore {
 }
 
 // API endpoint for fetching APY data
-const APY_API_ENDPOINT = 'https://api.yieldscan.io/apys';
+const APY_API_ENDPOINT = 'http://64.176.164.234:5679';
 
 // Auto-refresh interval in milliseconds (3 seconds)
 const AUTO_REFRESH_INTERVAL = 3000;
@@ -43,7 +64,7 @@ export const useApyStore = create<ApyStore>()(
       lastUpdated: null,
       autoRefreshEnabled: true,
 
-      // Fetch APYs for one or more chains
+      // Fetch APYs for all chains and tokens
       fetchApys: async (showLoading = true) => {
         // Only show loading state if explicitly requested
         if (showLoading) {
@@ -60,10 +81,22 @@ export const useApyStore = create<ApyStore>()(
             throw new Error(`API response error: ${response.statusText}`);
           }
           
-          const data: Record<number, Record<string, ProtocolApys>> = await response.json();
+          // The API returns data already in the format we need
+          const data: ApiResponseStructure = await response.json();
+          
+          // Ensure all addresses are lowercase for consistency
+          const normalizedData: ApiResponseStructure = {};
+          Object.entries(data).forEach(([chainIdStr, chainData]) => {
+            const chainId = parseInt(chainIdStr, 10);
+            normalizedData[chainId] = {};
+            
+            Object.entries(chainData).forEach(([address, protocols]) => {
+              normalizedData[chainId][address.toLowerCase()] = protocols;
+            });
+          });
           
           set({ 
-            apyData: data,
+            apyData: normalizedData,
             isLoading: false,
             lastUpdated: Date.now()
           });
@@ -167,7 +200,6 @@ let autoRefreshInitialized = false;
 
 /**
  * Hook that sets up auto-refresh for APY data once
- * @param chainIds Optional array of chain IDs to refresh
  */
 export function useApyAutoRefresh() {
   const { fetchApys, autoRefreshEnabled } = useApyStore();
@@ -186,7 +218,6 @@ export function useApyAutoRefresh() {
     
     // Set up auto-refresh interval
     const intervalId = setInterval(() => {
-        console.log('hello')
       // Only fetch if auto-refresh is enabled (checking latest state)
       if (useApyStore.getState().autoRefreshEnabled) {
         // Use silent refresh (no loading state)

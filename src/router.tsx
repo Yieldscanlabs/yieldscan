@@ -1,11 +1,13 @@
+import React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import CalculatorPage from './pages/CalculatorPage';
+import LitepaperPage from './pages/LitepaperPage';
+import MyYieldsPage from './pages/MyYieldsPage';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
-import LitepaperPage from './pages/LitepaperPage';
-import CalculatorPage from './pages/CalculatorPage';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -22,7 +24,7 @@ const router = createBrowserRouter([
         path: 'terms',
         element: <TermsPage />,
       },
-    {
+      {
         path: 'calculator',
         element: <CalculatorPage />,
       },
@@ -33,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: 'litepaper',
         element: <LitepaperPage />,
+      },
+      {
+        path: 'my-yields',
+        element: <MyYieldsPage />,
       },
     ],
   },

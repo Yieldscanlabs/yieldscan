@@ -4,7 +4,9 @@ import { CHAIN_NAMES } from '../utils/constants';
 import { formatNumber } from '../utils/helpers';
 import YieldOptionComponent from './YieldOption';
 import styles from './AssetList.module.css';
-import useBestApy from '../hooks/useBestApy';
+import useBestApy, { type BestApyResult } from '../hooks/useBestApy';
+import { useApyStore } from '../store/apyStore';
+import { getBestYield } from '../utils/getBestYield';
 
 interface AssetComponentProps {
   asset: Asset;
@@ -14,7 +16,7 @@ interface AssetComponentProps {
     yearlyYieldUsd: string;
   };
   isSelected: boolean;
-  onSelect: (asset: Asset, bestApyData?: any) => void;
+  onSelect: (asset: Asset, bestApyData?: BestApyResult) => void;
 }
 
 const AssetComponent: React.FC<AssetComponentProps> = ({
@@ -25,20 +27,13 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
 }) => {
   
   // Move useBestApy here from YieldOption component
-  const bestApyData = useBestApy(asset);
+  const { apyData, isLoading: apyLoading, error: apyError } = useApyStore();
+  const bestApyData = getBestYield(apyData, asset.chainId, asset.address);
   
-  const { 
-    bestApy,
-    bestProtocol,
-    aaveApy,
-    compoundApy,
-    loading: apyLoading,
-    error: apyError
-  } = bestApyData;
-
   // Enhanced onSelect handler that includes bestApy data
   const handleSelect = useCallback(() => {
     onSelect(asset, bestApyData);
+
   }, [onSelect, asset, bestApyData]);
   
   return (
@@ -66,14 +61,7 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
             option={yieldInfo?.option}
             yearlyYieldUsd={yieldInfo?.yearlyYieldUsd || '0.00'}
             asset={asset}
-            bestApyData={{
-              bestApy,
-              bestProtocol,
-              aaveApy,
-              compoundApy,
-              loading: apyLoading,
-              error: apyError
-            }}
+            bestApyData={bestApyData}
           />
         </div>
       </div>
