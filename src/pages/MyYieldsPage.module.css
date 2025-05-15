@@ -489,7 +489,10 @@
 }
 
 .yieldCardSlim:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  /* border-color: var(--primary-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; */
 }
 
 /* Top section with asset info and APY */
