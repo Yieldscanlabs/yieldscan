@@ -89,7 +89,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
         
         <div className={styles['amount-display']}>
           <div>
-            <span className={styles['amount-value']}>{formatNumber(parseFloat(amount), 6)}</span>
+            <span className={styles['amount-value']}>{formatNumber(parseFloat(amount), asset.maxDecimalsShow)}</span>
             <span className={styles['amount-token']}>{asset.token}</span>
           </div>
           <div className={styles['amount-usd']}>${amountUsd}</div>

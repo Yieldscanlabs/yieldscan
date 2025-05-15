@@ -7,6 +7,7 @@ const tokens = [
     chainId: 1, // mainnet
     yieldbearingToken: false,
     decimals: 6,
+    maxDecimalsShow: 2,
     usdPrice: 1 // Stablecoin pegged to USD
   },
   {
@@ -17,6 +18,7 @@ const tokens = [
     yieldbearingToken: false,
     chainId: 1, // mainnet
     decimals: 6,
+    maxDecimalsShow: 2,
     usdPrice: 1 // Stablecoin pegged to USD
   },
   {
@@ -27,6 +29,7 @@ const tokens = [
     yieldbearingToken: false,
     chainId: 42161, // arbitrum
     decimals: 6,
+    maxDecimalsShow: 2,
     usdPrice: 1 // Stablecoin pegged to USD
   },
   {
@@ -37,6 +40,7 @@ const tokens = [
     yieldbearingToken: false,
     chainId: 42161, // arbitrum
     decimals: 6,
+    maxDecimalsShow: 2,
     usdPrice: 1 // Stablecoin pegged to USD
   },
   // Aave aTokens on Ethereum
@@ -48,6 +52,7 @@ const tokens = [
     chainId: 1, // mainnet
     decimals: 6,
     yieldBearingToken: true,
+    maxDecimalsShow: 2,
     usdPrice: 1 // Value tracks underlying asset
   },
   {
@@ -57,6 +62,7 @@ const tokens = [
     icon: 'https://raw.githubusercontent.com/1inch/token-list/master/assets/0x3Ed3B47Dd13EC9a98b44e6204A523E766B225811/logo.png',
     chainId: 1, // mainnet
     decimals: 6,
+    maxDecimalsShow: 2,
     yieldBearingToken: true,
 
     usdPrice: 1 // Value tracks underlying asset
@@ -70,6 +76,7 @@ const tokens = [
     chainId: 1, // mainnet
     yieldBearingToken: true,
     decimals: 8, // Note: cTokens typically have 8 decimals
+    maxDecimalsShow: 2,
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
   {
@@ -79,7 +86,7 @@ const tokens = [
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9/logo.png',
     chainId: 1, // mainnet
     yieldBearingToken: true,
-
+    maxDecimalsShow: 2,
     decimals: 8, // Note: cTokens typically have 8 decimals
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
@@ -91,7 +98,7 @@ const tokens = [
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png', // Using Ethereum icon
     chainId: 42161, // arbitrum
     yieldBearingToken: true,
-
+    maxDecimalsShow: 2,
     decimals: 8, // Note: cTokens typically have 8 decimals
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
@@ -102,7 +109,7 @@ const tokens = [
   //   icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9/logo.png', // Using Ethereum icon
   //   chainId: 42161, // arbitrum
   //   yieldBearingToken: true,
-
+  //   maxDecimalsShow: 2,
   //   decimals: 8, // Note: cTokens typically have 8 decimals
   //   usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   // }
