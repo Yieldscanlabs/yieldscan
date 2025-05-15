@@ -60,6 +60,7 @@ export default function useAssets(walletAddress: string) {
             address: token.address,
             chain: token.chain,
             balance,
+            yieldBearingToken: token.yieldBearingToken ? true : false,
             chainId: token.chainId,
             decimals: token.decimals,
             balanceUsd,

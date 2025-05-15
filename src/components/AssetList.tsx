@@ -102,12 +102,11 @@ const AssetList: React.FC<AssetListProps> = ({
       </div>
     );
   }
-  
-  if (assets.length === 0) {
+  const regularAssets = assets.filter(asset => !asset.yieldBearingToken);
+  if (regularAssets.length === 0) {
     return (
       <div className={styles['no-assets']}>
-        <p>No assets found in your wallet</p>
-        <p className={styles['no-assets-subtext']}>We're looking for USDC and USDT on Ethereum and Arbitrum</p>
+        <p>No valid assets found in your wallet</p>
       </div>
     );
   }
@@ -116,7 +115,7 @@ const AssetList: React.FC<AssetListProps> = ({
     <div className={styles['asset-list']}>
       <h2>Your Assets</h2>
       <div className={styles['asset-grid']}>
-        {assets.map((asset) => {
+        {regularAssets.map((asset) => {
           const assetKey = `${asset.token}-${asset.chain}`;
           const yieldInfo = assetYields[assetKey];
           

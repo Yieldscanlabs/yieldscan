@@ -3,6 +3,7 @@ import type { Asset, YieldOption } from '../types';
 import { calculateDailyYield, formatNumber } from '../utils/helpers';
 import styles from './DepositForm.module.css';
 import DepositModal from './DepositModal';
+import { useChainId, useSwitchChain } from 'wagmi';
 
 interface DepositFormProps {
   asset: Asset;
@@ -26,7 +27,8 @@ const DepositForm: React.FC<DepositFormProps> = ({
   const [yearlyYieldUsd, setYearlyYieldUsd] = useState('0');
   const [activePercentage, setActivePercentage] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const { chains, switchChain,  } = useSwitchChain()
+    const chainId = useChainId();
   // Calculate max amount based on asset balance
   const maxAmount = parseFloat(asset.balance);
   const amountUsd = (parseFloat(amount) * usdPrice).toFixed(2);
@@ -80,7 +82,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
       setYearlyYieldUsd('0');
     }
   }, [amount, yieldOption.apy, usdPrice]);
-  
   return (
     <div className={styles['deposit-container']}>
       <div className={styles['deposit-form']}>
@@ -154,14 +155,24 @@ const DepositForm: React.FC<DepositFormProps> = ({
         )}
         
         <div className={styles['action-buttons']}>
-          <button 
-            className={styles['deposit-button']}
-            onClick={handleDeposit}
-            disabled={parseFloat(amount) <= 0}
-          >
-            <span className={styles['button-icon']}>↗</span>
-            Deposit Now
-          </button>
+          {asset.chainId !== chainId ? (
+            <button 
+              className={styles['deposit-button']}
+              onClick={() => switchChain({ chainId: asset.chainId })}
+            >
+              <span className={styles['button-icon']}>↺</span>
+              Switch to {chains.find(chain => chain.id === asset.chainId)?.name || 'Correct Chain'}
+            </button>
+          ) : (
+            <button 
+              className={styles['deposit-button']}
+              onClick={handleDeposit}
+              disabled={parseFloat(amount) <= 0}
+            >
+              <span className={styles['button-icon']}>↗</span>
+              Deposit Now
+            </button>
+          )}
         </div>
       </div>
       

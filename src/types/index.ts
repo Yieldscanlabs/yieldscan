@@ -9,6 +9,7 @@ export interface Asset {
   balance: string;
   decimals: number;
   chainId: number;
+    yieldBearingToken: boolean;
   balanceUsd: string;
   icon: string;
 }

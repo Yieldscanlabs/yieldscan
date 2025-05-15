@@ -35,7 +35,7 @@ const protocolAbis = {
   ]
 } as const;
 
-interface UseUnifiedYieldOptions {
+  interface UseUnifiedYieldOptions {
   protocol: SupportedProtocol;
   contractAddress: Address;
   tokenAddress: Address;

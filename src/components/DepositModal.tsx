@@ -6,11 +6,14 @@ import useERC20 from '../hooks/useERC20';
 import { COMPOUND_V3_MARKETS } from '../hooks/useCompoundApy';
 import type {SupportedProtocol} from '../hooks/useUnifiedYield';
 import useUnifiedYield from '../hooks/useUnifiedYield';
+import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 
 const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     console.log(protocol, token, chainId);
     if(protocol === 'Compound') {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;
+    } else if(protocol === 'Aave') {
+        return AAVE_V3_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'
 }
@@ -54,14 +57,15 @@ const DepositModal: React.FC<DepositModalProps> = ({
   } = useERC20({
     tokenAddress: asset.address as `0x${string}`,
     spenderAddress: protocolAddress,
+    chainId: asset.chainId,
   });
 
   const { supply, isSupplying, isConfirmed } = useUnifiedYield({
-    protocol: protocol as SupportedProtocol, // or 'Aave'
-    contractAddress: protocolAddress, // Protocol contract address
-    tokenAddress: asset.address as `0x${string}`, // Token address
-    tokenDecimals: asset.decimals, // optional, defaults to 18
-    chainId: asset.chainId // optional 
+        protocol: protocol as SupportedProtocol, // or 'Aave'
+        contractAddress: protocolAddress, // Protocol contract address
+        tokenAddress: asset.address as `0x${string}`, // Token address
+        tokenDecimals: asset.decimals, // optional, defaults to 18
+        chainId: asset.chainId // optional 
     });
 
   // Check if we need approval or already have enough allowance
@@ -69,6 +73,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
     if (isOpen) {
       setStep(1);
       setError(null);
+        
       const hasEnough = hasEnoughAllowance(amount);
       // Check if we already have approval
       if (hasEnough) {
@@ -112,7 +117,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
     setError(null);
     try {
       const success = await supply(amount);
-      
       if (success) {
         setStep(3);
         // Move to complete after a brief delay
