@@ -50,7 +50,7 @@ export interface ApyStore {
 }
 
 // API endpoint for fetching APY data
-const APY_API_ENDPOINT = 'http://64.176.164.234:5679';
+const APY_API_ENDPOINT = 'http://65.109.34.27:5678';
 
 // Auto-refresh interval in milliseconds (3 seconds)
 const AUTO_REFRESH_INTERVAL = 3000;

@@ -4,7 +4,7 @@ import { CHAIN_NAMES } from '../utils/constants';
 import { formatNumber } from '../utils/helpers';
 import YieldOptionComponent from './YieldOption';
 import styles from './AssetList.module.css';
-import useBestApy, { type BestApyResult } from '../hooks/useBestApy';
+import { type BestApyResult } from '../hooks/useBestApy';
 import { useApyStore } from '../store/apyStore';
 import { getBestYield } from '../utils/getBestYield';
 
@@ -57,9 +57,7 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
         
         <div className={styles['yield-info']}>
           <YieldOptionComponent 
-            loading={yieldInfo?.loading || false}
-            option={yieldInfo?.option}
-            yearlyYieldUsd={yieldInfo?.yearlyYieldUsd || '0.00'}
+            loading={apyLoading}
             asset={asset}
             bestApyData={bestApyData}
           />

@@ -6,16 +6,12 @@ import type { BestApyResult } from '../hooks/useBestApy';
 
 interface YieldOptionProps {
   loading: boolean;
-  option?: YieldOptionType;
-  yearlyYieldUsd: string;
   asset?: Asset;
   bestApyData: BestApyResult;
 }
 
 const YieldOption: React.FC<YieldOptionProps> = ({ 
   loading, 
-  option, 
-  yearlyYieldUsd,
   asset,
   bestApyData
 }) => {
@@ -33,8 +29,7 @@ const YieldOption: React.FC<YieldOptionProps> = ({
       // Use the best APY across protocols if available
       return bestApy.toFixed(2);
     }
-    return option?.apy;
-  }, [bestApy, option]);
+  }, [bestApy]);
 
   // Calculate yearly yield using the best APY
   const calculatedYearlyYieldUsd = useMemo(() => {
@@ -43,8 +38,7 @@ const YieldOption: React.FC<YieldOptionProps> = ({
       const apyDecimal = parseFloat(displayApy.toString()) / 100;
       return (balanceNum * apyDecimal).toFixed(2);
     }
-    return yearlyYieldUsd;
-  }, [asset, displayApy, yearlyYieldUsd]);
+  }, [asset, displayApy]);
 
   if (loading || apyLoading) {
     return (
