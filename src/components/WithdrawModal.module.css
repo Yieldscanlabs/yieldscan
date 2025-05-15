@@ -1,0 +1,465 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  background-color: var(--surface-dark, #121212);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease-out forwards;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modalHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #a0a0a0);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #ffffff);
+}
+
+.modalContent {
+  padding: 1.5rem;
+}
+
+.withdrawDetails {
+  background-color: var(--surface-medium, #1e1e1e);
+  border-radius: var(--radius-md, 8px);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.detailRow:last-child {
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  color: var(--text-tertiary, #777);
+  font-size: 0.9rem;
+}
+
+.detailValue {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.assetIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+}
+
+/* Amount Input Section */
+.amountContainer {
+  margin-bottom: 1.5rem;
+}
+
+.amountLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.amountDisplay {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.amountValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.amountToken {
+  display: inline-block;
+  font-weight: 600;
+  margin-left: 0.25rem;
+  color: var(--text-secondary);
+}
+
+.amountUsd {
+  font-size: 1rem;
+  color: var(--text-tertiary);
+}
+
+/* Slider */
+.sliderContainer {
+  position: relative;
+  margin: 2rem 0;
+  padding: 0 1rem;
+}
+
+.sliderTrack {
+  position: relative;
+  height: 16px;
+  margin: 1.5rem 0;
+}
+
+.amountSlider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  z-index: 3;
+}
+
+.amountSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.amountSlider::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.sliderTrack::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--surface-medium);
+  border-radius: 8px;
+}
+
+.sliderProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transition: width 0.1s ease;
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+}
+
+.sliderThumb {
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 3px solid var(--primary-color);
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sliderPercentage {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.percentageButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+}
+
+.percentageButtons button {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: var(--surface-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.percentageButtons button:hover {
+  background-color: var(--surface-light);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.percentageButtons button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(108, 92, 231, 0.3);
+}
+
+/* Withdraw Button */
+.withdrawButton {
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  min-height: 60px;
+  background: linear-gradient(135deg, var(--error-color) 0%, #ff4d4d 100%);
+  color: white;
+}
+
+.withdrawButton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.6s;
+}
+
+.withdrawButton:hover::after {
+  left: 100%;
+}
+
+.withdrawButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(255, 77, 77, 0.4);
+}
+
+.withdrawButton:disabled {
+  background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.withdrawButton:disabled::after {
+  display: none;
+}
+
+.buttonIcon {
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+  display: inline-flex;
+}
+
+/* Error message */
+.error {
+  margin: 1rem 0;
+  color: var(--error-color);
+  text-align: center;
+  background-color: rgba(255, 94, 91, 0.1);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 94, 91, 0.2);
+}
+
+/* Loading state */
+.withdrawButton.loading {
+  position: relative;
+  color: transparent !important;
+  background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.withdrawButton.loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+}
+
+/* Success state */
+.successContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(0, 230, 121, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--success-color, #00e679);
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(0, 230, 121, 0.2);
+  animation: scaleIn 0.4s cubic-bezier(0.5, 1.8, 0.8, 1.2) forwards;
+}
+
+.successTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  animation: fadeInUp 0.5s 0.2s forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.successMessage {
+  color: var(--text-secondary, #a0a0a0);
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.5s 0.3s forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.completeButton {
+  background: linear-gradient(135deg, var(--primary-color, #6c5ce7), var(--secondary-color, #574bd2));
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all 0.3s;
+  animation: fadeInUp 0.5s 0.4s forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.completeButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}

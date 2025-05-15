@@ -1,3 +1,5 @@
+import { withdraw } from "viem/zksync";
+
 const tokens = [
   {
     token: 'USDC' as const,
@@ -78,12 +80,13 @@ const tokens = [
     token: 'cUSDC' as const,
     chain: 'ETH' as const,
     underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    address: '0x39AA39c021dfbaE8faC545936693aC917d5E7563', // 
+    address: '0xc3d688B66703497DAA19211EEdff47f25384cdc3', // 
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png',
     chainId: 1, // mainnet
     protocol: 'Compound',
+    withdrawContract: '0xc3d688B66703497DAA19211EEdff47f25384cdc3', // Aave v3 withdraw contract
     yieldBearingToken: true,
-    decimals: 8, // Note: cTokens typically have 8 decimals
+    decimals: 6, // Note: cTokens typically have 8 decimals
     maxDecimalsShow: 2,
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
@@ -93,11 +96,12 @@ const tokens = [
     address: '0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9', // Compound cUSDT v2 on Ethereum
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9/logo.png',
     chainId: 1, // mainnet
+    withdrawContract: '0x3Afdc9BCA9213A35503b077a6072F3D0d5AB0840', // compound usdt v3 withdraw contract
     underlyingAsset: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum USDT
     protocol: 'Compound',
     yieldBearingToken: true,
     maxDecimalsShow: 2,
-    decimals: 8, // Note: cTokens typically have 8 decimals
+    decimals: 6, // Note: cTokens typically have 8 decimals
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
   // Compound cTokens on Arbitrum One
@@ -108,10 +112,11 @@ const tokens = [
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png', // Using Ethereum icon
     chainId: 42161, // arbitrum
     underlyingAsset: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum USDC
+    withdrawContract: '0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf', // Compound cUSDC v3 withdraw contract
     protocol: 'Compound',
     yieldBearingToken: true,
     maxDecimalsShow: 2,
-    decimals: 8, // Note: cTokens typically have 8 decimals
+    decimals: 6, // Note: cTokens typically have 8 decimals
     usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   },
   // {
@@ -122,6 +127,7 @@ const tokens = [
   //    protocol: 'Compound',
   //   chainId: 42161, // arbitrum
   //   yieldBearingToken: true,
+  // withdrawcontract: '0xd98Be00b5D27fc98112BdE293e487f8D4cA57d07', // Compound cUSDT v3 withdraw contract
   //   maxDecimalsShow: 2,
   //   decimals: 8, // Note: cTokens typically have 8 decimals
   //   usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)

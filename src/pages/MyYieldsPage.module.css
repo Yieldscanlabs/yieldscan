@@ -475,3 +475,248 @@
     border-radius: 0.25rem;
     color: var(--text-tertiary)
 }
+
+/* Slimmer Card Layout */
+.yieldCardSlim {
+  background: var(--surface-dark);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+}
+
+.yieldCardSlim:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Top section with asset info and APY */
+.cardTopSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.assetInfoSlim {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.assetIconSmall {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.assetNameBold {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.detailsRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.protocolBadge, .chainBadge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-medium);
+  color: var(--text-tertiary);
+}
+
+.chainBadge {
+  background: rgba(3, 105, 161, 0.15);
+  color: #60a5fa;
+}
+
+.apyBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.apyValue {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--success-color);
+}
+
+.apyLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  letter-spacing: 0.5px;
+}
+
+/* Middle section - balances and yields */
+.cardMiddleSection {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.balanceColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.balanceAmount {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.balanceUsd {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.yieldsColumn {
+  text-align: right;
+}
+
+.yieldRow {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.yieldRow span:first-child {
+  color: var(--text-tertiary);
+}
+
+.yearlyYield {
+  color: var(--success-color);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
+/* Button row */
+.cardActionRow {
+  display: flex;
+  gap: 8px;
+}
+
+.actionButton, .actionButtonAccent {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.actionButton {
+  background-color: var(--surface-medium);
+  color: var(--text-secondary);
+}
+
+.actionButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.actionButtonAccent {
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.actionButtonAccent:hover {
+  filter: brightness(1.1);
+}
+
+.buttonIcon {
+  font-size: 11px;
+}
+
+/* Withdraw panel */
+.withdrawPanel {
+  width: 100%;
+}
+
+.withdrawInputRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.withdrawInputSlim {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-medium);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.withdrawInputSlim::placeholder {
+  color: var(--text-tertiary);
+}
+
+.inputActions {
+  display: flex;
+  gap: 4px;
+}
+
+.confirmBtn, .cancelBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.confirmBtn {
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.confirmBtn:hover {
+  filter: brightness(1.1);
+}
+
+.confirmBtn:disabled {
+  background: rgba(79, 70, 229, 0.3);
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  background-color: var(--surface-medium);
+  color: var(--text-secondary);
+}
+
+.cancelBtn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.successBadge {
+  font-size: 12px;
+  color: var(--success-color);
+  text-align: center;
+  padding: 4px 0;
+}

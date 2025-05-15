@@ -7,6 +7,8 @@ import tokens from '../utils/tokens';
 import { getChainName } from '../utils/chains';
 import { useApyStore } from '../store/apyStore';
 import useUnifiedYield from '../hooks/useUnifiedYield';
+import WithdrawModal from './WithdrawModal';
+import { useChainId, useSwitchChain } from 'wagmi';
 
 interface YieldCardProps {
   asset: Asset;
@@ -14,41 +16,39 @@ interface YieldCardProps {
 }
 
 const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
-  const { apyData, isLoading: apyLoading, error: apyError } = useApyStore();
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [showWithdrawInput, setShowWithdrawInput] = useState(false);
+  const { apyData } = useApyStore();
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const chainId = useChainId();
+  const { chains, switchChain } = useSwitchChain();
   
-  // Find the token details
+  // Find token details and determine protocol info
   const token = tokens.find(
     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
   );
   
-  // Determine which protocol this yield-bearing token belongs to
+  // Get protocol and APY data
   let protocol = '';
   let apy = 0;
   
-  // Use the apyData from the store instead of hardcoded values
   if (token) {
-    const tokenApyData = asset.protocol && token.underlyingAsset ? apyData[token.chainId]?.[token.underlyingAsset.toLowerCase()]: null;
-    console.log('Token APY Data:', tokenApyData, asset, apyData);
+    const tokenApyData = asset.protocol && token.underlyingAsset ? apyData[token.chainId]?.[token.underlyingAsset.toLowerCase()] : null;
     if (tokenApyData && asset.protocol) {
-      protocol = asset.protocol || '';
+      protocol = asset.protocol;
       const protocolKey = protocol.toLowerCase() as keyof typeof tokenApyData;
       apy = tokenApyData[protocolKey] || 0;
     } else {
-      // Fallback to basic detection if APY data is not available
+      // Fallback detection
       if (token.token.startsWith('a')) {
         protocol = PROTOCOL_NAMES.AAVE;
-        apy = 3.2; // Fallback APY
+        apy = 3.2;
       } else if (token.token.startsWith('c')) {
         protocol = PROTOCOL_NAMES.COMPOUND;
-        apy = 2.8; // Fallback APY
+        apy = 2.8;
       }
     }
   }
   
-  // Initialize useUnifiedYield hook for withdrawing
+  // Initialize useUnifiedYield hook
   const {
     withdraw,
     isWithdrawing: isProcessingWithdrawal,
@@ -56,140 +56,133 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
     isConfirmed,
   } = useUnifiedYield({
     protocol: asset.protocol as any,
-    contractAddress: (token?.withdrawContract as `0x${string}`) || '0x', // Ensure withdrawContract matches the Address type
+    contractAddress: (token?.withdrawContract as `0x${string}`) || '0x',
     tokenAddress: token?.underlyingAsset as `0x${string}`,
     tokenDecimals: asset.decimals || 18,
     chainId: asset.chainId,
   });
 
-  // Get chain name
-  const chainName = getChainName(asset.chainId);
-  
-  // Calculate yield
+  // Calculate yields
   const balanceNum = parseFloat(asset.balance);
   const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
-  const dailyYield = (balanceNum * (apy / 100)) / 365;
-  const dailyYieldUsd = dailyYield * usdPrice;
+  const dailyYieldUsd = (balanceNum * (apy / 100) / 365) * usdPrice;
   const yearlyYieldUsd = dailyYieldUsd * 365;
   
-  // Handle withdraw button click
-  const handleWithdrawClick = () => {
-    setShowWithdrawInput(!showWithdrawInput);
-  };
-
-  // Handle withdraw submission
-  const handleWithdraw = async () => {
-    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) return;
-    
-    setIsWithdrawing(true);
-    try {
-      const success = await withdraw(withdrawAmount);
-      if (success) {
-        // Show success message or update UI
-        console.log(`Successfully initiated withdrawal of ${withdrawAmount} ${asset.token}`);
-        // Reset the input field after successful transaction
-        setWithdrawAmount('');
-        setShowWithdrawInput(false);
-      } else {
-        console.error('Withdrawal failed');
+  // Open withdraw modal
+  const openWithdrawModal = async () => {
+    // Check if we're on the correct network before opening the modal
+    if (chainId !== asset.chainId) {
+      // If not on the correct network, switch to it first
+      try {
+        await switchChain({ chainId: asset.chainId });
+        // Once switched, open the modal
+        setIsWithdrawModalOpen(true);
+      } catch (error) {
+        console.error('Failed to switch networks:', error);
+        // Could add user notification here
       }
-    } catch (error) {
-      console.error('Error during withdrawal:', error);
-    } finally {
-      setIsWithdrawing(false);
+    } else {
+      // Already on correct network, just open the modal
+      setIsWithdrawModalOpen(true);
     }
   };
   
+  // Close withdraw modal
+  const closeWithdrawModal = () => {
+    setIsWithdrawModalOpen(false);
+  };
+  
+  // Handle withdraw modal completion
+  const handleWithdrawComplete = (success: boolean) => {
+    if (success) {
+      // Handle successful withdrawal
+      // In a real app, you might want to refresh the asset data
+    }
+    setIsWithdrawModalOpen(false);
+  };
+  
+  // Handle withdraw action
+  const handleWithdraw = async (amount: string) => {
+    if (!amount || parseFloat(amount) <= 0) return false;
+    
+    try {
+      const success = await withdraw(amount);
+      return success;
+    } catch (error) {
+      console.error('Error during withdrawal:', error);
+      return false;
+    }
+  };
+
+  const chainName = getChainName(asset.chainId);
+  
   return (
-    <div className={styles.yieldCard}>
-      <div className={styles.assetHeader}>
-        <div className={styles.assetInfo}>
-          <img src={asset.icon} alt={asset.token} className={styles.assetIcon} />
+    <div className={styles.yieldCardSlim}>
+      <div className={styles.cardTopSection}>
+        <div className={styles.assetInfoSlim}>
+          <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
           <div>
-            <div className={styles.assetName}>{asset.token}</div>
-            <div className={styles.assetDetails}>
-              <span className={styles.assetProtocol}>{protocol}</span>
-              <span className={styles.assetChain}>{chainName}</span>
+            <div className={styles.assetNameBold}>{asset.token}</div>
+            <div className={styles.detailsRow}>
+              <span className={styles.protocolBadge}>{protocol}</span>
+              <span className={styles.chainBadge}>{chainName}</span>
             </div>
           </div>
         </div>
-        <div className={styles.assetApy}>
-          <div className={styles.apyValue}>{apy.toFixed(2)}%</div>
-          <div className={styles.apyLabel}>APY</div>
+        
+        <div className={styles.apyBadge}>
+          <span className={styles.apyValue}>{apy.toFixed(2)}%</span>
+          <span className={styles.apyLabel}>APY</span>
         </div>
       </div>
       
-      <div className={styles.assetBalances}>
-        <div className={styles.balanceDetail}>
-          <div className={styles.balanceLabel}>Balance</div>
-          <div className={styles.balanceValue}>
+      <div className={styles.cardMiddleSection}>
+        <div className={styles.balanceColumn}>
+          <div className={styles.balanceAmount}>
             {formatNumber(balanceNum, asset.maxDecimalsShow)} {asset.token}
           </div>
           <div className={styles.balanceUsd}>${formatNumber(parseFloat(asset.balanceUsd), 2)}</div>
         </div>
-      </div>
-      
-      <div className={styles.yieldDetails}>
-        <div className={styles.yieldDetail}>
-          <div className={styles.yieldLabel}>Daily Yield</div>
-          <div className={styles.yieldValue}>${formatNumber(dailyYieldUsd, 2)}</div>
-        </div>
-        <div className={styles.yieldDetail}>
-          <div className={styles.yieldLabel}>Yearly Yield</div>
-          <div className={styles.yieldValue}>${formatNumber(yearlyYieldUsd, 2)}</div>
-        </div>
-      </div>
-      
-      <div className={styles.cardActions}>
-        {showWithdrawInput ? (
-          <div className={styles.withdrawInputContainer}>
-            <input
-              type="number"
-              placeholder={`Amount (max: ${balanceNum})`}
-              className={styles.withdrawInput}
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              disabled={isWithdrawing || isProcessingWithdrawal || isConfirming}
-            />
-            <div className={styles.withdrawButtonGroup}>
-              <button 
-                className={styles.withdrawConfirmButton}
-                onClick={handleWithdraw}
-                disabled={isWithdrawing || isProcessingWithdrawal || isConfirming}
-              >
-                {isWithdrawing || isProcessingWithdrawal || isConfirming ? 'Processing...' : 'Confirm'}
-              </button>
-              <button 
-                className={styles.withdrawCancelButton}
-                onClick={() => {
-                  setShowWithdrawInput(false);
-                  setWithdrawAmount('');
-                }}
-                disabled={isWithdrawing || isProcessingWithdrawal || isConfirming}
-              >
-                Cancel
-              </button>
-            </div>
-            {isConfirmed && <div className={styles.successMessage}>Withdrawal successful!</div>}
+        
+        <div className={styles.yieldsColumn}>
+          <div className={styles.yieldRow}>
+            <span>Daily:</span> <span>${formatNumber(dailyYieldUsd, 2)}</span>
           </div>
-        ) : (
-          <button 
-            className={styles.withdrawButton} 
-            onClick={handleWithdrawClick}
-          >
-            Withdraw
-          </button>
-        )}
+          <div className={styles.yieldRow}>
+            <span>Yearly:</span> <span className={styles.yearlyYield}>${formatNumber(yearlyYieldUsd, 2)}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className={styles.cardActionRow}>
+        <button className={styles.actionButton} onClick={openWithdrawModal}>
+          <span className={styles.buttonIcon}>↓</span> 
+          {chainId !== asset.chainId 
+            ? `Withdraw`
+            : 'Withdraw'
+          }
+        </button>
         
         {onOptimize && (
-          <button 
-            className={styles.optimizeButton} 
-            onClick={onOptimize}
-          >
-            Optimize Yield
+          <button className={styles.actionButtonAccent} onClick={onOptimize}>
+            <span className={styles.buttonIcon}>↗</span> Optimize
           </button>
         )}
       </div>
+      
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={closeWithdrawModal}
+        onComplete={handleWithdrawComplete}
+        asset={asset}
+        protocol={protocol}
+        balance={balanceNum}
+        maxDecimals={asset.maxDecimalsShow || 6}
+        onWithdraw={handleWithdraw}
+        isProcessing={isProcessingWithdrawal}
+        isConfirming={isConfirming}
+        isConfirmed={isConfirmed}
+      />
     </div>
   );
 };
