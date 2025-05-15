@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits, type Address } from 'viem';
+import { PROTOCOL_NAMES } from '../utils/constants';
 
 // Supported protocols
-export type SupportedProtocol = 'Aave' | 'Compound';
+export type SupportedProtocol = typeof PROTOCOL_NAMES [keyof typeof PROTOCOL_NAMES];
 
 // Protocol-specific ABIs
 const protocolAbis = {
@@ -72,7 +73,7 @@ export default function useUnifiedYield({
       let hash;
       console.log(amount, tokenDecimals, amountInWei.toString());
       // Protocol-specific supply function
-      if (protocol === 'Aave') {
+      if (protocol === PROTOCOL_NAMES.AAVE) {
         hash = await writeContractAsync({
           address: contractAddress,
           abi: protocolAbis.Aave,
@@ -80,7 +81,7 @@ export default function useUnifiedYield({
           args: [tokenAddress, amountInWei, address, 0], // Aave requires these args
           chainId
         });
-      } else if (protocol === 'Compound') {
+      } else if (protocol === PROTOCOL_NAMES.COMPOUND) {
         hash = await writeContractAsync({
           address: contractAddress,
           abi: protocolAbis.Compound,

@@ -7,12 +7,13 @@ import { COMPOUND_V3_MARKETS } from '../hooks/useCompoundApy';
 import type {SupportedProtocol} from '../hooks/useUnifiedYield';
 import useUnifiedYield from '../hooks/useUnifiedYield';
 import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
+import { PROTOCOL_NAMES } from '../utils/constants';
 
 const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     console.log(protocol, token, chainId);
-    if(protocol === 'Compound') {
+    if(protocol === PROTOCOL_NAMES.COMPOUND) {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;
-    } else if(protocol === 'Aave') {
+    } else if(protocol === PROTOCOL_NAMES.AAVE) {
         return AAVE_V3_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'

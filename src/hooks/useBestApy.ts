@@ -2,10 +2,11 @@ import { useMemo } from 'react';
 import useAaveApy from './useAaveApy';
 import useCompoundApy from './useCompoundApy';
 import type { Asset } from '../types';
+import { PROTOCOL_NAMES } from '../utils/constants';
 
 export interface BestApyResult {
   bestApy: number | null;
-  bestProtocol: 'Aave' | 'Compound' | null;
+  bestProtocol: typeof PROTOCOL_NAMES[keyof typeof PROTOCOL_NAMES] | null;
   aaveApy: number | null;
   compoundApy: number | null;
   loading: boolean;
@@ -47,7 +48,7 @@ export default function useBestApy(asset?: Asset): BestApyResult {
     
     // Default values
     let bestApy: number | null = null;
-    let bestProtocol: 'Aave' | 'Compound' | null = null;
+    let bestProtocol: typeof PROTOCOL_NAMES[keyof typeof PROTOCOL_NAMES] | null = null;
     
     // Only compare if we have at least one valid APY and not loading
     if (!loading) {
@@ -55,19 +56,19 @@ export default function useBestApy(asset?: Asset): BestApyResult {
         // We have both APYs, compare them
         if (aaveApy > compoundApy) {
           bestApy = aaveApy;
-          bestProtocol = 'Aave';
+          bestProtocol = PROTOCOL_NAMES.AAVE;
         } else {
           bestApy = compoundApy;
-          bestProtocol = 'Compound';
+          bestProtocol = PROTOCOL_NAMES.COMPOUND;
         }
       } else if (aaveApy !== null) {
         // We only have Aave APY
         bestApy = aaveApy;
-        bestProtocol = 'Aave';
+        bestProtocol = PROTOCOL_NAMES.AAVE;
       } else if (compoundApy !== null) {
         // We only have Compound APY
         bestApy = compoundApy;
-        bestProtocol = 'Compound';
+        bestProtocol = PROTOCOL_NAMES.COMPOUND;
       }
     }
     
