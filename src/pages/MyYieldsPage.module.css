@@ -357,6 +357,85 @@
   filter: brightness(1.1);
 }
 
+.cardActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.withdrawButton {
+  background-color: #f3f4f6;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.withdrawButton:hover {
+  background-color: #e5e7eb;
+}
+
+.withdrawInputContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+}
+
+.withdrawInput {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.withdrawButtonGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.withdrawConfirmButton {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.withdrawConfirmButton:hover {
+  background-color: #4338ca;
+}
+
+.withdrawConfirmButton:disabled {
+  background-color: #a5a5a5;
+  cursor: not-allowed;
+}
+
+.withdrawCancelButton {
+  background-color: #f3f4f6;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.successMessage {
+  color: #22c55e;
+  font-size: 14px;
+  margin-top: 4px;
+  text-align: center;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -380,4 +459,19 @@
   .comparisonArrow {
     transform: rotate(90deg);
   }
+}
+
+.assetDetails {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.assetChain {
+    font-size: 0.7rem;
+    background-color: var(--surface-medium);
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.25rem;
+    color: var(--text-tertiary)
 }

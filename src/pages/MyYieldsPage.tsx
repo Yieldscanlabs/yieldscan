@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import useAssets from '../hooks/useAssets';
-import useBestApy from '../hooks/useBestApy';
+import { useApyStore } from '../store/apyStore'; // Import the APY store instead
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
@@ -22,9 +22,15 @@ const MyYieldsPage: React.FC = () => {
     betterApy: number;
     additionalYearlyUsd: string;
   }[]>([]);
+  
+  // Get the getBestApy method from the store
+  const { getBestApy, lastUpdated, apyData } = useApyStore();
 
-  // Filter for yield-bearing tokens only
-  const yieldAssets = assets.filter(asset => asset.yieldBearingToken);
+  // Memoize yield-bearing tokens to prevent re-renders
+  const yieldAssets = useMemo(() => 
+    assets.filter(asset => asset.yieldBearingToken),
+    [assets]
+  );
 
   // Calculate total yields and check for optimizations
   useEffect(() => {
@@ -54,7 +60,6 @@ const MyYieldsPage: React.FC = () => {
         
         // Get current APY estimate (this would ideally come from an API)
         // For now, we'll use a simplified approach based on the token name
-        const currentApyEstimate = token.token.startsWith('a') ? 3.2 : 2.8;
         
         // Find the underlying asset for this yield token
         const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
@@ -64,22 +69,16 @@ const MyYieldsPage: React.FC = () => {
         
         if (!underlyingToken) continue;
         
-        // Create a dummy underlying asset to use with our hooks
-        const underlyingAsset: Asset = {
-          token: underlyingToken.token,
-          address: underlyingToken.address,
-          maxDecimalsShow: underlyingToken.maxDecimalsShow,
-          chain: underlyingToken.chain,
-          chainId: underlyingToken.chainId,
-          balance: asset.balance,
-          balanceUsd: asset.balanceUsd,
-          decimals: underlyingToken.decimals,
-          yieldBearingToken: false,
-          icon: underlyingToken.icon
-        };
-        
-        // Get best APY for the underlying asset
-        const bestApyData = useBestApy(underlyingAsset);
+        // Get best APY from the store instead of using the hook directly
+        const { bestApy, bestProtocol } = getBestApy(
+          underlyingToken.chainId,
+          underlyingToken.address.toLowerCase()
+        );
+        console.log(underlyingToken, bestApy, bestProtocol);
+        // If no best APY found, skip this asset
+        if (bestApy === null) continue;
+        const currentApyEstimate = bestApy
+
         
         // Calculate daily and yearly yield
         const balanceNum = parseFloat(asset.balance);
@@ -92,13 +91,13 @@ const MyYieldsPage: React.FC = () => {
         yearlyYieldTotal += yearlyYieldUsd;
         
         // Check if there's a better APY available
+        console.log(bestProtocol, currentProtocol)
         if (
-          bestApyData.bestApy !== null && 
-          bestApyData.bestApy > currentApyEstimate &&
-          bestApyData.bestProtocol !== currentProtocol
+          bestProtocol !== currentProtocol
         ) {
+          console.log('hello')
           // Calculate additional yield if user switches to better protocol
-          const betterYearlyYield = (balanceNum * (bestApyData.bestApy / 100));
+          const betterYearlyYield = (balanceNum * (bestApy / 100));
           const betterYearlyYieldUsd = betterYearlyYield * usdPrice;
           const additionalYearlyUsd = betterYearlyYieldUsd - yearlyYieldUsd;
           
@@ -106,20 +105,21 @@ const MyYieldsPage: React.FC = () => {
             asset,
             currentProtocol,
             currentApy: currentApyEstimate,
-            betterProtocol: bestApyData.bestProtocol || '',
-            betterApy: bestApyData.bestApy,
+            betterProtocol: bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES 
+              ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] 
+              : '',
+            betterApy: bestApy,
             additionalYearlyUsd: formatNumber(additionalYearlyUsd, 2)
           });
         }
       }
-      
       setTotalDailyYield(formatNumber(dailyYieldTotal, 2));
       setTotalYearlyYield(formatNumber(yearlyYieldTotal, 2));
       setOptimizations(potentialOptimizations);
     };
     
     processAssets();
-  }, [yieldAssets]);
+  }, [lastUpdated]); 
 
   if (loading) {
     return (
@@ -171,7 +171,6 @@ const MyYieldsPage: React.FC = () => {
 
       {/* Current Yields Section */}
       <div className={styles.section}>
-        <h2>Current Yield-Bearing Assets</h2>
         <div className={styles.yieldGrid}>
           {yieldAssets.map((asset) => (
             <YieldCard
@@ -185,7 +184,7 @@ const MyYieldsPage: React.FC = () => {
       {/* Optimizations Section */}
       {optimizations.length > 0 && (
         <div className={styles.section}>
-          <h2>Yield Optimizations</h2>
+          <h2>Optimize</h2>
           <p className={styles.sectionDescription}>
             These optimizations could increase your yield earnings.
           </p>

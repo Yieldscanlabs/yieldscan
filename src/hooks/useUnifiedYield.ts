@@ -20,6 +20,17 @@ const protocolAbis = {
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'asset', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'to', type: 'address' },
+      ],
+      name: 'withdraw',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
     }
   ],
   Compound: [
@@ -30,6 +41,16 @@ const protocolAbis = {
       ],
       name: 'supply',
       outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'asset', type: 'address' },
+        { name: 'amount', type: 'uint256' }
+      ],
+      name: 'withdraw',
+      outputs: [{ name: '', type: 'uint256' }],
       stateMutability: 'nonpayable',
       type: 'function',
     }
@@ -55,6 +76,7 @@ export default function useUnifiedYield({
   const { writeContractAsync } = useWriteContract();
   
   const [isSupplying, setIsSupplying] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
 
   // Transaction receipt for last transaction
@@ -103,14 +125,57 @@ export default function useUnifiedYield({
     }
   }, [address, contractAddress, protocol, tokenAddress, tokenDecimals, writeContractAsync, chainId]);
 
+  // Withdraw tokens from the protocol
+  const withdraw = useCallback(async (amount: string): Promise<boolean> => {
+    if (!address || !contractAddress) return false;
+    
+    try {
+      setIsWithdrawing(true);
+      const amountInWei = parseUnits(amount, tokenDecimals);
+      let hash;
+      console.log("Withdrawing:", amount, tokenDecimals, amountInWei.toString());
+      
+      // Protocol-specific withdraw function
+      if (protocol === PROTOCOL_NAMES.AAVE) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Aave,
+          functionName: 'withdraw',
+          args: [tokenAddress, amountInWei, address], // Aave withdraw requires these args
+          chainId
+        });
+      } else if (protocol === PROTOCOL_NAMES.COMPOUND) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Compound,
+          functionName: 'withdraw',
+          args: [tokenAddress, amountInWei], // Compound withdraw
+          chainId
+        });
+      } else {
+        throw new Error(`Protocol ${protocol} not supported`);
+      }
+      
+      setTxHash(hash);
+      return true;
+    } catch (error) {
+      console.error(`Error withdrawing from ${protocol}:`, error);
+      return false;
+    } finally {
+      setIsWithdrawing(false);
+    }
+  }, [address, contractAddress, protocol, tokenAddress, tokenDecimals, writeContractAsync, chainId]);
+
   return {
     // State
     isSupplying,
+    isWithdrawing,
     isConfirming,
     isConfirmed,
     txHash,
     
     // Functions
-    supply
+    supply,
+    withdraw
   };
 }

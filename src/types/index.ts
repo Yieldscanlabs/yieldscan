@@ -8,6 +8,7 @@ export interface Asset {
   chain: SupportedChain;
   balance: string;
   decimals: number;
+  protocol?: string;
   chainId: number;
     yieldBearingToken: boolean;
   balanceUsd: string;

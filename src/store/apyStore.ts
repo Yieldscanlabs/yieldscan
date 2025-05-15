@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
+import { PROTOCOL_NAMES } from '../utils/constants';
 
 // Define types for the APY data structure
 export interface ProtocolApys {
@@ -174,7 +175,7 @@ export const useApyStore = create<ApyStore>()(
         Object.entries(apys).forEach(([protocol, apy]) => {
           if (apy !== undefined && (bestApy === null || apy > bestApy)) {
             bestApy = apy;
-            bestProtocol = protocol;
+            bestProtocol = PROTOCOL_NAMES[protocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] || protocol;
           }
         });
         

@@ -8,6 +8,7 @@ import LitepaperPage from './pages/LitepaperPage';
 import MyYieldsPage from './pages/MyYieldsPage';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
+import FaqPage from './pages/FaqPage';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: 'litepaper',
         element: <LitepaperPage />,
+      },
+            {
+        path: 'faq',
+        element: <FaqPage />,
       },
       {
         path: 'my-yields',
