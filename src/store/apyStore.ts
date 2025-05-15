@@ -162,36 +162,49 @@ export const useApyStore = create<ApyStore>()(
   )
 );
 
+// Track if auto-refresh has been set up already using a module-level variable
+let autoRefreshInitialized = false;
+
 /**
- * Hook that sets up auto-refresh for APY data
+ * Hook that sets up auto-refresh for APY data once
  * @param chainIds Optional array of chain IDs to refresh
  */
-export function useApyAutoRefresh(chainIds?: number[]) {
+export function useApyAutoRefresh() {
   const { fetchApys, autoRefreshEnabled } = useApyStore();
   
   useEffect(() => {
+    // Skip if already initialized
+    if (autoRefreshInitialized) {
+      return;
+    }
+    
+    console.log('📊 Setting up APY auto-refresh...');
+    autoRefreshInitialized = true;
+    
     // Initial fetch
     fetchApys(true);
     
     // Set up auto-refresh interval
-    //@ts-ignore
-    let intervalId: NodeJS.Timeout | null = null;
-    
-    if (autoRefreshEnabled) {
-      intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
+        console.log('hello')
+      // Only fetch if auto-refresh is enabled (checking latest state)
+      if (useApyStore.getState().autoRefreshEnabled) {
         // Use silent refresh (no loading state)
         fetchApys(false);
-      }, AUTO_REFRESH_INTERVAL);
-    }
+      }
+    }, AUTO_REFRESH_INTERVAL);
     
     // Clean up interval on unmount
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      console.log('🛑 Cleaning up APY auto-refresh');
+      clearInterval(intervalId);
+      autoRefreshInitialized = false;
     };
-  }, [fetchApys, chainIds, autoRefreshEnabled]);
+  }, []); // Empty dependency array ensures it only runs once
 }
+
+// Track token-specific auto-refresh with a Map
+const tokenAutoRefreshMap = new Map<string, boolean>();
 
 /**
  * Hook that sets up auto-refresh for a specific token's APY data
@@ -204,25 +217,34 @@ export function useTokenApyAutoRefresh(chainId: number, address: string) {
   useEffect(() => {
     if (!chainId || !address) return;
     
+    // Create a unique key for this token
+    const tokenKey = `${chainId}-${address.toLowerCase()}`;
+    
+    // Skip if already initialized for this token
+    if (tokenAutoRefreshMap.get(tokenKey)) {
+      return;
+    }
+    
+    console.log(`📊 Setting up auto-refresh for token: ${tokenKey}`);
+    tokenAutoRefreshMap.set(tokenKey, true);
+    
     // Initial fetch
     fetchApyForToken(chainId, address, true);
     
     // Set up auto-refresh interval
-    //@ts-ignore
-    let intervalId: NodeJS.Timeout | null = null;
-    
-    if (autoRefreshEnabled) {
-      intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
+      // Only fetch if auto-refresh is enabled (checking latest state)
+      if (useApyStore.getState().autoRefreshEnabled) {
         // Use silent refresh (no loading state)
         fetchApyForToken(chainId, address, false);
-      }, AUTO_REFRESH_INTERVAL);
-    }
+      }
+    }, AUTO_REFRESH_INTERVAL);
     
     // Clean up interval on unmount
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      console.log(`🛑 Cleaning up auto-refresh for token: ${tokenKey}`);
+      clearInterval(intervalId);
+      tokenAutoRefreshMap.delete(tokenKey);
     };
-  }, [fetchApyForToken, chainId, address, autoRefreshEnabled]);
+  }, [chainId, address]); // Only re-run if chainId or address changes
 }
