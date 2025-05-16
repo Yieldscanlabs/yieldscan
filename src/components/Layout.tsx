@@ -13,7 +13,6 @@ const Layout = () => {
   
   useEffect(() => {
     if (lastUpdated) {
-      console.log(`🚀 APY data refreshed at: ${new Date(lastUpdated).toLocaleTimeString()}`);
     }
   }, [lastUpdated]);
 

@@ -5,6 +5,7 @@
   padding: 1rem 2rem;
   background-color: var(--surface-dark);
   border-bottom: 1px solid var(--border-color);
+  height: 70px;
 }
 
 .headerLeft {

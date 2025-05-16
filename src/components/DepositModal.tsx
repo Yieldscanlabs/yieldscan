@@ -10,7 +10,6 @@ import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
 
 const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
-    console.log(protocol, token, chainId);
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.AAVE) {
@@ -63,7 +62,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   const { supply, isSupplying, isConfirmed } = useUnifiedYield({
         protocol: protocol as SupportedProtocol, // or 'Aave'
-        contractAddress: protocolAddress, // Protocol contract address
+        contractAddress: asset.withdrawContract as `0x${string}` || '0x', // Protocol contract address
         tokenAddress: asset.address as `0x${string}`, // Token address
         tokenDecimals: asset.decimals, // optional, defaults to 18
         chainId: asset.chainId // optional 

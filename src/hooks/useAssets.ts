@@ -61,6 +61,7 @@ export default function useAssets(walletAddress: string) {
             chain: token.chain,
             maxDecimalsShow: token.maxDecimalsShow,
             protocol: token.protocol,
+            withdrawContract: token.withdrawContract,
             balance,
             yieldBearingToken: token.yieldBearingToken ? true : false,
             chainId: token.chainId,

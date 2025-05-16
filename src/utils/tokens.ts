@@ -46,10 +46,11 @@ const tokens = [
     usdPrice: 1 // Stablecoin pegged to USD
   },
   // Aave aTokens on Ethereum
+  
   {
     token: 'aUSDC' as const,
     chain: 'ETH' as const,
-    address: '0xbcca60bb61934080951369a648fb03df4f96263c', // Ethereum aUSDC
+    address: '0xbcca60bb61934080951369a648fb03df4f96263c', // Ethereum aUSDC v2
     underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Aave USDC v3 on Ethereum
     withdrawContract: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // Aave v3 withdraw contract
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5760.png',
@@ -60,8 +61,22 @@ const tokens = [
     maxDecimalsShow: 2,
     usdPrice: 1 // Value tracks underlying asset
   },
+    {
+    token: 'AUSDT' as const,
+    chain: 'ETH' as const,
+    address: '0x23878914EFE38d27C4D67Ab83ed1b93A74D4086a', // Ethereum aUSDC v2
+    underlyingAsset: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Aave USDC v3 on Ethereum
+    withdrawContract: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // Aave v3 withdraw contract
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5761.png',
+    chainId: 1, // mainnet
+    protocol: 'Aave',
+    decimals: 6,
+    yieldBearingToken: true,
+    maxDecimalsShow: 2,
+    usdPrice: 1 // Value tracks underlying asset
+  },
   {
-    token: 'aUSDT' as const,
+    token: 'aUSDT v2' as const,
     chain: 'ETH' as const,
     address: '0x3Ed3B47Dd13EC9a98b44e6204A523E766B225811', // Aave aUSDT v2 on Ethereum
     withdrawContract: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // Aave v3 withdraw contract

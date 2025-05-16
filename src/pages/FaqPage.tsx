@@ -163,12 +163,12 @@ const FaqPage: React.FC = () => {
 
   // Group FAQs by category
   const categories = [
-    { id: "general", label: "📘 General" },
-    { id: "yield", label: "💰 Yield & Optimization" },
-    { id: "security", label: "🔐 Security" },
-    { id: "technical", label: "🔄 Technical" },
-    { id: "strategy", label: "📊 Strategy & Performance" },
-    { id: "other", label: "💡 Other" }
+    { id: "general", label: "General" },
+    { id: "yield", label: "Yield & Optimization" },
+    { id: "security", label: "Security" },
+    { id: "technical", label: "Technical" },
+    { id: "strategy", label: "Strategy & Performance" },
+    { id: "other", label: "Other" }
   ];
 
   return (

@@ -211,7 +211,6 @@ export function useApyAutoRefresh() {
       return;
     }
     
-    console.log('📊 Setting up APY auto-refresh...');
     autoRefreshInitialized = true;
     
     // Initial fetch
@@ -228,7 +227,6 @@ export function useApyAutoRefresh() {
     
     // Clean up interval on unmount
     return () => {
-      console.log('🛑 Cleaning up APY auto-refresh');
       clearInterval(intervalId);
       autoRefreshInitialized = false;
     };
@@ -257,7 +255,6 @@ export function useTokenApyAutoRefresh(chainId: number, address: string) {
       return;
     }
     
-    console.log(`📊 Setting up auto-refresh for token: ${tokenKey}`);
     tokenAutoRefreshMap.set(tokenKey, true);
     
     // Initial fetch
@@ -274,7 +271,6 @@ export function useTokenApyAutoRefresh(chainId: number, address: string) {
     
     // Clean up interval on unmount
     return () => {
-      console.log(`🛑 Cleaning up auto-refresh for token: ${tokenKey}`);
       clearInterval(intervalId);
       tokenAutoRefreshMap.delete(tokenKey);
     };

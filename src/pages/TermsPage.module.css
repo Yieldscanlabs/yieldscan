@@ -20,7 +20,11 @@
   font-style: italic;
   margin-bottom: 1.5rem;
 }
-
+.divider {
+  opacity: 0.2;
+  margin-bottom: 24px;
+  height: 1px;
+}
 .intro {
   font-weight: 500;
   color: var(--text-primary);

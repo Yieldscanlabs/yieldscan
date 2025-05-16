@@ -44,7 +44,6 @@ function App() {
 
   const handleDeposit = ({ amount, dailyYield, yearlyYield }: { amount: string; dailyYield: string; yearlyYield: string }) => {
     const protocol = bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
-    console.log(`Depositing ${amount} ${selectedAsset?.token} into ${protocol}`);
     
     setDepositAmount(amount);
     setDepositDailyYield(dailyYield);

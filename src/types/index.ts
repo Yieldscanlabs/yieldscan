@@ -1,6 +1,8 @@
+import type { withdraw } from "viem/zksync";
+
 export type SupportedChain = 'ETH' | 'BSC' | 'ARBITRUM_ONE';
 
-export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH' | 'aUSDC' | 'aUSDT' | 'cUSDC' | 'cUSDT';
+export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH' | 'aUSDC' | 'aUSDT v2' | 'AUSDT' | 'cUSDC' | 'cUSDT';
 
 export interface Asset {
   token: SupportedToken;
@@ -9,6 +11,7 @@ export interface Asset {
   balance: string;
   decimals: number;
   protocol?: string;
+  withdrawContract?: string;
   chainId: number;
     yieldBearingToken: boolean;
   balanceUsd: string;

@@ -93,7 +93,6 @@ export default function useUnifiedYield({
       setIsSupplying(true);
       const amountInWei = parseUnits(amount, tokenDecimals);
       let hash;
-      console.log(amount, tokenDecimals, amountInWei.toString());
       // Protocol-specific supply function
       if (protocol === PROTOCOL_NAMES.AAVE) {
         hash = await writeContractAsync({
@@ -133,7 +132,6 @@ export default function useUnifiedYield({
       setIsWithdrawing(true);
       const amountInWei = parseUnits(amount, tokenDecimals);
       let hash;
-      console.log("Withdrawing:", amount, tokenDecimals, amountInWei.toString());
       
       // Protocol-specific withdraw function
       if (protocol === PROTOCOL_NAMES.AAVE) {

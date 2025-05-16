@@ -4,10 +4,11 @@ import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import useAssets from '../hooks/useAssets';
-import { useApyStore } from '../store/apyStore'; // Import the APY store instead
+import { useApyStore } from '../store/apyStore';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
+import OptimizationCard from '../components/OptimizationCard'; // Import the new component
 
 const MyYieldsPage: React.FC = () => {
   const { address } = useAccount();
@@ -51,12 +52,7 @@ const MyYieldsPage: React.FC = () => {
         if (!token) continue;
         
         // Determine which protocol this yield-bearing token belongs to
-        let currentProtocol = '';
-        if (token.token.startsWith('a')) {
-          currentProtocol = PROTOCOL_NAMES.AAVE;
-        } else if (token.token.startsWith('c')) {
-          currentProtocol = PROTOCOL_NAMES.COMPOUND;
-        }
+        let currentProtocol = token.protocol;
         
         // Get current APY estimate (this would ideally come from an API)
         // For now, we'll use a simplified approach based on the token name
@@ -74,10 +70,10 @@ const MyYieldsPage: React.FC = () => {
           underlyingToken.chainId,
           underlyingToken.address.toLowerCase()
         );
-        console.log(underlyingToken, bestApy, bestProtocol);
         // If no best APY found, skip this asset
         if (bestApy === null) continue;
-        const currentApyEstimate = bestApy
+        //@ts-ignore
+        const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
 
         
         // Calculate daily and yearly yield
@@ -91,11 +87,10 @@ const MyYieldsPage: React.FC = () => {
         yearlyYieldTotal += yearlyYieldUsd;
         
         // Check if there's a better APY available
-        console.log(bestProtocol, currentProtocol)
         if (
+          currentProtocol &&
           bestProtocol !== currentProtocol
         ) {
-          console.log('hello')
           // Calculate additional yield if user switches to better protocol
           const betterYearlyYield = (balanceNum * (bestApy / 100));
           const betterYearlyYieldUsd = betterYearlyYield * usdPrice;
@@ -153,6 +148,12 @@ const MyYieldsPage: React.FC = () => {
     );
   }
 
+  // Add a handler for optimization button clicks
+  const handleOptimize = (optimization: typeof optimizations[0]) => {
+    // Implement the optimization logic here
+    // In a real app, this would initiate the token migration process
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -191,37 +192,16 @@ const MyYieldsPage: React.FC = () => {
           
           <div className={styles.optimizationsGrid}>
             {optimizations.map((opt, index) => (
-              <div key={index} className={styles.optimizationCard}>
-                <div className={styles.optimizationHeader}>
-                  <img src={opt.asset.icon} alt={opt.asset.token} className={styles.assetIcon} />
-                  <div className={styles.optimizationTitle}>
-                    Optimize your {opt.asset.token} yield
-                  </div>
-                </div>
-                
-                <div className={styles.comparisonRow}>
-                  <div className={styles.currentOption}>
-                    <div className={styles.optionProtocol}>{opt.currentProtocol}</div>
-                    <div className={styles.optionApy}>{opt.currentApy.toFixed(2)}% APY</div>
-                    <div className={styles.optionLabel}>Current</div>
-                  </div>
-                  
-                  <div className={styles.comparisonArrow}>→</div>
-                  
-                  <div className={styles.betterOption}>
-                    <div className={styles.optionProtocol}>{opt.betterProtocol}</div>
-                    <div className={styles.optionApy}>{opt.betterApy.toFixed(2)}% APY</div>
-                    <div className={styles.optionLabel}>Recommended</div>
-                  </div>
-                </div>
-                
-                <div className={styles.optimizationBenefit}>
-                  <div className={styles.benefitLabel}>Additional yearly earnings</div>
-                  <div className={styles.benefitValue}>+${opt.additionalYearlyUsd}</div>
-                </div>
-                
-                <button className={styles.optimizeButton}>Optimize Now</button>
-              </div>
+              <OptimizationCard
+                key={index}
+                asset={opt.asset}
+                currentProtocol={opt.currentProtocol}
+                currentApy={opt.currentApy}
+                betterProtocol={opt.betterProtocol}
+                betterApy={opt.betterApy}
+                additionalYearlyUsd={opt.additionalYearlyUsd}
+                onOptimize={() => handleOptimize(opt)}
+              />
             ))}
           </div>
         </div>

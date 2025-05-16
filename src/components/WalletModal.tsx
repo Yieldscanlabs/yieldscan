@@ -95,7 +95,6 @@ export default WalletModal;
 
 // Helper functions to get wallet names and icons
 function getWalletName(id: string): string {
-  console.log(id)
   switch (id) {
     case 'io.metamask':
       return 'MetaMask'
