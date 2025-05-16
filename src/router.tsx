@@ -9,6 +9,7 @@ import MyYieldsPage from './pages/MyYieldsPage';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
 import FaqPage from './pages/FaqPage';
+import LiveApyPage from './pages/LiveApyPage';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: 'my-yields',
         element: <MyYieldsPage />,
+      },
+      {
+        path: 'markets',
+        element: <LiveApyPage />,
       },
     ],
     // Add ScrollRestoration to handle scroll position

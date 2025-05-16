@@ -63,6 +63,12 @@ const Header: React.FC<HeaderProps> = ({
               My Yields
             </Link>
           )}
+                <Link 
+              to="/markets" 
+              className={`${styles.navLink} ${location.pathname === '/markets' ? styles.activeLink : ''}`}
+            >
+              Markets
+            </Link>
         </nav>
       </div>
       

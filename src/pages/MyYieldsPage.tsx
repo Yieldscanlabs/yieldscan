@@ -138,7 +138,7 @@ const MyYieldsPage: React.FC = () => {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1>My Yields</h1>
+          {/* <h1>My Yields</h1> */}
         </div>
         <div className={styles.emptyState}>
           <h3>No yield-bearing assets found</h3>
@@ -158,7 +158,7 @@ const MyYieldsPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>My Yields</h1>
+        {/* <h1>My Yields</h1> */}
         <div className={styles.summaryCards}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Daily Earnings</div>
