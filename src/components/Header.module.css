@@ -18,10 +18,12 @@
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 24px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: #fff;
+  /* linear-gradient(135deg, var(--primary-color), var(--secondary-color)); */
   -webkit-background-clip: text;
+  color: #fff;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -34,12 +36,10 @@
 }
 
 .navLink {
-  color: var(--text-secondary);
+  color: #fff;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
-  padding: 0.5rem 0;
-  padding-bottom: 0rem;
   position: relative;
   transition: color 0.2s ease;
 }
@@ -49,14 +49,14 @@
 }
 
 .activeLink {
-  color: var(--primary-color);
+  /* color: var(--primary-color); */
   font-weight: 600;
 }
 
 .activeLink::after {
   content: '';
   position: absolute;
-  bottom: -2px;
+  bottom: -22px;
   left: 0;
   right: 0;
   height: 2px;
@@ -70,6 +70,10 @@
   gap: 1rem;
 }
 
+.walletContainer {
+  position: relative;
+}
+
 .walletAddress {
   font-family: var(--font-mono);
   background-color: var(--surface-medium);
@@ -77,22 +81,75 @@
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
   color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.walletAddress:hover {
+  background-color: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.walletAddressActive {
+  background-color: var(--surface-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dropdownArrow {
+  font-size: 0.6rem;
+  margin-left: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.walletAddressActive .dropdownArrow {
+  transform: rotate(180deg);
+}
+
+.walletDropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  z-index: 10;
+  min-width: 150px;
+  animation: fadeIn 0.2s ease;
 }
 
 .disconnectButton {
   background-color: transparent;
   color: var(--text-tertiary);
-  border: 1px solid var(--border-color);
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .disconnectButton:hover {
   color: var(--error-color);
-  border-color: var(--error-color);
+  background-color: rgba(255, 94, 91, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive styles */
@@ -115,5 +172,9 @@
   .walletInfo {
     width: 100%;
     justify-content: space-between;
+  }
+  
+  .walletDropdown {
+    width: 100%;
   }
 }

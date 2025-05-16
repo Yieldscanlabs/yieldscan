@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { shortenAddress } from '../utils/helpers';
 import styles from './Header.module.css';
@@ -15,6 +15,26 @@ const Header: React.FC<HeaderProps> = ({
   disconnectWallet 
 }) => {
   const location = useLocation();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
   return (
     <header className={styles.header}>
@@ -46,13 +66,21 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       {isConnected && address && (
-        <div className={styles.walletInfo}>
-          <span className={styles.walletAddress}>
+        <div className={styles.walletContainer} ref={dropdownRef}>
+          <div 
+            className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
+            onClick={toggleDropdown}
+          >
             {shortenAddress(address)}
-          </span>
-          <button onClick={disconnectWallet} className={styles.disconnectButton}>
-            Disconnect
-          </button>
+            <span className={styles.dropdownArrow}>▼</span>
+          </div>
+          {isDropdownOpen && (
+            <div className={styles.walletDropdown}>
+              <button onClick={disconnectWallet} className={styles.disconnectButton}>
+                Disconnect
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>

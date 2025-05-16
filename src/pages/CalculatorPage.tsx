@@ -19,11 +19,10 @@ const CalculatorPage: React.FC = () => {
     }).format(value);
   };
 
-  const apyPresets = [
-    { label: 'Stablecoins', value: '4' },
-    { label: 'ETH Staking', value: '5.5' },
-    { label: 'LP', value: '10' },
-    { label: 'Farming', value: '25' }
+  const apyPresets: any = [
+    // { label: 'ETH Staking', value: '2' },
+    // { label: 'Stablecoins', value: '5' },
+    // { label: 'Yield ', value: '160' },
   ];
 
   const amountPresets = [
@@ -118,7 +117,7 @@ const CalculatorPage: React.FC = () => {
                 <span className={styles.inputSuffix}>%</span>
               </div>
               <div className={styles.presetButtons}>
-                {apyPresets.map(preset => (
+                {apyPresets.map((preset: any) => (
                   <button 
                     key={preset.value}
                     className={apy === preset.value ? styles.presetActive : ''}

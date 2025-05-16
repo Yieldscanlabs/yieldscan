@@ -95,13 +95,14 @@ export default WalletModal;
 
 // Helper functions to get wallet names and icons
 function getWalletName(id: string): string {
+  console.log(id)
   switch (id) {
-    case 'metaMask':
+    case 'io.metamask':
       return 'MetaMask'
-    case 'coinbaseWallet':
-      return 'Coinbase Wallet'
-    case 'walletConnect':
-      return 'WalletConnect'
+    case 'app.phantom':
+      return 'Phantom Wallet'
+    case 'network.pontem':
+      return 'Pontem Wallet'
     case 'injected':
       return 'Browser Wallet'
     default:

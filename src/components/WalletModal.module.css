@@ -120,7 +120,10 @@
   width: 36px;
   height: 36px;
 }
-
+.walletIcon img {
+  width: 100%;
+  height: 100%;
+}
 .walletName {
   font-weight: 600;
   color: var(--text-primary, #ffffff);
