@@ -29,38 +29,33 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   
+  // Calculate percentage improvement
+  const apyImprovement = ((betterApy - currentApy) / currentApy * 100).toFixed(0);
+  
   const handleOpenModal = async () => {
-    // Check if we're on the correct network before opening the modal
     if (chainId !== asset.chainId) {
       try {
         setIsSwitchingNetwork(true);
         setNetworkSwitchStatus('switching');
-        
-        // Switch to the correct network first
         await switchChain({ chainId: asset.chainId });
         
-        // Add a small delay to ensure UI updates
         setTimeout(() => {
           setNetworkSwitchStatus('success');
           setIsSwitchingNetwork(false);
-          // Once switched successfully, open the modal
           setIsModalOpen(true);
         }, 500);
       } catch (error) {
         console.error('Failed to switch networks:', error);
         setNetworkSwitchStatus('error');
         setIsSwitchingNetwork(false);
-        // Could add user notification here
       }
     } else {
-      // Already on correct network, just open the modal
       setIsModalOpen(true);
     }
   };
   
   const handleModalClose = () => {
     setIsModalOpen(false);
-    // Reset status when modal closes
     setNetworkSwitchStatus('idle');
   };
   
@@ -69,58 +64,57 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
     if (success) {
       onOptimize();
     }
-    // Reset status when modal completes
     setNetworkSwitchStatus('idle');
-  };
-  
-  // Button text and class based on network switch status
-  const getButtonText = () => {
-    if (networkSwitchStatus === 'switching') return 'Optimizing...';
-    return 'Optimize Now';
-  };
-  
-  const getButtonClass = () => {
-    let baseClass = styles.optimizeButton;
-    return baseClass;
   };
   
   return (
     <>
-      <div className={styles.optimizationCard}>
-        <div className={styles.optimizationHeader}>
-          <img src={asset.icon} alt={asset.token} className={styles.assetIcon} />
-          <div className={styles.optimizationTitle}>
-            {asset.token} can earn more
+      <div className={styles.optimizationCardCompact}>
+        <div className={styles.cardHeader}>
+          <div className={styles.assetInfoCompact}>
+            <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
+            <span className={styles.assetNameBold}>{asset.token}</span>
+          </div>
+          <div className={styles.improvementBadge}>+{apyImprovement}%</div>
+        </div>
+        
+        <div className={styles.protocolComparison}>
+          <div className={styles.protocolItem}>
+            <span className={styles.protocolLabel}>Current</span>
+            <div className={styles.protocolDetails}>
+              <span className={styles.protocolName}>{currentProtocol}</span>
+              <span className={styles.currentApy}>{currentApy.toFixed(2)}%</span>
+            </div>
+          </div>
+          
+          <div className={styles.arrowContainer}>
+            <span className={styles.arrow}>→</span>
+          </div>
+          
+          <div className={styles.protocolItem}>
+            <span className={styles.protocolLabel}>Recommended</span>
+            <div className={styles.protocolDetails}>
+              <span className={styles.protocolName}>{betterProtocol}</span>
+              <span className={styles.betterApy}>{betterApy.toFixed(2)}%</span>
+            </div>
           </div>
         </div>
         
-        <div className={styles.comparisonRow}>
-          <div className={styles.currentOption}>
-            <div className={styles.optionProtocol}>{currentProtocol}</div>
-            <div className={styles.optionApy}>{currentApy.toFixed(2)}% APY</div>
-            <div className={styles.optionLabel}>Current</div>
-          </div>
-          
-          <div className={styles.comparisonArrow}>→</div>
-          
-          <div className={styles.betterOption}>
-            <div className={styles.optionProtocol}>{betterProtocol}</div>
-            <div className={styles.optionApy}>{betterApy.toFixed(2)}% APY</div>
-            <div className={styles.optionLabel}>Recommended</div>
-          </div>
-        </div>
-        
-        <div className={styles.optimizationBenefit}>
-          <div className={styles.benefitLabel}>Additional yearly earnings</div>
-          <div className={styles.benefitValue}>+${additionalYearlyUsd}</div>
+        <div className={styles.benefitRow}>
+          <span>Additional yearly earnings:</span>
+          <span className={styles.benefitAmount}>+${additionalYearlyUsd}</span>
         </div>
         
         <button 
-          className={getButtonClass()} 
+          className={styles.optimizeButtonCompact} 
           onClick={handleOpenModal}
           disabled={isSwitchingNetwork}
         >
-          {getButtonText()}
+          {networkSwitchStatus === 'switching' ? (
+            <span className={styles.loadingIndicatorSmall}></span>
+          ) : (
+            'Optimize'
+          )}
         </button>
       </div>
       

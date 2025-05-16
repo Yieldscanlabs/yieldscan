@@ -246,7 +246,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Amount</span>
               <span className={styles.detailValue}>
-                {formatNumber(parseFloat(withdrawAmount), 6)} {asset.token}
+                {formatNumber(parseFloat(asset.balance), asset.maxDecimalsShow)} {asset.token}
                 <span className={styles.subDetail}>(${formatNumber(parseFloat(asset.balanceUsd), 2)})</span>
               </span>
             </div>

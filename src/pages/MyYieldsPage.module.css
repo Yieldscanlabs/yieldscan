@@ -725,3 +725,174 @@
   text-align: center;
   padding: 4px 0;
 }
+
+/* Compact optimization card */
+.optimizationCardCompact {
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.optimizationCardCompact:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assetInfoCompact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assetIconSmall {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.assetNameBold {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.improvementBadge {
+  background: linear-gradient(135deg, var(--success-color), #00c866);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 1rem;
+}
+
+.protocolComparison {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.protocolItem {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.protocolLabel {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.protocolDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.protocolName {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.currentApy {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.betterApy {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--success-color);
+  font-weight: 700;
+}
+
+.arrowContainer {
+  padding: 0 0.5rem;
+}
+
+.arrow {
+  color: var(--text-tertiary);
+  font-size: 1.1rem;
+}
+
+.benefitRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(0, 230, 121, 0.08);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.benefitAmount {
+  color: var(--success-color);
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.optimizeButtonCompact {
+  padding: 0.6rem;
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+}
+
+.optimizeButtonCompact:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.optimizeButtonCompact:disabled {
+  background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+}
+
+.loadingIndicatorSmall {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-left-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
