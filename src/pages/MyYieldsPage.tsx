@@ -8,6 +8,7 @@ import { useApyStore } from '../store/apyStore';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
+import GlobalOptimizationModal from '../components/GlobalOptimizationModal';
 import OptimizationCard from '../components/OptimizationCard'; // Import the new component
 
 const MyYieldsPage: React.FC = () => {

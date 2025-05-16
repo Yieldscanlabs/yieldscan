@@ -5,6 +5,7 @@ import styles from './Layout.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import { useApyAutoRefresh, useApyStore } from '../store/apyStore';
 import { useEffect } from 'react';
+import GlobalOptimizationModal from './GlobalOptimizationModal';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
@@ -26,6 +27,7 @@ const Layout = () => {
       <main className={styles.main}>
         <Outlet />
       </main>
+      <GlobalOptimizationModal />
       <Footer />
     </div>
   );

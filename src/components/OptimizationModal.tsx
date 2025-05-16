@@ -60,7 +60,6 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   const [step, setStep] = useState(1); 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
   
   // Get underlying token for deposit after withdrawal
   const underlyingToken = getUnderlyingToken(asset);
@@ -108,9 +107,16 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     chainId: asset.chainId
   });
 
+  // Add a ref to track if the process has been started
+  const hasStartedRef = React.useRef(false);
+
   // Start the optimization process when opened
   useEffect(() => {
-    if (isOpen) {
+    console.log(isOpen, 'asdkaslk')
+    if (isOpen && !hasStartedRef.current) {
+      // Set the ref to true to prevent multiple executions
+      hasStartedRef.current = true;
+      
       // Reset states
       setStep(1);
       setError(null);
@@ -118,6 +124,9 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
       
       // Begin withdrawal immediately when modal opens
       handleWithdraw();
+    } else if (!isOpen) {
+      // Reset the ref when modal is closed
+      hasStartedRef.current = false;
     }
   }, [isOpen, asset.balance]);
   
@@ -168,14 +177,14 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     
     try {
       // Check if we already have allowance
-      if (hasEnoughAllowance(withdrawAmount)) {
+      if (hasEnoughAllowance(asset.balance)) {
         // Skip to deposit if already approved
         setStep(3);
         handleDeposit();
         return;
       }
       
-      const success = await approve(withdrawAmount, betterProtocolAddress);
+      const success = await approve(asset.balance, betterProtocolAddress);
       
       if (success) {
         setStep(3);
@@ -197,7 +206,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     setError(null);
     
     try {
-      const success = await supply(withdrawAmount);
+      const success = await supply(asset.balance);
       
       if (!success) {
         setError("Deposit failed. Please try again.");

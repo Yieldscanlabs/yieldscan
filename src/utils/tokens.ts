@@ -103,7 +103,7 @@ const tokens = [
     yieldBearingToken: true,
     decimals: 6, // Note: cTokens typically have 8 decimals
     maxDecimalsShow: 2,
-    usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
   {
     token: 'cUSDT' as const,
@@ -117,7 +117,7 @@ const tokens = [
     yieldBearingToken: true,
     maxDecimalsShow: 2,
     decimals: 6, // Note: cTokens typically have 8 decimals
-    usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
   // Compound cTokens on Arbitrum One
   {
@@ -132,7 +132,7 @@ const tokens = [
     yieldBearingToken: true,
     maxDecimalsShow: 2,
     decimals: 6, // Note: cTokens typically have 8 decimals
-    usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
   // {
   //   token: 'cUSDT' as const,
@@ -147,6 +147,20 @@ const tokens = [
   //   decimals: 8, // Note: cTokens typically have 8 decimals
   //   usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   // }
+    {
+    token: 'aUSD₮0' as const,
+    chain: 'ARBITRUM_ONE' as const,
+    address: '0x6ab707Aca953eDAeFBc4fD23bA73294241490620', // Compound cUSDC v3 on Arbitrum
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png', // Using Ethereum icon
+    chainId: 42161, // arbitrum
+    underlyingAsset: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // Arbitrum USDC
+    withdrawContract: '0x794a61358D6845594F94dc1DB02A252b5b4814aD', // Compound cUSDC v3 withdraw contract
+    protocol: 'Aave',
+    yieldBearingToken: true,
+    maxDecimalsShow: 2,
+    decimals: 6, // Note: cTokens typically have 8 decimals
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  },
 ];
 
 export default tokens

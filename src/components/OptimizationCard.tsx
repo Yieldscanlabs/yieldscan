@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from '../pages/MyYieldsPage.module.css';
 import type { Asset } from '../types';
-import OptimizationModal from './OptimizationModal';
 import { useChainId, useSwitchChain } from 'wagmi';
+import { useOptimizationStore } from '../store/optimizationStore';
+import OptimizationModal from './OptimizationModal';
 
 interface OptimizationCardProps {
   asset: Asset;
@@ -23,11 +24,17 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
   additionalYearlyUsd,
   onOptimize
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
-  const [networkSwitchStatus, setNetworkSwitchStatus] = useState<'idle' | 'switching' | 'success' | 'error'>('idle');
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
+  
+  // Use the global store instead of local state
+  const { 
+    isSwitchingNetwork,
+    networkSwitchStatus,
+    setIsSwitchingNetwork,
+    setNetworkSwitchStatus,
+    openModal
+  } = useOptimizationStore();
   
   // Calculate percentage improvement
   const apyImprovement = ((betterApy - currentApy) / currentApy * 100).toFixed(0);
@@ -42,7 +49,17 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
         setTimeout(() => {
           setNetworkSwitchStatus('success');
           setIsSwitchingNetwork(false);
-          setIsModalOpen(true);
+          
+          // Use the store action to open the modal
+          openModal({
+            asset,
+            currentProtocol,
+            currentApy,
+            betterProtocol,
+            betterApy,
+            additionalYearlyUsd,
+            onOptimize
+          });
         }, 500);
       } catch (error) {
         console.error('Failed to switch networks:', error);
@@ -50,86 +67,68 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
         setIsSwitchingNetwork(false);
       }
     } else {
-      setIsModalOpen(true);
+      // Use the store action to open the modal
+      openModal({
+        asset,
+        currentProtocol,
+        currentApy,
+        betterProtocol,
+        betterApy,
+        additionalYearlyUsd,
+        onOptimize
+      });
     }
-  };
-  
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setNetworkSwitchStatus('idle');
-  };
-  
-  const handleModalComplete = (success: boolean) => {
-    setIsModalOpen(false);
-    if (success) {
-      onOptimize();
-    }
-    setNetworkSwitchStatus('idle');
   };
   
   return (
-    <>
-      <div className={styles.optimizationCardCompact}>
-        <div className={styles.cardHeader}>
-          <div className={styles.assetInfoCompact}>
-            <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
-            <span className={styles.assetNameBold}>{asset.token}</span>
-          </div>
-          <div className={styles.improvementBadge}>+{apyImprovement}%</div>
+    <div className={styles.optimizationCardCompact}>
+      <div className={styles.cardHeader}>
+        <div className={styles.assetInfoCompact}>
+          <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
+          <span className={styles.assetNameBold}>{asset.token}</span>
         </div>
-        
-        <div className={styles.protocolComparison}>
-          <div className={styles.protocolItem}>
-            <span className={styles.protocolLabel}>Current</span>
-            <div className={styles.protocolDetails}>
-              <span className={styles.protocolName}>{currentProtocol}</span>
-              <span className={styles.currentApy}>{currentApy.toFixed(2)}%</span>
-            </div>
-          </div>
-          
-          <div className={styles.arrowContainer}>
-            <span className={styles.arrow}>→</span>
-          </div>
-          
-          <div className={styles.protocolItem}>
-            <span className={styles.protocolLabel}>Recommended</span>
-            <div className={styles.protocolDetails}>
-              <span className={styles.protocolName}>{betterProtocol}</span>
-              <span className={styles.betterApy}>{betterApy.toFixed(2)}%</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className={styles.benefitRow}>
-          <span>Additional yearly earnings:</span>
-          <span className={styles.benefitAmount}>+${additionalYearlyUsd}</span>
-        </div>
-        
-        <button 
-          className={styles.optimizeButtonCompact} 
-          onClick={handleOpenModal}
-          disabled={isSwitchingNetwork}
-        >
-          {networkSwitchStatus === 'switching' ? (
-            <span className={styles.loadingIndicatorSmall}></span>
-          ) : (
-            'Optimize'
-          )}
-        </button>
+        <div className={styles.improvementBadge}>+{apyImprovement}%</div>
       </div>
       
-      <OptimizationModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        onComplete={handleModalComplete}
-        asset={asset}
-        currentProtocol={currentProtocol}
-        currentApy={currentApy}
-        betterProtocol={betterProtocol}
-        betterApy={betterApy}
-        additionalYearlyUsd={additionalYearlyUsd}
-      />
-    </>
+      <div className={styles.protocolComparison}>
+        <div className={styles.protocolItem}>
+          <span className={styles.protocolLabel}>Current</span>
+          <div className={styles.protocolDetails}>
+            <span className={styles.protocolName}>{currentProtocol}</span>
+            <span className={styles.currentApy}>{currentApy.toFixed(2)}%</span>
+          </div>
+        </div>
+        
+        <div className={styles.arrowContainer}>
+          <span className={styles.arrow}>→</span>
+        </div>
+        
+        <div className={styles.protocolItem}>
+          <span className={styles.protocolLabel}>Recommended</span>
+          <div className={styles.protocolDetails}>
+            <span className={styles.protocolName}>{betterProtocol}</span>
+            <span className={styles.betterApy}>{betterApy.toFixed(2)}%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className={styles.benefitRow}>
+        <span>Additional yearly earnings:</span>
+        <span className={styles.benefitAmount}>+${additionalYearlyUsd}</span>
+      </div>
+      
+      <button 
+        className={styles.optimizeButtonCompact} 
+        onClick={handleOpenModal}
+        disabled={isSwitchingNetwork}
+      >
+        {networkSwitchStatus === 'switching' ? (
+          <span className={styles.loadingIndicatorSmall}></span>
+        ) : (
+          'Optimize'
+        )}
+      </button>
+    </div>
   );
 };
 
