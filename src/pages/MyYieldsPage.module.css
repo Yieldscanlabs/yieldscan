@@ -78,7 +78,6 @@
 }
 
 .yieldCard:hover {
-  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
@@ -198,7 +197,6 @@
 }
 
 .optimizationCard:hover {
-  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
@@ -740,7 +738,6 @@
 }
 
 .optimizationCardCompact:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -866,7 +863,6 @@
 
 .optimizeButtonCompact:hover {
   filter: brightness(1.1);
-  transform: translateY(-1px);
 }
 
 .optimizeButtonCompact:disabled {

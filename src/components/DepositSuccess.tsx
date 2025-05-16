@@ -38,7 +38,7 @@ const DepositSuccess: React.FC<DepositSuccessProps> = ({
         <div className={styles['deposit-detail-row']}>
           <span className={styles['deposit-detail-label']}>Amount Deposited</span>
           <span className={styles['deposit-detail-value']}>
-            {formatNumber(parseFloat(amount), 6)} {asset.token}
+            {formatNumber(parseFloat(amount), asset.maxDecimalsShow)} {asset.token}
           </span>
         </div>
         <div className={styles['deposit-detail-row']}>

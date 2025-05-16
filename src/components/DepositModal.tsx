@@ -62,7 +62,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   const { supply, isSupplying, isConfirmed } = useUnifiedYield({
         protocol: protocol as SupportedProtocol, // or 'Aave'
-        contractAddress: asset.withdrawContract as `0x${string}` || '0x', // Protocol contract address
+        contractAddress: protocolAddress as `0x${string}` || '0x', // Protocol contract address
         tokenAddress: asset.address as `0x${string}`, // Token address
         tokenDecimals: asset.decimals, // optional, defaults to 18
         chainId: asset.chainId // optional 
@@ -162,7 +162,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Amount</span>
               <span className={styles.detailValue}>
-                {formatNumber(parseFloat(amount), 6)} {asset.token}
+                {formatNumber(parseFloat(amount), asset.maxDecimalsShow)} {asset.token}
                 <span className={styles.subDetail}>(${amountUsd})</span>
               </span>
             </div>

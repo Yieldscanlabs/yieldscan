@@ -63,6 +63,18 @@
   height: 2px;
   background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
   border-radius: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: grow 0.3s ease forwards;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .walletInfo {
