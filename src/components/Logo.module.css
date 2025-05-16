@@ -1,0 +1,27 @@
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.logoContainer img {
+  width: 30px;
+  margin-top: 2px;
+  height: 30px;
+}
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  background: #fff;
+  font-family: 'Oswald';
+  /* linear-gradient(135deg, var(--primary-color), var(--secondary-color)); */
+  -webkit-background-clip: text;
+  color: #fff;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  letter-spacing: 1.5px;
+}
+.title span {
+  font-weight: 300;
+
+}

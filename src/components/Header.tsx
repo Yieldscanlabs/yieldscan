@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { shortenAddress } from '../utils/helpers';
 import styles from './Header.module.css';
-
+import bear from '../assets/bear.png'; // Adjust the path as necessary
+import Logo from './Logo';
 interface HeaderProps {
   isConnected: boolean;
   address?: string;
@@ -40,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className={styles.header}>
       <div className={styles.headerLeft}>
         <Link to="/" className={styles.titleLink}>
-          <h1 className={styles.title}>Yieldscan</h1>
+        <Logo />
         </Link>
         
         {/* Navigation Links */}

@@ -16,21 +16,32 @@
 
 .titleLink {
   text-decoration: none;
+  display: flex;
+  align-items: centers;
 }
-
+.titleLink img {
+  width: 30px;
+  height: 30px;
+  margin-right: 4px;
+  margin-top: -2px;
+}
 .title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   background: #fff;
+  font-family: 'Oswald';
   /* linear-gradient(135deg, var(--primary-color), var(--secondary-color)); */
   -webkit-background-clip: text;
   color: #fff;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
-  letter-spacing: -0.05em;
+  letter-spacing: 1.5px;
 }
+.title span {
+  font-weight: 300;
 
+}
 .navigation {
   display: flex;
   gap: 1.5rem;

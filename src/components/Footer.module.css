@@ -41,6 +41,7 @@
 .footerDescription {
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
+  margin-top: 1.25rem;
   font-size: 0.95rem;
   max-width: 320px;
   line-height: 1.5;
