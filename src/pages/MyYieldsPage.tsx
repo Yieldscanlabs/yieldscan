@@ -9,7 +9,7 @@ import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
 import GlobalOptimizationModal from '../components/GlobalOptimizationModal';
-import OptimizationCard from '../components/OptimizationCard'; // Import the new component
+import OptimizationCard from '../components/OptimizationCard';
 
 const MyYieldsPage: React.FC = () => {
   const { address } = useAccount();
@@ -183,30 +183,46 @@ const MyYieldsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Optimizations Section */}
-      {optimizations.length > 0 && (
-        <div className={styles.section}>
-          <h2>Optimize</h2>
-          <p className={styles.sectionDescription}>
-            These optimizations could increase your yield earnings.
-          </p>
-          
-          <div className={styles.optimizationsGrid}>
-            {optimizations.map((opt, index) => (
-              <OptimizationCard
-                key={index}
-                asset={opt.asset}
-                currentProtocol={opt.currentProtocol}
-                currentApy={opt.currentApy}
-                betterProtocol={opt.betterProtocol}
-                betterApy={opt.betterApy}
-                additionalYearlyUsd={opt.additionalYearlyUsd}
-                onOptimize={() => handleOptimize(opt)}
-              />
-            ))}
+      {/* Optimizations Section - Always show the section but content changes based on optimizations */}
+      <div className={styles.section}>
+        <h2>Optimize</h2>
+        
+        {optimizations.length > 0 ? (
+          <>
+            <p className={styles.sectionDescription}>
+              These optimizations could increase your yield earnings.
+            </p>
+            
+            <div className={styles.optimizationsGrid}>
+              {optimizations.map((opt, index) => (
+                <OptimizationCard
+                  key={index}
+                  asset={opt.asset}
+                  currentProtocol={opt.currentProtocol}
+                  currentApy={opt.currentApy}
+                  betterProtocol={opt.betterProtocol}
+                  betterApy={opt.betterApy}
+                  additionalYearlyUsd={opt.additionalYearlyUsd}
+                  onOptimize={() => handleOptimize(opt)}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className={styles.optimizationEmptyState}>
+            <div className={styles.optimizationEmptyContent}>
+              <div className={styles.optimizationEmptyIcon}>✓</div>
+              <div className={styles.optimizationEmptyText}>
+                <h3>Your yields are optimized</h3>
+                <p>
+                  You're already earning the best possible yields on all your assets.
+                  We'll notify you when better opportunities become available.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
