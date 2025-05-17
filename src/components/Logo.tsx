@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Logo.module.css';
-import bear from '../assets/bear.png';
+import owl from '../assets/owl.png';
 
 interface LogoProps {
   linkTo?: string;
@@ -14,7 +14,7 @@ const Logo: React.FC<LogoProps> = ({
 }) => {
   const LogoContent = () => (
     <div className={`${styles.logoContainer} ${className}`}>
-      <img src={bear} alt="YieldScan logo" className={styles.logoImage} />
+      <img src={owl} alt="YieldScan logo" className={styles.logoImage} />
       <h1 className={styles.title}>YIELD<span>SCAN</span></h1>
     </div>
   );

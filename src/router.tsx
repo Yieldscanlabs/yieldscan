@@ -42,11 +42,11 @@ const router = createBrowserRouter([
         element: <FaqPage />,
       },
       {
-        path: 'my-yields',
+        path: 'yields',
         element: <MyYieldsPage />,
       },
       {
-        path: 'markets',
+        path: 'explore',
         element: <LiveApyPage />,
       },
     ],

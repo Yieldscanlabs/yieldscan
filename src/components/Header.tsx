@@ -51,23 +51,23 @@ const Header: React.FC<HeaderProps> = ({
             to="/" 
             className={`${styles.navLink} ${location.pathname === '/' ? styles.activeLink : ''}`}
           >
-            Home
+            Wallet
           </Link>
           
           {/* Only show My Yields when connected */}
           {isConnected && (
             <Link 
-              to="/my-yields" 
-              className={`${styles.navLink} ${location.pathname === '/my-yields' ? styles.activeLink : ''}`}
+              to="/yields" 
+              className={`${styles.navLink} ${location.pathname === '/yields' ? styles.activeLink : ''}`}
             >
-              My Yields
+              Yields
             </Link>
           )}
                 <Link 
-              to="/markets" 
-              className={`${styles.navLink} ${location.pathname === '/markets' ? styles.activeLink : ''}`}
+              to="/explore" 
+              className={`${styles.navLink} ${location.pathname === '/explore' ? styles.activeLink : ''}`}
             >
-              Markets
+              Explore
             </Link>
         </nav>
       </div>

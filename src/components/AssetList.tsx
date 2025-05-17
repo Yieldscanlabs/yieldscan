@@ -73,7 +73,7 @@ const AssetList: React.FC<AssetListProps> = ({
   
   return (
     <div className={styles['asset-list']}>
-      <h2>Your Assets</h2>
+      {/* <h2>Your Assets</h2> */}
       <div className={styles['asset-grid']}>
         {regularAssets.map((asset) => {
           const assetKey = `${asset.token}-${asset.chain}`;

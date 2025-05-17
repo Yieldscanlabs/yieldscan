@@ -20,7 +20,7 @@
   align-items: centers;
 }
 .titleLink img {
-  width: 30px;
+  width: auto;
   height: 30px;
   margin-right: 4px;
   margin-top: -2px;
