@@ -54,10 +54,39 @@ const protocolAbis = {
       stateMutability: 'nonpayable',
       type: 'function',
     }
+  ],
+  Venus: [
+    {
+      inputs: [
+        { name: 'mintAmount', type: 'uint256' }
+      ],
+      name: 'mint',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'redeemTokens', type: 'uint256' }
+      ],
+      name: 'redeem',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'redeemTokens', type: 'uint256' }
+      ],
+      name: 'redeem',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    }
   ]
 } as const;
 
-  interface UseUnifiedYieldOptions {
+interface UseUnifiedYieldOptions {
   protocol: SupportedProtocol;
   contractAddress: Address;
   tokenAddress: Address;
@@ -110,6 +139,14 @@ export default function useUnifiedYield({
           args: [tokenAddress, amountInWei], // Compound just needs amount
           chainId
         });
+      } else if (protocol === PROTOCOL_NAMES.VENUS) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Venus,
+          functionName: 'mint',
+          args: [amountInWei], // Venus uses 'mint' instead of 'supply'
+          chainId
+        });
       } else {
         throw new Error(`Protocol ${protocol} not supported`);
       }
@@ -148,6 +185,14 @@ export default function useUnifiedYield({
           abi: protocolAbis.Compound,
           functionName: 'withdraw',
           args: [tokenAddress, amountInWei], // Compound withdraw
+          chainId
+        });
+      } else if (protocol === PROTOCOL_NAMES.VENUS) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Venus,
+          functionName: 'redeem', // Venus uses 'redeem' to withdraw exact amount
+          args: [amountInWei],
           chainId
         });
       } else {

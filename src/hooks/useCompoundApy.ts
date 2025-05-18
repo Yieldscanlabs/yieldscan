@@ -38,7 +38,7 @@ export const COMPOUND_V3_MARKETS: Record<number, Record<string, string>> = {
   },
   // Arbitrum
   42161: {
-    'USDC': '0xA5EDBDD9646f8dFF606d7448e414884C7d905dCA'
+    'USDC': '0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf'
   }
 };
 

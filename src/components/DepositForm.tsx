@@ -145,15 +145,22 @@ const DepositForm: React.FC<DepositFormProps> = ({
             <div className={styles['usd-earnings-amount']}>${yearlyYieldUsd}</div>
             <div className={styles['usd-earnings-period']}>per year</div>
           </div>
-        </div>
-        
-        {yieldOption.lockupDays > 0 && (
-          <div className={styles['lockup-info-compact']}>
-            <span className={styles['lockup-icon']}>🔒</span>
-            <span>{yieldOption.lockupDays} day lockup period</span>
+          
+          <div className={styles['protocol-info']}>
+            <div className={styles['info-tag']}>
+              <span className={styles['info-icon']}>ⓘ</span>
+              <span>Direct interaction with {yieldOption.protocol}</span>
+            </div>
+            
+            {yieldOption.lockupDays > 0 && (
+              <div className={styles['info-tag']}>
+                <span className={styles['lock-icon']}>🔒</span>
+                <span>{yieldOption.lockupDays} day lockup</span>
+              </div>
+            )}
           </div>
-        )}
-        
+        </div>
+
         <div className={styles['action-buttons']}>
           {asset.chainId !== chainId ? (
             <button 

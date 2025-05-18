@@ -8,12 +8,17 @@ import type {SupportedProtocol} from '../hooks/useUnifiedYield';
 import useUnifiedYield from '../hooks/useUnifiedYield';
 import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
+import { useAssetStore } from '../store/assetStore';
+import useWalletConnection from '../hooks/useWalletConnection';
+import { VENUS_V3_MARKETS } from '../utils/markets';
 
 const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.AAVE) {
         return AAVE_V3_MARKETS[chainId][token] as `0x${string}`;
+    } else if(protocol === PROTOCOL_NAMES.VENUS) {
+      return VENUS_V3_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'
 }
@@ -43,8 +48,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
 }) => {
   const [step, setStep] = useState(1); // Start directly at step 1 (approval)
   const [isLoading, setIsLoading] = useState(false);
+  const { wallet }  = useWalletConnection()
   const [error, setError] = useState<string | null>(null);
-  
+  const { fetchAssets } = useAssetStore()
   // Protocol contract address - in a real app this would come from a config or lookup
   const protocolAddress: `0x${string}` = setupProtocol(protocol, asset.token, asset.chainId);
   
@@ -120,6 +126,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
       if (success) {
         setStep(3);
         // Move to complete after a brief delay
+        fetchAssets(wallet.address, false);
         setTimeout(() => {
           onComplete(true);
         }, 1500);

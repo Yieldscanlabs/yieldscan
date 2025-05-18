@@ -79,7 +79,7 @@ const tokens = [
     token: 'aUSDT v2' as const,
     chain: 'ETH' as const,
     address: '0x3Ed3B47Dd13EC9a98b44e6204A523E766B225811', // Aave aUSDT v2 on Ethereum
-    withdrawContract: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // Aave v3 withdraw contract
+    withdrawContract: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9', // Aave v3 withdraw contract
     underlyingAsset: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum USDT
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5761.png',
     chainId: 1, // mainnet
@@ -119,6 +119,56 @@ const tokens = [
     decimals: 6, // Note: cTokens typically have 8 decimals
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
+
+    {
+    token: 'USUALUSDC+' as const,
+    chain: 'ETH' as const,
+    address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D', // Compound cUSDT v2 on Ethereum
+    icon: 'https://assets.coingecko.com/coins/images/51339/standard/usdc.png?1730814974',
+    chainId: 1, // mainnet
+    withdrawContract: '0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245', // compound usdt v3 withdraw contract
+    approvalContract: '0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0', // compound usdt v3 withdraw contract
+    underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDT
+    protocol: 'Morpho',
+    yieldBearingToken: true,
+    maxDecimalsShow: 2,
+    decimals: 18, // Note: cTokens typically have 8 decimals
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  },
+
+
+    {
+      //0x17C07e0c232f2f80DfDbd7a95b942D893A4C5ACb
+    token: 'vUSDC' as const,
+    chain: 'ETH' as const,
+    address: '0x17C07e0c232f2f80DfDbd7a95b942D893A4C5ACb', // Compound cUSDT v2 on Ethereum
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7958.png',
+    chainId: 1, // mainnet
+    withdrawContract: '0x17C07e0c232f2f80DfDbd7a95b942D893A4C5ACb', // compound usdt v3 withdraw contract
+    underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDT
+    protocol: 'Venus',
+    yieldBearingToken: true,
+    maxDecimalsShow: 2,
+    decimals: 8, // Note: cTokens typically have 8 decimals
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  },
+
+      {
+      //0x17C07e0c232f2f80DfDbd7a95b942D893A4C5ACb
+    token: 'vUSDT' as const,
+    chain: 'ETH' as const,
+    address: '0x8C3e3821259B82fFb32B2450A95d2dcbf161C24E', // Compound cUSDT v2 on Ethereum
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7957.png',
+    chainId: 1, // mainnet
+    withdrawContract: '0x8C3e3821259B82fFb32B2450A95d2dcbf161C24E', // compound usdt v3 withdraw contract
+    underlyingAsset: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum USDT
+    protocol: 'Venus',
+    yieldBearingToken: true,
+    maxDecimalsShow: 2,
+    decimals: 8, // Note: cTokens typically have 8 decimals
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  },
+
   // Compound cTokens on Arbitrum One
   {
     token: 'cUSDC' as const,
@@ -148,7 +198,7 @@ const tokens = [
   //   usdPrice: 0.02 // Approximate value (will need to be updated dynamically in production)
   // }
     {
-    token: 'aUSD₮0' as const,
+    token: 'aArbUSDT' as const,
     chain: 'ARBITRUM_ONE' as const,
     address: '0x6ab707Aca953eDAeFBc4fD23bA73294241490620', // Compound cUSDC v3 on Arbitrum
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png', // Using Ethereum icon

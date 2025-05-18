@@ -28,7 +28,7 @@ const erc20ABI = [
 ] as const;
 
 // Auto-refresh interval in milliseconds (30 seconds)
-const AUTO_REFRESH_INTERVAL = 5000;
+const AUTO_REFRESH_INTERVAL = 30000;
 
 interface AssetStore {
   // State
