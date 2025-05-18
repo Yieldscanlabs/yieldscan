@@ -206,7 +206,7 @@ const LiveApyPage: React.FC = () => {
                         const protocolKey = Object.entries(PROTOCOL_NAMES)
                           .find(([_, value]) => value === protocol)?.[0]?.toLowerCase();
                         
-                        const apy = protocolKey && tokenData ? tokenData[protocolKey] : undefined;
+                        const apy = protocolKey && tokenData ? tokenData[protocolKey as keyof typeof tokenData] : undefined;
                         const isBest = bestProtocol === protocol;
                         
                         return (

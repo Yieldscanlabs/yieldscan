@@ -19,8 +19,8 @@ export function getNetworkIcon(chainId: number): string {
     //   return polygonIcon;
     // case 56:
     //   return bscIcon;
-    case 10:
-      return optimismIcon;
+    // case 10:
+    //   return optimismIcon;
     default:
       // Return a generic blockchain icon for unknown chains
       return ethereumIcon; // Could be replaced with a generic blockchain icon
