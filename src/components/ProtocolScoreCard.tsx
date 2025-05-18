@@ -41,10 +41,7 @@ const ProtocolScoreCard: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h2>Protocol Security Assessment</h2>
-        <p>Objective metrics of protocol security and reliability</p>
-      </div>
+  
       
       <div className={styles.scoreTable}>
         <div className={styles.tableHeader}>
@@ -76,7 +73,7 @@ const ProtocolScoreCard: React.FC = () => {
       <div className={styles.infoFooter}>
         <p>
           <span className={styles.infoIcon}>ℹ️</span>
-          Trust scores reflect on-chain metrics and liquidity depth. Updated daily.
+          Yieldscan ranks protocols based on liquidity, volume, and security.
         </p>
       </div>
     </div>

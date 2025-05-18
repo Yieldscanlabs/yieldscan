@@ -10,6 +10,7 @@ import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
 import FaqPage from './pages/FaqPage';
 import LiveApyPage from './pages/LiveApyPage';
+import AboutPage from './pages/AboutPage';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
       {
         path: 'explore',
         element: <LiveApyPage />,
+      },
+      {
+        path: 'about',
+        element: <AboutPage />,
       },
     ],
     // Add ScrollRestoration to handle scroll position
