@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './ProtocolScoreCard.module.css';
 import { PROTOCOL_NAMES } from '../utils/constants';
+import Protocol from './Protocol';
 
 interface ProtocolScore {
   name: string;
@@ -13,6 +14,11 @@ const protocolScores: ProtocolScore[] = [
     name: 'Aave', 
     trustScore: 95, 
     liquidity: 95
+  },
+    { 
+    name: 'Venus', 
+    trustScore: 90, 
+    liquidity: 85
   },
   { 
     name: 'Compound', 
@@ -54,7 +60,7 @@ const ProtocolScoreCard: React.FC = () => {
           {protocolScores.map((protocol) => (
             <div key={protocol.name} className={styles.tableRow}>
               <div className={styles.protocolColumn}>
-                <div className={styles.protocolName}>{protocol.name}</div>
+                <div className={styles.protocolName}><Protocol name={protocol.name} showLogo={true}  /> </div>
               </div>
               <div className={styles.scoreColumn}>
                 <div className={styles.trustScore}>

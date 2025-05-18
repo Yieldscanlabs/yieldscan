@@ -3,6 +3,7 @@ import type { YieldOption as YieldOptionType } from '../types';
 import type { Asset } from '../types';
 import styles from './AssetList.module.css';
 import type { BestApyResult } from '../hooks/useBestApy';
+import Protocol from './Protocol';
 
 interface YieldOptionProps {
   loading: boolean;
@@ -65,7 +66,7 @@ const YieldOption: React.FC<YieldOptionProps> = ({
         )} */}
       </div>
       <div className={styles['yield-details']}>
-        <span className={styles['yield-protocol']}>{bestProtocol}</span>
+        <Protocol className={styles['yield-protocol']} name={bestProtocol} showLogo={true} /> 
         <span className={styles['yield-earning']}>${calculatedYearlyYieldUsd}/year</span>
         {apyError && !bestApy && <span className={styles['yield-error']} title={apyError}>⚠️</span>}
       </div>

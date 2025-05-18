@@ -9,6 +9,7 @@ import { useApyStore } from '../store/apyStore';
 import useUnifiedYield from '../hooks/useUnifiedYield';
 import WithdrawModal from './WithdrawModal';
 import { useChainId, useSwitchChain } from 'wagmi';
+import Protocol from './Protocol';
 
 interface YieldCardProps {
   asset: Asset;
@@ -124,7 +125,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
           <div>
             <div className={styles.assetNameBold}>{asset.token}</div>
             <div className={styles.detailsRow}>
-              <span className={styles.protocolBadge}>{protocol}</span>
+              <Protocol name={protocol} showLogo={true} className={styles.protocolBadge} />
               <span className={styles.chainBadge}>{chainName}</span>
             </div>
           </div>

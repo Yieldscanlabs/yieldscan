@@ -91,6 +91,7 @@ const AssetList: React.FC<AssetListProps> = ({
         <NetworkSelector
           selectedNetwork={selectedNetwork}
           networks={[1, 42161]} // Example chain IDs
+          //@ts-ignore
           onChange={setSelectedNetwork}
           className={styles.networkSelector}
         />

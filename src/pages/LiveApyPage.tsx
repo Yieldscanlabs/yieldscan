@@ -8,6 +8,7 @@ import NetworkSelector from '../components/NetworkSelector';
 import useWalletConnection from '../hooks/useWalletConnection';
 import WalletCtaCard from '../components/WalletCtaCard';
 import ProtocolScoreCard from '../components/ProtocolScoreCard';
+import Protocol from '../components/Protocol';
 
 const LiveApyPage: React.FC = () => {
   const { apyData, isLoading, error, lastUpdated, fetchApys } = useApyStore();
@@ -132,6 +133,7 @@ const LiveApyPage: React.FC = () => {
           <NetworkSelector 
             selectedNetwork={selectedChain}
             networks={chainOptions}
+            //@ts-ignore
             onChange={setSelectedChain}
             className={styles.compactNetworkSelector}
           />
@@ -161,7 +163,9 @@ const LiveApyPage: React.FC = () => {
                 </th>
                 <th>Network</th>
                 {protocols.map(protocol => (
-                  <th key={protocol} className={styles.protocolHeader}>{protocol}</th>
+                  <th key={protocol} className={styles.protocolHeader}>
+                  <Protocol name={protocol} showLogo={true}/>
+                  </th>
                 ))}
                 <th onClick={() => toggleSort('highestApy')} className={`${styles.sortableHeader} ${styles.bestApyHeader}`}>
                   Best Yield

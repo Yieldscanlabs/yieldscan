@@ -201,7 +201,7 @@ const tokens = [
     token: 'aArbUSDT' as const,
     chain: 'ARBITRUM_ONE' as const,
     address: '0x6ab707Aca953eDAeFBc4fD23bA73294241490620', // Compound cUSDC v3 on Arbitrum
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png', // Using Ethereum icon
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5761.png', // Using Ethereum icon
     chainId: 42161, // arbitrum
     underlyingAsset: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // Arbitrum USDC
     withdrawContract: '0x794a61358D6845594F94dc1DB02A252b5b4814aD', // Compound cUSDC v3 withdraw contract

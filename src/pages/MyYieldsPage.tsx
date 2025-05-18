@@ -187,10 +187,10 @@ const MyYieldsPage: React.FC = () => {
         
         {optimizations.length > 0 ? (
           <>
-            <p className={styles.sectionDescription}>
+            {/* <p className={styles.sectionDescription}>
               These optimizations could increase your yield earnings.
             </p>
-            
+             */}
             <div className={styles.optimizationsGrid}>
               {optimizations.map((opt, index) => (
                 <OptimizationCard

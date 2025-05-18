@@ -4,6 +4,7 @@ import type { Asset } from '../types';
 import { useChainId, useSwitchChain } from 'wagmi';
 import { useOptimizationStore } from '../store/optimizationStore';
 import OptimizationModal from './OptimizationModal';
+import Protocol from './Protocol';
 
 interface OptimizationCardProps {
   asset: Asset;
@@ -94,7 +95,7 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
         <div className={styles.protocolItem}>
           <span className={styles.protocolLabel}>Current</span>
           <div className={styles.protocolDetails}>
-            <span className={styles.protocolName}>{currentProtocol}</span>
+            <Protocol className={styles.protocolName} name={currentProtocol} showLogo={true} />
             <span className={styles.currentApy}>{currentApy.toFixed(2)}%</span>
           </div>
         </div>
@@ -106,7 +107,7 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
         <div className={styles.protocolItem}>
           <span className={styles.protocolLabel}>Recommended</span>
           <div className={styles.protocolDetails}>
-            <span className={styles.protocolName}>{betterProtocol}</span>
+            <Protocol className={styles.protocolName} name={betterProtocol} showLogo={true} />
             <span className={styles.betterApy}>{betterApy.toFixed(2)}%</span>
           </div>
         </div>

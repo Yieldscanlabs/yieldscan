@@ -1,0 +1,36 @@
+.protocol {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+}
+
+.protocol img {
+  width: 16px;
+  margin-right: 2px;
+  height: auto;
+}
+.compound img{ 
+  height: 16px;
+  width: auto;
+
+}
+/* 
+/* Custom coloring for dark mode */
+@media (prefers-color-scheme: dark) {
+  .protocolLogo {
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Add responsive styles */
+@media (max-width: 768px) {
+  .protocol {
+    padding: 3px 6px;
+  }
+  
+  .large {
+    font-size: 0.9rem;
+  }
+}
