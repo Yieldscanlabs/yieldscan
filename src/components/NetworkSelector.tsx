@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './NetworkSelector.module.css';
 import { getNetworkIcon, getNetworkName, getNetworkIconDataUrl } from '../utils/networkIcons';
+import type { SupportedChain } from '../types';
 
 export interface NetworkOption {
   id: number;
@@ -10,8 +11,8 @@ export interface NetworkOption {
 
 interface NetworkSelectorProps {
   selectedNetwork: number | 'all';
-  networks: number[];
-  onChange: (chainId: number | 'all') => void;
+  networks: number[] | SupportedChain[];
+  onChange: (chainId: number | SupportedChain | 'all') => void;
   className?: string;
 }
 
@@ -22,7 +23,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   className = ''
 }) => {
   // Get network icon for a chain ID
-  const renderNetworkIcon = (chainId: number) => {
+  const renderNetworkIcon = (chainId: number | SupportedChain) => {
     try {
       const iconSrc = getNetworkIcon(chainId);
       return (
@@ -47,7 +48,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   };
 
   // Get network icon class for a chain ID
-  const getNetworkIconClass = (chainId: number): string => {
+  const getNetworkIconClass = (chainId: number | SupportedChain): string => {
     switch (chainId) {
       case 1:
         return styles.ethereum;

@@ -369,6 +369,15 @@
   color: var(--text-quaternary);
 }
 
+.network-filter {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.networkSelector {
+  /* Additional custom styles for the network selector if needed */
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
 import { formatNumber, getBestYieldOptionForAsset, calculateDailyYield } from '../utils/helpers';
 import AssetComponent from './AssetComponent';
+import NetworkSelector from './NetworkSelector';
 import styles from './AssetList.module.css';
 
 interface AssetListProps {
@@ -23,6 +24,9 @@ const AssetList: React.FC<AssetListProps> = ({
     option?: YieldOption;
     yearlyYieldUsd: string;
   }>>({});
+  
+  // Add state for network filtering
+  const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
 
   // Handler for asset selection that passes along the bestApy data
   const handleSelectAsset = (asset: Asset, bestApyData?: any) => {
@@ -62,7 +66,16 @@ const AssetList: React.FC<AssetListProps> = ({
       </div>
     );
   }
-  const regularAssets = assets.filter(asset => !asset.yieldBearingToken);
+  
+  // Get unique chain IDs from assets for the network selector
+  const uniqueChainIds = Array.from(new Set(assets.map(asset => asset.chain)))
+  
+  // Filter assets by selected network
+  const regularAssets = assets.filter(asset => 
+    !asset.yieldBearingToken && 
+    (selectedNetwork === 'all' || asset.chainId === selectedNetwork)
+  );
+  
   if (regularAssets.length === 0) {
     return (
       <div className={styles['no-assets']}>
@@ -73,7 +86,16 @@ const AssetList: React.FC<AssetListProps> = ({
   
   return (
     <div className={styles['asset-list']}>
-      {/* <h2>Your Assets</h2> */}
+      {/* Network selector for filtering assets */}
+      <div className={styles['network-filter']}>
+        <NetworkSelector
+          selectedNetwork={selectedNetwork}
+          networks={[1, 42161]} // Example chain IDs
+          onChange={setSelectedNetwork}
+          className={styles.networkSelector}
+        />
+      </div>
+      
       <div className={styles['asset-grid']}>
         {regularAssets.map((asset) => {
           const assetKey = `${asset.token}-${asset.chain}`;

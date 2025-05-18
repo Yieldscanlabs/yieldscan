@@ -1,5 +1,6 @@
 import ethereumIcon from '../assets/networks/ethereum.svg';
 import arbitrumIcon from '../assets/networks/arbitrum.svg';
+import type { SupportedChain } from '../types';
 // import polygonIcon from '../assets/networks/polygon.svg';
 // import bscIcon from '../assets/networks/bsc.svg';
 // import optimismIcon from '../assets/networks/optimism.svg';
@@ -9,7 +10,7 @@ import arbitrumIcon from '../assets/networks/arbitrum.svg';
  * @param chainId The blockchain network ID
  * @returns The network icon image source
  */
-export function getNetworkIcon(chainId: number): string {
+export function getNetworkIcon(chainId: number | SupportedChain): string {
   switch (chainId) {
     case 1:
       return ethereumIcon;
@@ -32,7 +33,7 @@ export function getNetworkIcon(chainId: number): string {
  * @param chainId The blockchain network ID
  * @returns The color hex code associated with the network
  */
-export function getNetworkColor(chainId: number): string {
+export function getNetworkColor(chainId: number | SupportedChain): string {
   switch (chainId) {
     case 1:
       return '#627EEA'; // Ethereum blue
@@ -54,7 +55,7 @@ export function getNetworkColor(chainId: number): string {
  * @param chainId The blockchain network ID
  * @returns The human-readable network name
  */
-export function getNetworkName(chainId: number): string {
+export function getNetworkName(chainId: number | SupportedChain): string {
   switch (chainId) {
     case 1:
       return 'Ethereum';
@@ -77,7 +78,7 @@ export function getNetworkName(chainId: number): string {
  * @param chainId The blockchain network ID
  * @returns A data URL for the network icon
  */
-export function getNetworkIconDataUrl(chainId: number): string {
+export function getNetworkIconDataUrl(chainId: number | SupportedChain): string {
   const name = getNetworkName(chainId);
   const letter = name.charAt(0);
   const color = getNetworkColor(chainId);
