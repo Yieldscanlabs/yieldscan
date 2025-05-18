@@ -80,6 +80,7 @@
 
 .featureCard:hover {
   transform: translateY(-5px);
+  color: #fff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   border-color: rgba(var(--primary-rgb), 0.3);
 }
@@ -146,6 +147,7 @@
 
 .litepaperButton:hover {
   transform: translateY(-2px);
+  color: #fff;
   box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.4);
 }
 

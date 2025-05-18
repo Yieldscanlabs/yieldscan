@@ -70,3 +70,13 @@ export const VENUS_V3_MARKETS: Record<number, Record<string, string>> = {
         'USDT': '0x8C3e3821259B82fFb32B2450A95d2dcbf161C24E',
     }
 }
+
+export const RADIANT_V3_MARKETS: Record<number, Record<string, string>> = {
+  // BSC
+  // Ethereum
+    1: {
+        // 'USDC': '0x17c07e0c232f2f80dfdbd7a95b942d893a4c5acb',
+        'USDT': '0xA950974f64aA33f27F6C5e017eEE93BF7588ED07',
+        "USDC": "0xA950974f64aA33f27F6C5e017eEE93BF7588ED07"
+    }
+}

@@ -73,13 +73,29 @@ const protocolAbis = {
       outputs: [{ name: '', type: 'uint256' }],
       stateMutability: 'nonpayable',
       type: 'function',
+    }
+  ],
+  Radiant: [
+    {
+      inputs: [
+        { name: 'asset', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'onBehalfOf', type: 'address' },
+        { name: 'referralCode', type: 'uint16' },
+      ],
+      name: 'deposit',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
     },
     {
       inputs: [
-        { name: 'redeemTokens', type: 'uint256' }
+        { name: 'asset', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'to', type: 'address' },
       ],
-      name: 'redeem',
-      outputs: [{ name: '', type: 'uint256' }],
+      name: 'withdraw',
+      outputs: [{ name: 'uint256' }],
       stateMutability: 'nonpayable',
       type: 'function',
     }
@@ -147,6 +163,14 @@ export default function useUnifiedYield({
           args: [amountInWei], // Venus uses 'mint' instead of 'supply'
           chainId
         });
+      } else if (protocol === PROTOCOL_NAMES.RADIANT) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Radiant,
+          functionName: 'deposit',
+          args: [tokenAddress, amountInWei, address, 0], // Radiant uses 'deposit' - similar to Aave
+          chainId
+        });
       } else {
         throw new Error(`Protocol ${protocol} not supported`);
       }
@@ -193,6 +217,14 @@ export default function useUnifiedYield({
           abi: protocolAbis.Venus,
           functionName: 'redeem', // Venus uses 'redeem' to withdraw exact amount
           args: [amountInWei],
+          chainId
+        });
+      } else if (protocol === PROTOCOL_NAMES.RADIANT) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Radiant,
+          functionName: 'withdraw',
+          args: [tokenAddress, amountInWei, address], // Radiant withdraw parameters
           chainId
         });
       } else {

@@ -9,7 +9,7 @@ interface ProtocolScore {
   liquidity: number;
 }
 
-const protocolScores: ProtocolScore[] = [
+export const protocolScores: ProtocolScore[] = [
   { 
     name: 'Aave', 
     trustScore: 95, 
@@ -24,6 +24,11 @@ const protocolScores: ProtocolScore[] = [
     name: 'Compound', 
     trustScore: 85, 
     liquidity: 75
+  },
+    { 
+    name: 'Radiant', 
+    trustScore: 60, 
+    liquidity: 80
   }
 ];
 
