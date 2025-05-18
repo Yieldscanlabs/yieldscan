@@ -7,11 +7,12 @@ import { formatNumber } from '../utils/helpers';
 import NetworkSelector from '../components/NetworkSelector';
 import useWalletConnection from '../hooks/useWalletConnection';
 import WalletCtaCard from '../components/WalletCtaCard';
+import ProtocolScoreCard from '../components/ProtocolScoreCard';
 
 const LiveApyPage: React.FC = () => {
   const { apyData, isLoading, error, lastUpdated, fetchApys } = useApyStore();
   const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
-    const { wallet, openConnectModal } = useWalletConnection(); // Add this line
+  const { wallet, openConnectModal } = useWalletConnection(); // Add this line
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -252,6 +253,7 @@ const LiveApyPage: React.FC = () => {
           {!wallet.isConnected && (
          <WalletCtaCard />
       )}
+      <ProtocolScoreCard />
       {/* <div className={styles.infoCard}>
         <div className={styles.infoHeader}>
           <div className={styles.infoIcon}>ℹ️</div>
