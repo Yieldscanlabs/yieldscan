@@ -3,10 +3,25 @@
   align-items: center;
   gap: 4px;
 }
+.logoContent {
+  display: flex;
+  justify-content: center ;
+  align-items: center;
+  flex-direction: column;
+}
 .logoContainer img {
   width: auto;
   margin-top: 2px;
   height: 30px;
+}
+.slogan {
+  font-size: 12.5px !important;
+  font-weight: 300;
+  color: #fff !important;
+  opacity: 0.8;
+  letter-spacing: 2px;
+  margin-top: -2px;
+  font-family: 'Oswald';
 }
 .title {
   font-size: 22px;

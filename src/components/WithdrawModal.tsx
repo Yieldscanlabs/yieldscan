@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { formatNumber } from '../utils/helpers';
 import type { Asset } from '../types';
 import styles from './WithdrawModal.module.css';
+import { useAssetStore } from '../store/assetStore';
+import useWalletConnection from '../hooks/useWalletConnection';
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -32,6 +34,8 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
 }) => {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [percentage, setPercentage] = useState(0);
+    const { wallet } = useWalletConnection();
+  const {fetchAssets} = useAssetStore()
   const [error, setError] = useState<string | null>(null);
   const [activePercentage, setActivePercentage] = useState<number | null>(null);
   
@@ -74,9 +78,11 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
       const success = await onWithdraw(withdrawAmount);
       if (success) {
         // Wait briefly before signaling completion
+        fetchAssets(wallet.address, false)
         setTimeout(() => {
           onComplete(true);
         }, 1500);
+
       } else {
         setError('Withdrawal failed. Please try again.');
       }

@@ -5,15 +5,16 @@ import AssetList from './components/AssetList';
 import DepositForm from './components/DepositForm';
 import DepositSuccess from './components/DepositSuccess';
 import useWalletConnection from './hooks/useWalletConnection';
-import useAssets from './hooks/useAssets';
 import useYieldOptions from './hooks/useYieldOptions';
 import type { Asset, YieldOption } from './types';
 import type { BestApyResult } from './hooks/useBestApy';
 import Loading from './components/Loading';
+import { useAssetStore } from './store/assetStore';
+import Logo from './components/Logo';
 
 function App() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal, disconnectWallet } = useWalletConnection();
-  const { assets, loading: assetsLoading } = useAssets(wallet.address);
+  const { assets, isLoading: assetsLoading } = useAssetStore();
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [bestApyData, setBestApyData] = useState<BestApyResult | null>(null);
   const { yieldOptions } = useYieldOptions(selectedAsset);
@@ -58,7 +59,12 @@ function App() {
       return (
         <div className={styles.welcomeContainer}>
           <div className={styles.welcomeMessage}>
-            <h2>Welcome to Yieldscan</h2>
+            <Logo
+              slogan={true}
+              className={styles.enalgeLogo}
+            />
+            <h2> </h2>
+
             <p>Find the best yield opportunities for your assets across multiple chains</p>
    
             <div className={styles.centerWalletConnect}>

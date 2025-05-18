@@ -3,17 +3,15 @@ import { useAccount } from 'wagmi';
 import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
-import useAssets from '../hooks/useAssets';
 import { useApyStore } from '../store/apyStore';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
-import GlobalOptimizationModal from '../components/GlobalOptimizationModal';
 import OptimizationCard from '../components/OptimizationCard';
+import { useAssetStore } from '../store/assetStore';
 
 const MyYieldsPage: React.FC = () => {
-  const { address } = useAccount();
-  const { assets, loading, error } = useAssets(address || '');
+  const { assets, error, isLoading: loading } = useAssetStore();
   const [totalDailyYield, setTotalDailyYield] = useState('0.00');
   const [totalYearlyYield, setTotalYearlyYield] = useState('0.00');
   const [optimizations, setOptimizations] = useState<{
@@ -115,7 +113,7 @@ const MyYieldsPage: React.FC = () => {
     };
     
     processAssets();
-  }, [lastUpdated]); 
+  }, [yieldAssets, getBestApy, apyData, tokens, lastUpdated]);
 
   if (loading) {
     return (

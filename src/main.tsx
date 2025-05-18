@@ -8,7 +8,7 @@ import router from './router';
 import './index.css';
 
 // Create wagmi config
-const config = createConfig({
+export const config = createConfig({
   chains: [mainnet, arbitrum, bsc],
   transports: {
     [mainnet.id]: http(),
