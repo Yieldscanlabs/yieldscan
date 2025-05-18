@@ -10,7 +10,7 @@ import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
-import { VENUS_V3_MARKETS } from '../utils/markets';
+import { RADIANT_V3_MARKETS, VENUS_V3_MARKETS } from '../utils/markets';
 
 const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
@@ -19,6 +19,8 @@ const setupProtocol = (protocol: string, token: SupportedToken, chainId: number)
         return AAVE_V3_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.VENUS) {
       return VENUS_V3_MARKETS[chainId][token] as `0x${string}`;
+    } else if(protocol === PROTOCOL_NAMES.RADIANT) {
+      return RADIANT_V3_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'
 }
@@ -102,6 +104,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
     setError(null);
     
     try {
+      const didApprove = await hasEnoughAllowance(amount);
+      if (didApprove) {
+        handleSupply();
+        return;
+      }
       const success = await approve(amount, protocolAddress);
       
       if (success) {

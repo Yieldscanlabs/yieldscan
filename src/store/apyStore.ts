@@ -86,7 +86,8 @@ export const useApyStore = create<ApyStore>()(
           const data: ApiResponseStructure = await response.json();
           data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'] = {
             ...data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
-            venus: 3.67
+            venus: 3.67,
+            radiant: 4
           }
 
           data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'] = {
