@@ -4,6 +4,7 @@ import styles from './Protocol.module.css';
 import aave from '../assets/protocols/aave.png'
 import radiant from '../assets/protocols/radiant.png'
 import venus from '../assets/protocols/venus.svg'
+import morphoblue from '../assets/protocols/morphoblue.svg'
 import compound from '../assets/protocols/compound.svg'
 
 interface ProtocolProps {
@@ -19,6 +20,7 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Aave': aave,
   'Compound': compound,
   'Venus': venus,
+  'Morpho Blue': morphoblue,
   'Radiant': radiant,
   'Curve': 'https://cryptologos.cc/logos/curve-dao-token-crv-logo.png',
   'Yearn': 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png',

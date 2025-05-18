@@ -459,6 +459,15 @@
   .comparisonArrow {
     transform: rotate(90deg);
   }
+  
+  .filtersContainer {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filterItem {
+    width: 100%;
+  }
 }
 
 .assetDetails {
@@ -942,5 +951,46 @@
   
   .optimizationEmptyIcon {
     margin-bottom: 0.25rem;
+  }
+}
+
+.networkFilterContainer {
+  margin-bottom: 1.5rem;
+}
+
+.networkSelector,
+.protocolSelector {
+  /* Any specific styling for selectors */
+}
+
+.filtersContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
+.filterLabel {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .filtersContainer {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filterItem {
+    width: 100%;
   }
 }

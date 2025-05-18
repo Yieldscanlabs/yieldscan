@@ -9,11 +9,15 @@ import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
 import OptimizationCard from '../components/OptimizationCard';
 import { useAssetStore } from '../store/assetStore';
+import NetworkSelector from '../components/NetworkSelector';
+import ProtocolSelector from '../components/ProtocolSelector';
 
 const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
   const [totalDailyYield, setTotalDailyYield] = useState('0.00');
   const [totalYearlyYield, setTotalYearlyYield] = useState('0.00');
+  const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
+  const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
   const [optimizations, setOptimizations] = useState<{
     asset: Asset;
     currentProtocol: string;
@@ -26,15 +30,51 @@ const MyYieldsPage: React.FC = () => {
   // Get the getBestApy method from the store
   const { getBestApy, lastUpdated, apyData } = useApyStore();
 
-  // Memoize yield-bearing tokens to prevent re-renders
-  const yieldAssets = useMemo(() => 
+  // Get unique protocols from tokens
+  const uniqueProtocols = useMemo(() => 
+    Array.from(new Set(tokens
+      .filter(token => token.protocol && token.yieldBearingToken)
+      .map(token => token.protocol)
+    )),
+    []
+  );
+
+  // Get all yield-bearing assets without filtering by protocol
+  // This will be used for calculating total yield and optimizations
+  const allYieldAssets = useMemo(() => 
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
 
+  // Memoize filtered yield-bearing tokens for display only
+  const filteredYieldAssets = useMemo(() => 
+    allYieldAssets.filter(asset => {
+      // Filter by network if selected
+      if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
+      
+      // Filter by protocol if selected
+      if (selectedProtocol !== 'all') {
+        const token = tokens.find(
+          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+        );
+        if (!token || token.protocol !== selectedProtocol) return false;
+      }
+      
+      return true;
+    }),
+    [allYieldAssets, selectedNetwork, selectedProtocol, tokens]
+  );
+
+  // Get unique chain IDs from assets for the network selector
+  const uniqueChainIds = useMemo(() => 
+    Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
+    [assets]
+  );
+
   // Calculate total yields and check for optimizations
+  // This effect uses allYieldAssets instead of filteredYieldAssets
   useEffect(() => {
-    if (yieldAssets.length === 0) return;
+    if (allYieldAssets.length === 0) return;
 
     let dailyYieldTotal = 0;
     let yearlyYieldTotal = 0;
@@ -42,7 +82,7 @@ const MyYieldsPage: React.FC = () => {
 
     // Process each yield-bearing asset
     const processAssets = async () => {
-      for (const asset of yieldAssets) {
+      for (const asset of allYieldAssets) {
         // Get APY info for the asset
         const token = tokens.find(
           t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
@@ -52,9 +92,6 @@ const MyYieldsPage: React.FC = () => {
         
         // Determine which protocol this yield-bearing token belongs to
         let currentProtocol = token.protocol;
-        
-        // Get current APY estimate (this would ideally come from an API)
-        // For now, we'll use a simplified approach based on the token name
         
         // Find the underlying asset for this yield token
         const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
@@ -113,8 +150,9 @@ const MyYieldsPage: React.FC = () => {
     };
     
     processAssets();
-  }, [yieldAssets, getBestApy, apyData, tokens, lastUpdated]);
+  }, [allYieldAssets, getBestApy, apyData, tokens, lastUpdated]);
 
+  // Loading state
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -124,6 +162,7 @@ const MyYieldsPage: React.FC = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className={styles.error}>
@@ -132,7 +171,8 @@ const MyYieldsPage: React.FC = () => {
     );
   }
 
-  if (yieldAssets.length === 0) {
+  // Empty state - no yield-bearing assets
+  if (allYieldAssets.length === 0) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -169,10 +209,35 @@ const MyYieldsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Current Yields Section */}
+      {/* Filters container */}
+      <div className={styles.filtersContainer}>
+        {/* Network selector for filtering yields */}
+        <div className={styles.filterItem}>
+          <label className={styles.filterLabel}>Network</label>
+          <NetworkSelector
+            selectedNetwork={selectedNetwork}
+            networks={uniqueChainIds}
+            onChange={setSelectedNetwork}
+            className={styles.networkSelector}
+          />
+        </div>
+        
+        {/* Protocol selector for filtering yields */}
+        <div className={styles.filterItem}>
+          <label className={styles.filterLabel}>Protocol</label>
+          <ProtocolSelector
+            selectedProtocol={selectedProtocol}
+            protocols={uniqueProtocols}
+            onChange={setSelectedProtocol}
+            className={styles.protocolSelector}
+          />
+        </div>
+      </div>
+
+      {/* Current Yields Section - Uses filteredYieldAssets for display */}
       <div className={styles.section}>
         <div className={styles.yieldGrid}>
-          {yieldAssets.map((asset) => (
+          {filteredYieldAssets.map((asset) => (
             <YieldCard
               key={`${asset.token}-${asset.chainId}`}
               asset={asset}
@@ -181,7 +246,7 @@ const MyYieldsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Optimizations Section - Always show the section but content changes based on optimizations */}
+      {/* Optimizations Section - Always uses all optimizations regardless of filters */}
       <div className={styles.section}>
         <h2>Optimize</h2>
         

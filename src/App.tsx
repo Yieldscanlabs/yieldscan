@@ -76,10 +76,10 @@ function App() {
                 Connect Wallet
               </button>
             </div>
-            <p className={styles.subtitle}>Connect your wallet to get started</p>
+            {/* <p className={styles.subtitle}>Connect your wallet to get started</p> */}
                 <div className={styles.exploreAsGuest}>
               <Link to="/explore" className={styles.exploreLink}>
-                Or explore as guest →
+                Explore as guest →
               </Link>
             </div>
           </div>

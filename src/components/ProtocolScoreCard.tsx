@@ -15,6 +15,11 @@ export const protocolScores: ProtocolScore[] = [
     trustScore: 95, 
     liquidity: 95
   },
+      { 
+    name: 'Morpho Blue', 
+    trustScore: 92, 
+    liquidity: 90
+  },
     { 
     name: 'Venus', 
     trustScore: 90, 
