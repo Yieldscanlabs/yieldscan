@@ -11,6 +11,7 @@ import type { BestApyResult } from './hooks/useBestApy';
 import Loading from './components/Loading';
 import { useAssetStore } from './store/assetStore';
 import Logo from './components/Logo';
+import { Link } from 'react-router-dom';
 
 function App() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal, disconnectWallet } = useWalletConnection();
@@ -76,7 +77,13 @@ function App() {
               </button>
             </div>
             <p className={styles.subtitle}>Connect your wallet to get started</p>
+                <div className={styles.exploreAsGuest}>
+              <Link to="/explore" className={styles.exploreLink}>
+                Or explore as guest →
+              </Link>
+            </div>
           </div>
+
         </div>
       );
     } else if (selectedAsset && showDepositSuccess) {

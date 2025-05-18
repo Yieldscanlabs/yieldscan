@@ -1,0 +1,108 @@
+.walletCtaCard {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-md);
+  color: white;
+  animation: fadeIn 0.5s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.walletCtaCard::before {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+  top: -90px;
+  right: -90px;
+  opacity: 0.5;
+  filter: blur(30px);
+  z-index: 0;
+}
+
+.walletCtaContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.walletCtaContent h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.walletCtaContent p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+  max-width: 500px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.connectButton {
+  background: white;
+  color: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-left: 1.5rem;
+  flex-shrink: 0;
+}
+
+.connectButton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: 0.6s;
+}
+
+.connectButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+}
+
+.connectButton:hover::after {
+  left: 100%;
+}
+
+@media (max-width: 768px) {
+  .walletCtaContent {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .connectButton {
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

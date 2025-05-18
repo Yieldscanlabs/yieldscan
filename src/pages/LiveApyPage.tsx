@@ -5,10 +5,13 @@ import styles from './LiveApyPage.module.css';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import { formatNumber } from '../utils/helpers';
 import NetworkSelector from '../components/NetworkSelector';
+import useWalletConnection from '../hooks/useWalletConnection';
+import WalletCtaCard from '../components/WalletCtaCard';
 
 const LiveApyPage: React.FC = () => {
   const { apyData, isLoading, error, lastUpdated, fetchApys } = useApyStore();
   const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
+    const { wallet, openConnectModal } = useWalletConnection(); // Add this line
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -120,6 +123,8 @@ const LiveApyPage: React.FC = () => {
           </div>
         </div>
       )}
+
+  
       
       <div className={styles.filterToolbar}>
         <div className={styles.filterControls}>
@@ -244,7 +249,9 @@ const LiveApyPage: React.FC = () => {
           </table>
         </div>
       </div>
-      
+          {!wallet.isConnected && (
+         <WalletCtaCard />
+      )}
       {/* <div className={styles.infoCard}>
         <div className={styles.infoHeader}>
           <div className={styles.infoIcon}>ℹ️</div>

@@ -116,7 +116,22 @@
   justify-content: center;
   margin: 0 0;
 }
+.exploreAsGuest {
+  margin-top: 20px;
+  text-align: center;
+}
 
+.exploreLink {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.exploreLink:hover {
+  color: #94a3b8;
+  text-decoration: underline;
+}
 .connectButtonLarge {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
   color: white;
