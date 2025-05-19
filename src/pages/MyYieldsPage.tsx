@@ -4,6 +4,7 @@ import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import { useApyStore } from '../store/apyStore';
+import { useEarnStore } from '../store/earnStore';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard';
@@ -13,6 +14,7 @@ import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
 
 const MyYieldsPage: React.FC = () => {
+  const { address } = useAccount();
   const { assets, error, isLoading: loading } = useAssetStore();
   const [totalDailyYield, setTotalDailyYield] = useState('0.00');
   const [totalYearlyYield, setTotalYearlyYield] = useState('0.00');
@@ -29,6 +31,20 @@ const MyYieldsPage: React.FC = () => {
   
   // Get the getBestApy method from the store
   const { getBestApy, lastUpdated, apyData } = useApyStore();
+  
+  // Get the earnings data from the earnStore
+  const { 
+    earningsData, 
+    getTotalEarnings,
+    isLoading: earningsLoading
+  } = useEarnStore();
+  
+  // Setup auto-refresh for earnings data
+  
+  // No need to fetch manually here since it's now handled in Layout
+  
+  // Get total earnings for display
+  const totalEarnings = useMemo(() => getTotalEarnings(), [getTotalEarnings]);
 
   // Get unique protocols from tokens
   const uniqueProtocols = useMemo(() => 
@@ -40,7 +56,6 @@ const MyYieldsPage: React.FC = () => {
   );
 
   // Get all yield-bearing assets without filtering by protocol
-  // This will be used for calculating total yield and optimizations
   const allYieldAssets = useMemo(() => 
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
@@ -153,7 +168,7 @@ const MyYieldsPage: React.FC = () => {
   }, [allYieldAssets, getBestApy, apyData, tokens, lastUpdated]);
 
   // Loading state
-  if (loading) {
+  if (loading || earningsLoading) {
     return (
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
@@ -171,7 +186,7 @@ const MyYieldsPage: React.FC = () => {
     );
   }
 
-  // Empty state - no yield-bearing assets
+  // Empty state - no yield-bearing assets at all
   if (allYieldAssets.length === 0) {
     return (
       <div className={styles.container}>
@@ -193,18 +208,38 @@ const MyYieldsPage: React.FC = () => {
     // In a real app, this would initiate the token migration process
   };
 
+  // Render the content
   return (
     <div className={styles.container}>
+      {/* Lifetime earnings hero section */}
+      <div className={styles.lifetimeHero}>
+        <div className={styles.lifetimeContent}>
+          <div className={styles.lifetimeLabelContainer}>
+            <h2 className={styles.lifetimeLabel}>Lifetime Earnings</h2>
+            <div className={styles.lifetimeBadge}>Total</div>
+          </div>
+          <div className={styles.lifetimeAmount}>${totalEarnings.lifetime.toFixed(2)}</div>
+        </div>
+      </div>
+
+      {/* Other earnings summary cards */}
       <div className={styles.header}>
-        {/* <h1>My Yields</h1> */}
         <div className={styles.summaryCards}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Daily Earnings</div>
-            <div className={styles.summaryAmount}>${totalDailyYield}</div>
+            <div className={styles.summaryAmount}>${totalEarnings.daily.toFixed(2)}</div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Yearly Earnings</div>
-            <div className={styles.summaryAmount}>${totalYearlyYield}</div>
+            <div className={styles.summaryTitle}>Weekly Earnings</div>
+            <div className={styles.summaryAmount}>${totalEarnings.weekly.toFixed(2)}</div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryTitle}>Monthly Earnings</div>
+            <div className={styles.summaryAmount}>${totalEarnings.monthly.toFixed(2)}</div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryTitle}>Yearly Projection</div>
+            <div className={styles.summaryAmount}>${totalEarnings.yearly.toFixed(2)}</div>
           </div>
         </div>
       </div>
@@ -236,14 +271,38 @@ const MyYieldsPage: React.FC = () => {
 
       {/* Current Yields Section - Uses filteredYieldAssets for display */}
       <div className={styles.section}>
-        <div className={styles.yieldGrid}>
-          {filteredYieldAssets.map((asset) => (
-            <YieldCard
-              key={`${asset.token}-${asset.chainId}`}
-              asset={asset}
-            />
-          ))}
-        </div>
+        {filteredYieldAssets.length > 0 ? (
+          <div className={styles.yieldGrid}>
+            {filteredYieldAssets.map((asset) => (
+              <YieldCard
+                key={`${asset.token}-${asset.chainId}`}
+                asset={asset}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.filteredEmptyState}>
+            <div className={styles.filteredEmptyContent}>
+              <div className={styles.filteredEmptyIcon}>🔍</div>
+              <div className={styles.filteredEmptyText}>
+                <h3>No matching assets found</h3>
+                <p>
+                  No yield-bearing assets match your current filters.
+                  Try changing the network or protocol filter to see your assets.
+                </p>
+              </div>
+              <button 
+                className={styles.resetFiltersButton}
+                onClick={() => {
+                  setSelectedNetwork('all');
+                  setSelectedProtocol('all');
+                }}
+              >
+                Reset Filters
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Optimizations Section - Always uses all optimizations regardless of filters */}
@@ -252,10 +311,6 @@ const MyYieldsPage: React.FC = () => {
         
         {optimizations.length > 0 ? (
           <>
-            {/* <p className={styles.sectionDescription}>
-              These optimizations could increase your yield earnings.
-            </p>
-             */}
             <div className={styles.optimizationsGrid}>
               {optimizations.map((opt, index) => (
                 <OptimizationCard

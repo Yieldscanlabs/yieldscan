@@ -2,18 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { shortenAddress } from '../utils/helpers';
 import styles from './Header.module.css';
-import bear from '../assets/bear.png'; // Adjust the path as necessary
 import Logo from './Logo';
+
 interface HeaderProps {
   isConnected: boolean;
   address?: string;
   disconnectWallet: () => void;
+  totalEarnings?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   isConnected, 
   address, 
-  disconnectWallet 
+  disconnectWallet,
+  totalEarnings = 0
 }) => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -41,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className={styles.header}>
       <div className={styles.headerLeft}>
         <Link to="/" className={styles.titleLink}>
-        <Logo />
+          <Logo />
         </Link>
         
         {/* Navigation Links */}
@@ -63,33 +65,44 @@ const Header: React.FC<HeaderProps> = ({
               Yields
             </Link>
           )}
-                <Link 
-              to="/explore" 
-              className={`${styles.navLink} ${location.pathname === '/explore' ? styles.activeLink : ''}`}
-            >
-              Explore
-            </Link>
+          <Link 
+            to="/explore" 
+            className={`${styles.navLink} ${location.pathname === '/explore' ? styles.activeLink : ''}`}
+          >
+            Explore
+          </Link>
         </nav>
       </div>
       
-      {isConnected && address && (
-        <div className={styles.walletContainer} ref={dropdownRef}>
-          <div 
-            className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
-            onClick={toggleDropdown}
-          >
-            {shortenAddress(address)}
-            <span className={styles.dropdownArrow}>▼</span>
+      <div className={styles.headerRight}>
+        {/* Display earnings if connected and greater than 0 */}
+        {isConnected && totalEarnings > 0 && (
+          <div className={styles.earningsBadge}>
+            <span className={styles.earningsLabel}>Total Yield:</span>
+            <span className={styles.earningsAmount}>${totalEarnings.toFixed(2)}</span>
           </div>
-          {isDropdownOpen && (
-            <div className={styles.walletDropdown}>
-              <button onClick={disconnectWallet} className={styles.disconnectButton}>
-                Disconnect
-              </button>
+        )}
+        
+        {/* Wallet address and dropdown */}
+        {isConnected && address && (
+          <div className={styles.walletContainer} ref={dropdownRef}>
+            <div 
+              className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
+              onClick={toggleDropdown}
+            >
+              {shortenAddress(address)}
+              <span className={styles.dropdownArrow}>▼</span>
             </div>
-          )}
-        </div>
-      )}
+            {isDropdownOpen && (
+              <div className={styles.walletDropdown}>
+                <button onClick={disconnectWallet} className={styles.disconnectButton}>
+                  Disconnect
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </header>
   );
 };

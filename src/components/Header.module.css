@@ -176,7 +176,31 @@
   }
 }
 
-/* Responsive styles */
+.earningsBadge {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1) 0%, rgba(var(--primary-rgb), 0.2) 100%);
+  border-radius: 20px;
+  padding: 6px 12px;
+  margin-right: 16px;
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
+  transition: all 0.2s ease;
+}
+
+.earningsLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-right: 6px;
+}
+
+.earningsAmount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* Make the badge responsive */
 @media (max-width: 768px) {
   .header {
     padding: 1rem;
@@ -200,5 +224,56 @@
   
   .walletDropdown {
     width: 100%;
+  }
+  
+  .earningsBadge {
+    display: none; /* Hide on small screens to save space */
+  }
+}
+
+/* Add these styles to your existing Header.module.css file */
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.earningsBadge {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 230, 121, 0.1);
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-right: 12px;
+  border: 1px solid rgba(0, 230, 121, 0.2);
+}
+
+.earningsLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+.earningsAmount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+/* Make the badge responsive */
+@media (max-width: 768px) {
+  .earningsLabel {
+    display: none; /* Hide label on small screens */
+  }
+  
+  .earningsBadge {
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .earningsBadge {
+    display: none; /* Hide completely on very small screens */
   }
 }

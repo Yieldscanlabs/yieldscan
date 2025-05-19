@@ -14,7 +14,7 @@ const FaqPage: React.FC = () => {
       question: "What is YieldScan?",
       answer: (
         <p>
-          YieldScan is a DeFi yield aggregator that helps users find and optimize the best returns on their 
+          Yieldscan is a DeFi yield aggregator that helps users find and optimize the best returns on their 
           yield-bearing crypto assets—without oracles, validators, or automated rebalancing.
         </p>
       ),
@@ -24,8 +24,9 @@ const FaqPage: React.FC = () => {
       question: "How is YieldScan different from other DeFi yield platforms?",
       answer: (
         <p>
-          Unlike other platforms, YieldScan is fully user-driven. No hidden automation, no smart contract custody, 
-          and no auto-deploys. You stay in full control.
+          Yieldscan is an information layer, you interact directly with protocols like Aave, Compound, and Morpho.
+          We don't take custody of your funds or require you to deposit into a vault.
+          Instead, we provide real-time yield comparisons and one-click migration options to help you earn more.
         </p>
       ),
       category: "general"
