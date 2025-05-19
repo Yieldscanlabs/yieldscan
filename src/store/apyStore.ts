@@ -54,7 +54,7 @@ export interface ApyStore {
 const APY_API_ENDPOINT = 'http://65.109.34.27:5678';
 
 // Auto-refresh interval in milliseconds (3 seconds)
-const AUTO_REFRESH_INTERVAL = 3000;
+const AUTO_REFRESH_INTERVAL = 30000;
 
 export const useApyStore = create<ApyStore>()(
   persist(

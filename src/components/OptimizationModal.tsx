@@ -177,7 +177,8 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     
     try {
       // Check if we already have allowance
-      if (hasEnoughAllowance(asset.balance)) {
+      const hasAllowance = await hasEnoughAllowance(asset.balance);
+      if (hasAllowance) {
         // Skip to deposit if already approved
         setStep(3);
         handleDeposit();
