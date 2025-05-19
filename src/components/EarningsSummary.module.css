@@ -1,0 +1,150 @@
+.earningsSummary {
+  margin-bottom: 1rem;
+}
+
+.earningsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Innovative lifetime earnings design */
+.lifetimeWrapper {
+  position: relative;
+  background: linear-gradient(to right, rgba(18, 21, 36, 0.9), rgba(28, 32, 50, 0.8));
+  border: 1px solid rgba(97, 134, 255, 0.2);
+  border-right: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  padding: 0.5rem 1rem 0.5rem 0.75rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  width: 140px;
+  height: 40px;
+  flex-shrink: 0;
+  box-shadow: 2px 0 8px -4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+/* Create unique star accent shape */
+.star {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: var(--accent-color, #6186FF);
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.star::before, 
+.star::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-color, #6186FF);
+  left: 0;
+  top: 0;
+}
+
+.star::before {
+  transform: rotate(30deg);
+}
+
+.star::after {
+  transform: rotate(60deg);
+}
+
+.lifetimeContent {
+  position: relative;
+  z-index: 1;
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lifetimeValue {
+  color: var(--success-color, #00E679);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+
+.lifetimeLabel {
+  color: var(--text-tertiary, #A0A3B1);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+/* Period cards as tabs connected to lifetime */
+.periodCards {
+  display: flex;
+  height: 40px;
+  flex: 1;
+  z-index: 1;
+}
+
+.periodCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 32, 50, 0.6);
+  border-top: 1px solid rgba(60, 66, 87, 0.4);
+  border-bottom: 1px solid rgba(60, 66, 87, 0.4);
+  border-right: 1px solid rgba(60, 66, 87, 0.2);
+  position: relative;
+  padding: 0.25rem 0.5rem;
+}
+
+.periodCard:last-child {
+  border-right: 1px solid rgba(60, 66, 87, 0.4);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.periodBadge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary, #A0A3B1);
+  margin-bottom: 2px;
+}
+
+.periodValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--success-color, #00E679);
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .earningsRow {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  
+  .lifetimeWrapper {
+    width: 100%;
+    border-radius: var(--radius-md);
+    border-right: 1px solid rgba(var(--primary-rgb), 0.2);
+    box-shadow: none;
+    justify-content: center;
+  }
+  
+  .periodCards {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  
+  .periodCard:first-child {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    border-left: 1px solid rgba(var(--border-rgb), 0.2);
+  }
+}

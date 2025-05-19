@@ -967,6 +967,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  align-items: end;
   gap: 16px;
   margin-bottom: 1.5rem;
 }
@@ -1132,4 +1133,32 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.earningsSnapshot {
+  display: flex;
+  gap: 1rem;
+  background: var(--surface-medium);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.earningsItem {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.earningsLabel {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  margin-right: 0.5rem;
+}
+
+.earningsValue {
+  font-weight: 700;
+  color: var(--success-color);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
 }

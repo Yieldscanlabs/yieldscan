@@ -12,6 +12,7 @@ import OptimizationCard from '../components/OptimizationCard';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
+import EarningsSummary from '../components/EarningsSummary';
 
 const MyYieldsPage: React.FC = () => {
   const { address } = useAccount();
@@ -38,8 +39,6 @@ const MyYieldsPage: React.FC = () => {
     getTotalEarnings,
     isLoading: earningsLoading
   } = useEarnStore();
-  
-  // Setup auto-refresh for earnings data
   
   // No need to fetch manually here since it's now handled in Layout
   
@@ -211,40 +210,7 @@ const MyYieldsPage: React.FC = () => {
   // Render the content
   return (
     <div className={styles.container}>
-      {/* Lifetime earnings hero section */}
-      <div className={styles.lifetimeHero}>
-        <div className={styles.lifetimeContent}>
-          <div className={styles.lifetimeLabelContainer}>
-            <h2 className={styles.lifetimeLabel}>Lifetime Earnings</h2>
-            <div className={styles.lifetimeBadge}>Total</div>
-          </div>
-          <div className={styles.lifetimeAmount}>${totalEarnings.lifetime.toFixed(2)}</div>
-        </div>
-      </div>
-
-      {/* Other earnings summary cards */}
-      <div className={styles.header}>
-        <div className={styles.summaryCards}>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Daily Earnings</div>
-            <div className={styles.summaryAmount}>${totalEarnings.daily.toFixed(2)}</div>
-          </div>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Weekly Earnings</div>
-            <div className={styles.summaryAmount}>${totalEarnings.weekly.toFixed(2)}</div>
-          </div>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Monthly Earnings</div>
-            <div className={styles.summaryAmount}>${totalEarnings.monthly.toFixed(2)}</div>
-          </div>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Yearly Projection</div>
-            <div className={styles.summaryAmount}>${totalEarnings.yearly.toFixed(2)}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters container */}
+      {/* Filters container with earnings summary */}
       <div className={styles.filtersContainer}>
         {/* Network selector for filtering yields */}
         <div className={styles.filterItem}>
@@ -258,7 +224,22 @@ const MyYieldsPage: React.FC = () => {
         </div>
         
         {/* Protocol selector for filtering yields */}
+
+        
+        {/* Daily and total earnings summary */}
         <div className={styles.filterItem}>
+          <div className={styles.earningsSnapshot}>
+            <div className={styles.earningsItem}>
+              <span className={styles.earningsLabel}>Daily</span>
+              <span className={styles.earningsValue}>${totalEarnings.daily.toFixed(2)}</span>
+            </div>
+            <div className={styles.earningsItem}>
+              <span className={styles.earningsLabel}>Total</span>
+              <span className={styles.earningsValue}>${totalEarnings.lifetime.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+                <div className={styles.filterItem}>
           <label className={styles.filterLabel}>Protocol</label>
           <ProtocolSelector
             selectedProtocol={selectedProtocol}
