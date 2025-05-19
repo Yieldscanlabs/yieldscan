@@ -172,18 +172,35 @@ export function useAssetAutoRefresh(address: string) {
     // Initial fetch
     fetchAssets(address, true);
     
+    // Track if the tab is visible
+    let isTabVisible = !document.hidden;
+    
+    // Handle visibility change
+    const handleVisibilityChange = () => {
+      isTabVisible = !document.hidden;
+      
+      // If tab becomes visible and auto-refresh is enabled, do an immediate refresh
+      if (isTabVisible && useAssetStore.getState().autoRefreshEnabled) {
+        fetchAssets(address, false);
+      }
+    };
+    
+    // Register visibility change event listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     // Set up auto-refresh interval
     const intervalId = setInterval(() => {
-      // Only fetch if auto-refresh is enabled (checking latest state)
-      if (useAssetStore.getState().autoRefreshEnabled) {
+      // Only fetch if auto-refresh is enabled AND tab is visible
+      if (useAssetStore.getState().autoRefreshEnabled && isTabVisible) {
         // Use silent refresh (no loading state)
         fetchAssets(address, false);
       }
     }, AUTO_REFRESH_INTERVAL);
     
-    // Clean up interval on unmount
+    // Clean up interval and event listener on unmount
     return () => {
       clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       autoRefreshInitialized = false;
     };
   }, [address, fetchAssets, autoRefreshEnabled]);
