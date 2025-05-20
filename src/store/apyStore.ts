@@ -10,6 +10,8 @@ export interface ProtocolApys {
   venus?: number;
   radiant?: number;
   gmx?: number;
+  lido?: number;
+  morpho?: number;
   // Add other protocols as needed
 }
 
@@ -90,7 +92,8 @@ export const useApyStore = create<ApyStore>()(
             radiant: 4
           }
           data['1']['0x'] = {
-            aave: 1.23
+            aave: 1.23,
+            lido: 2.34
           }
           data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'] = {
             ...data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'],

@@ -82,3 +82,10 @@ export const RADIANT_V3_MARKETS: Record<number, Record<string, string>> = {
         "USDC": "0xA950974f64aA33f27F6C5e017eEE93BF7588ED07"
     }
 }
+
+export const LIDO_V3_MARKETS: Record<number, Record<string, string>> = {
+  // Ethereum
+  1: {
+    'ETH': '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84'
+  }
+}

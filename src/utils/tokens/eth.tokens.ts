@@ -99,10 +99,24 @@ export default [
     usdPrice: 1 // Value tracks underlying asset
   },
   {
+    token: 'AWETH' as const,
+    chain: 'ETH' as const,
+    address: '0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8', 
+    withdrawContract: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // Aave v3 withdraw contract
+    underlyingAsset: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH address
+    yieldBearingToken: true,
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5761.png',
+    chainId: 1, // mainnet
+    protocol: 'Aave',
+    decimals: 18,
+    maxDecimalsShow: 8,
+    usdPrice: 2500 // Value tracks underlying asset
+  },
+  {
     token: 'cUSDC' as const,
     chain: 'ETH' as const,
     underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    address: '0xc3d688B66703497DAA19211EEdff47f25384cdc3', // 
+    address: '0xc3d688B66703497DAA19211EEdff47f25384cdc3',
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x39AA39c021dfbaE8faC545936693aC917d5E7563/logo.png',
     chainId: 1, // mainnet
     protocol: 'Compound',
@@ -148,7 +162,6 @@ export default [
     token: 'vUSDC' as const,
     chain: 'ETH' as const,
     address: '0x17C07e0c232f2f80DfDbd7a95b942D893A4C5ACb', // Compound cUSDT v2 on Ethereum
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7958.png',
     chainId: 1, // mainnet
     withdrawContract: '0x17C07e0c232f2f80DfDbd7a95b942D893A4C5ACb', // compound usdt v3 withdraw contract
     underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDT
@@ -207,12 +220,13 @@ export default [
     token: 'stETH' as const,
     chain: 'ETH' as const,
     address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84', // Lido stETH on Ethereum
+    withdrawUri: 'https://stake.lido.fi/withdrawals/request',
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png',
     chainId: 1, // mainnet
     protocol: 'Lido',
     yieldBearingToken: true,
     decimals: 18,
-    maxDecimalsShow: 2,
+    maxDecimalsShow: 6,
     usdPrice: 2500 // Approximate value (will need to be updated dynamically in production)
   }
 ]

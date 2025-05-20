@@ -121,6 +121,17 @@ const protocolAbis = {
       stateMutability: 'nonpayable',
       type: 'function',
     }
+  ],
+    Lido: [
+    {
+      inputs: [
+        { name: 'referral', type: 'address' }
+      ],
+      name: 'submit',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'payable', 
+      type: 'function'
+    }
   ]
 } as const;
 
@@ -193,7 +204,17 @@ export default function useUnifiedYield({
           args: [tokenAddress, amountInWei, address, 0], // Radiant uses 'deposit' - similar to Aave
           chainId
         });
-      } else {
+      } else if(protocol === PROTOCOL_NAMES.LIDO) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Lido,
+          functionName: 'submit',
+          args: ['0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6'], // Use user's address as referral
+          value: amountInWei, // Send ETH value
+          chainId: 1
+        });
+      }
+       else {
         throw new Error(`Protocol ${protocol} not supported`);
       }
       

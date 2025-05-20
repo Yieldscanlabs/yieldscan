@@ -1,6 +1,4 @@
 import type { SupportedChain, SupportedToken, YieldOption } from '../types';
-import { MOCK_YIELD_OPTIONS } from './constants';
-
 export function formatNumber(number: number | string, decimals: number = 2): string {
   const num = typeof number === 'string' ? parseFloat(number) : number;
   return num.toLocaleString(undefined, {
@@ -14,17 +12,7 @@ export function calculateDailyYield(amount: number, apy: number): number {
   return (amount * (apy / 100)) / 365;
 }
 
-export function getYieldOptionsForAsset(token: SupportedToken, chain: SupportedChain): YieldOption[] {
-  return MOCK_YIELD_OPTIONS.filter(
-    option => option.token === token && option.chain === chain
-  );
-}
 
-export function getBestYieldOptionForAsset(token: SupportedToken, chain: SupportedChain): YieldOption | undefined {
-  const options = getYieldOptionsForAsset(token, chain);
-  // Return the option with highest APY
-  return options.sort((a, b) => b.apy - a.apy)[0];
-}
 
 export function getChainColor(chain: SupportedChain): string {
   switch (chain) {

@@ -10,6 +10,7 @@ import useUnifiedYield from '../hooks/useUnifiedYield';
 import WithdrawModal from './WithdrawModal';
 import { useChainId, useSwitchChain } from 'wagmi';
 import Protocol from './Protocol';
+import useWalletConnection from '../hooks/useWalletConnection';
 
 interface YieldCardProps {
   asset: Asset;
@@ -21,24 +22,27 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const chainId = useChainId();
   const { chains, switchChain } = useSwitchChain();
+  const { wallet } = useWalletConnection();
+  
+  // Check if the token is native (address is '0x')
+  const isNativeToken = asset.address === '0x';
   
   // Find token details and determine protocol info
   const token = tokens.find(
     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
   );
-  
   // Get protocol and APY data
-  let protocol = '';
+  let protocol = asset.protocol || '';
   let apy = 0;
   
   if (token) {
+    console.log(asset.protocol)
     const tokenApyData = asset.protocol && token.underlyingAsset ? apyData[token.chainId]?.[token.underlyingAsset.toLowerCase()] : null;
     if (tokenApyData && asset.protocol) {
       protocol = asset.protocol;
       const protocolKey = protocol.toLowerCase() as keyof typeof tokenApyData;
       apy = tokenApyData[protocolKey] || 0;
     } else {
-      console.log('helasdas')
       // Fallback detection
       if (token.token.startsWith('a')) {
         protocol = PROTOCOL_NAMES.AAVE;
@@ -56,6 +60,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
     isWithdrawing: isProcessingWithdrawal,
     isConfirming,
     isConfirmed,
+    withdrawETH
   } = useUnifiedYield({
     protocol: asset.protocol as any,
     contractAddress: (token?.withdrawContract as `0x${string}`) || '0x',
@@ -108,7 +113,17 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
     if (!amount || parseFloat(amount) <= 0) return false;
     
     try {
-      const success = await withdraw(amount);
+      let success = false;
+      
+      // For Aave protocol and native ETH, use the special withdrawETH function
+      if (isNativeToken && asset.protocol === PROTOCOL_NAMES.AAVE) {
+        // Use wallet.address as the recipient for the withdrawn ETH
+        success = await withdrawETH(amount, wallet.address as `0x${string}`);
+      } else {
+        // For all other tokens/protocols, use the regular withdraw function
+        success = await withdraw(amount);
+      }
+      
       return success;
     } catch (error) {
       console.error('Error during withdrawal:', error);
@@ -156,21 +171,33 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
         </div>
       </div>
       
-      <div className={styles.cardActionRow}>
-        <button className={styles.actionButton} onClick={openWithdrawModal}>
-          <span className={styles.buttonIcon}>↓</span> 
-          {chainId !== asset.chainId 
-            ? `Withdraw`
-            : 'Withdraw'
-          }
-        </button>
-        
-        {onOptimize && (
-          <button className={styles.actionButtonAccent} onClick={onOptimize}>
-            <span className={styles.buttonIcon}>↗</span> Optimize
-          </button>
-        )}
-      </div>
+<div className={styles.cardActionRow}>
+  {asset.withdrawUri ? (
+    <a 
+      href={asset.withdrawUri} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className={styles.actionButton}
+    >
+      <span className={styles.buttonIcon}>↗</span> 
+      Withdraw on {new URL(asset.withdrawUri).hostname.replace('www.', '')}
+    </a>
+  ) : (
+    <button className={styles.actionButton} onClick={openWithdrawModal}>
+      <span className={styles.buttonIcon}>↓</span> 
+      {chainId !== asset.chainId 
+        ? `Withdraw`
+        : 'Withdraw'
+      }
+    </button>
+  )}
+  
+  {onOptimize && (
+    <button className={styles.actionButtonAccent} onClick={onOptimize}>
+      <span className={styles.buttonIcon}>↗</span> Optimize
+    </button>
+  )}
+</div>
       
       <WithdrawModal
         isOpen={isWithdrawModalOpen}
@@ -184,6 +211,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
         isProcessing={isProcessingWithdrawal}
         isConfirming={isConfirming}
         isConfirmed={isConfirmed}
+        isNativeToken={isNativeToken}
       />
     </div>
   );

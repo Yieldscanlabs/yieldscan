@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
-import { formatNumber, getBestYieldOptionForAsset, calculateDailyYield } from '../utils/helpers';
 import AssetComponent from './AssetComponent';
 import NetworkSelector from './NetworkSelector';
 import styles from './AssetList.module.css';
 import { AVAILABLE_NETWORKS } from '../utils/markets';
+import { usePriceStore } from '../store/priceStore';
 
 interface AssetListProps {
   assets: Asset[];
@@ -25,7 +25,8 @@ const AssetList: React.FC<AssetListProps> = ({
     option?: YieldOption;
     yearlyYieldUsd: string;
   }>>({});
-  
+  const { getPrice } = usePriceStore();
+
   // Add state for network filtering
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
 
@@ -102,11 +103,12 @@ const AssetList: React.FC<AssetListProps> = ({
         {regularAssets.map((asset) => {
           const assetKey = `${asset.token}-${asset.chain}`;
           const yieldInfo = assetYields[assetKey];
-          
+          const price = getPrice(asset.token.toLowerCase());
           return (
             <AssetComponent
               key={assetKey}
               asset={asset}
+              price={price}
               yieldInfo={yieldInfo}
               isSelected={selectedAsset === asset}
               onSelect={handleSelectAsset}

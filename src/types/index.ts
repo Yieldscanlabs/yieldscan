@@ -8,6 +8,7 @@ export interface Asset {
   chain: SupportedChain;
   balance: string;
   decimals: number;
+  withdrawUri?: string;
   protocol?: string;
   withdrawContract?: string;
   chainId: number;

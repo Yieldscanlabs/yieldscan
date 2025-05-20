@@ -8,11 +8,13 @@ import { useAssetAutoRefresh, useAssetStore } from '../store/assetStore';
 import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
 import { useEffect, useMemo } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
+import { usePriceStore } from '../store/priceStore';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
   const { lastUpdated: apyLastUpdated, autoRefreshEnabled: apyAutoRefresh, setAutoRefresh: setApyAutoRefresh } = useApyStore();
-  const { lastUpdated: assetsLastUpdated, autoRefreshEnabled: assetsAutoRefresh, setAutoRefresh: setAssetsAutoRefresh, fetchAssets } = useAssetStore();
+  const {} = usePriceStore()
+  const { fetchAssets } = useAssetStore();
   const { 
     fetchEarnings, 
     getTotalEarnings, 
@@ -31,14 +33,11 @@ const Layout = () => {
   
   // Fetch assets and earnings when wallet connection changes
   useEffect(() => {
-    if (wallet.isConnected && wallet.address) {
-      // Manually trigger a fetch when wallet connects
-      // fetchAssets(wallet.address, true);
-      
-      // Also fetch earnings data
+    if (wallet.address) {
       fetchEarnings(wallet.address, true);
+      fetchAssets(wallet.address, true);
     }
-  }, [wallet.isConnected, wallet.address, fetchEarnings]);
+  }, [wallet.address]);
   
   useEffect(() => {
     if (apyLastUpdated) {
@@ -46,11 +45,6 @@ const Layout = () => {
     }
   }, [apyLastUpdated]);
 
-  useEffect(() => {
-    if (assetsLastUpdated && wallet.isConnected) {
-      // Any code to run when Assets data is refreshed
-    }
-  }, [assetsLastUpdated, wallet.isConnected]);
 
   useEffect(() => {
     if (earningsLastUpdated && wallet.isConnected) {

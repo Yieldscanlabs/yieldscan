@@ -24,7 +24,7 @@ function App() {
   const [depositAmount, setDepositAmount] = useState('0');
   const [depositDailyYield, setDepositDailyYield] = useState('0');
   const [depositYearlyYield, setDepositYearlyYield] = useState('0');
-  
+  console.log(assets)
   // Updated to handle bestApyData from asset selection
   const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
     setSelectedAsset(asset);

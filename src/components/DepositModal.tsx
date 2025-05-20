@@ -20,6 +20,8 @@ export const setupProtocol = (protocol: string, token: SupportedToken, chainId: 
       return VENUS_V3_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.RADIANT) {
       return RADIANT_V3_MARKETS[chainId][token] as `0x${string}`;
+    } else if(protocol === PROTOCOL_NAMES.LIDO) { 
+      return '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84'
     }
     return '0x'
 }
@@ -160,7 +162,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
       if (isNativeToken && protocol === PROTOCOL_NAMES.AAVE) {
         // For native ETH on Aave, we use the supplyETH function which calls depositETH on the gateway contract
         // onBehalfOf parameter is the user's address
-        success = await supplyETH(amount, wallet.address);
+        success = await supplyETH(amount, wallet.address as `0x${string}`);
       } else {
         // For all other tokens/protocols, use the regular supply function
         success = await supply(amount);

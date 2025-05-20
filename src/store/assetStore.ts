@@ -1,33 +1,32 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { formatUnits } from 'viem';
-import { readContracts, getBalance } from 'wagmi/actions';
-import { useEffect } from 'react'; // Missing import
+import { useEffect } from 'react';
+import Moralis from 'moralis';
 import type { Asset } from '../types';
 import tokens from '../utils/tokens';
-import { config } from '../main';
 
-// ERC20 ABI (minimal for balance checking)
-const erc20ABI = [
-  {
-    inputs: [{ name: 'owner', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'decimals',
-    outputs: [{ name: '', type: 'uint8' }],
-    stateMutability: 'view',
-    type: 'function',
-  }
-] as const;
-
-// Auto-refresh interval in milliseconds (30 seconds)
+// Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
 
+// Moralis API configuration
+const MORALIS_API_KEY = '2NXh9MrXsA7XnkJ5ucq3HK5uMBRCoxDwwAXMmgJpWjiDRNqWULsiTtyNHj9B1gm1';
+
+// Initialize Moralis SDK
+if (!Moralis.Core.isStarted) {
+  Moralis.start({
+    apiKey: MORALIS_API_KEY
+  });
+}
+
+// Map chain IDs to Moralis chain names
+const chainIdToMoralisChain = {
+  1: '0x1',       // Ethereum
+  56: '0x38',     // BSC
+  137: '0x89',    // Polygon
+  42161: '0xa4b1', // Arbitrum
+  8453: '0x2105'  // Base
+} as const;
 interface AssetStore {
   // State
   assets: Asset[];
@@ -67,66 +66,47 @@ export const useAssetStore = create<AssetStore>()(
         set({ error: null });
         
         try {
-          // Create contract calls for all non-native tokens
-          const contractCalls = tokens
-            .filter(token => token.address !== '0x')
-            .flatMap(token => [
-              {
-                address: token.address as `0x${string}`,
-                abi: erc20ABI,
-                functionName: 'balanceOf',
-                args: [walletAddress as `0x${string}`],
-                chainId: token.chainId as 1 | 42161 | 56 | 8453
-              }
-            ]);
-        
-          // Use readContracts action for ERC20 tokens
-          const data = await readContracts(config, {
-            contracts: contractCalls
-          });
-        
-          // Process the results
           const assets: Asset[] = [];
+          const supportedChainIds = [...new Set(tokens.map(t => t.chainId))];
           
-          // Process ERC20 tokens
-          let dataIndex = 0;
+          // Fetch token balances for each supported chain
+          const balancePromises = supportedChainIds.map(async (chainId) => {
+            const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
+            if (!moralisChain) return null;
+            
+            // Fetch ERC20 tokens
+            const tokenBalances = await Moralis.EvmApi.token.getWalletTokenBalances({
+              address: walletAddress,
+              chain: moralisChain
+            });
+            
+            // Fetch native token balance
+            const nativeBalance = await Moralis.EvmApi.balance.getNativeBalance({
+              address: walletAddress,
+              chain: moralisChain
+            });
+            
+            return {
+              chainId,
+              tokenBalances: tokenBalances.toJSON(),
+              nativeBalance: nativeBalance.toJSON()
+            };
+          });
           
-          // Process all tokens
+          // Wait for all balance requests to complete
+          const balanceResults = await Promise.all(balancePromises);
+          
+          // Process all tokens and find matches with balances from Moralis
           for (const token of tokens) {
+            const chainResult = balanceResults.find(result => result?.chainId === token.chainId);
+            
+            if (!chainResult) continue;
+            
             if (token.address === '0x') {
               // Handle native token
-              try {
-                const balance = await getBalance(config, {
-                  address: walletAddress as `0x${string}`,
-                  chainId: token.chainId as 1 | 42161 | 56 | 8453
-                });
-                
-                if (balance.value > 0n) {
-                  const balanceStr = formatUnits(balance.value, token.decimals);
-                  const balanceUsd = (parseFloat(balanceStr) * token.usdPrice).toString();
-                  
-                  assets.push({
-                    token: token.token,
-                    address: token.address,
-                    chain: token.chain,
-                    maxDecimalsShow: token.maxDecimalsShow,
-                    protocol: token.protocol,
-                    withdrawContract: token.withdrawContract,
-                    balance: balanceStr,
-                    yieldBearingToken: Boolean(token.yieldBearingToken),
-                    chainId: token.chainId,
-                    decimals: token.decimals,
-                    balanceUsd,
-                    icon: token.icon
-                  });
-                }
-              } catch (error) {
-                console.error(`Error fetching native token balance for ${token.token}:`, error);
-              }
-            } else if (data && data[dataIndex]?.result) {
-              const rawBalance = BigInt(data[dataIndex]?.result || 0);
-              if (rawBalance > 0n) {
-                const balance = formatUnits(rawBalance, token.decimals);
+              const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
+              if (nativeBalanceRaw > 0n) {
+                const balance = formatUnits(nativeBalanceRaw, token.decimals);
                 const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
                 
                 assets.push({
@@ -144,7 +124,32 @@ export const useAssetStore = create<AssetStore>()(
                   icon: token.icon
                 });
               }
-              dataIndex++;
+            } else {
+              // Handle ERC20 tokens
+              const tokenBalance = chainResult.tokenBalances.find(
+                (tb: any) => tb.token_address.toLowerCase() === token.address.toLowerCase()
+              );
+              
+              if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
+                const balance = formatUnits(BigInt(tokenBalance.balance), token.decimals);
+                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+                
+                assets.push({
+                  token: token.token,
+                  address: token.address,
+                  chain: token.chain,
+                  maxDecimalsShow: token.maxDecimalsShow,
+                  protocol: token.protocol,
+                  withdrawContract: token.withdrawContract,
+                  balance,
+                  withdrawUri: token?.withdrawUri,
+                  yieldBearingToken: Boolean(token.yieldBearingToken),
+                  chainId: token.chainId,
+                  decimals: token.decimals,
+                  balanceUsd,
+                  icon: token.icon
+                });
+              }
             }
           }
           
@@ -154,8 +159,9 @@ export const useAssetStore = create<AssetStore>()(
             lastUpdated: Date.now()
           });
         } catch (error) {
+          console.error('Error fetching assets from Moralis:', error);
           set({ 
-            error: error instanceof Error ? error.message : 'Unknown error fetching assets',
+            error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
             isLoading: false
           });
         }

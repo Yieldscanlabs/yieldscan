@@ -18,6 +18,7 @@ interface WithdrawModalProps {
   isProcessing: boolean;
   isConfirming: boolean;
   isConfirmed: boolean;
+  isNativeToken?: boolean;
 }
 
 const WithdrawModal: React.FC<WithdrawModalProps> = ({
@@ -31,7 +32,8 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
   onWithdraw,
   isProcessing,
   isConfirming,
-  isConfirmed
+  isConfirmed,
+  isNativeToken = false
 }) => {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [percentage, setPercentage] = useState(0);
@@ -130,6 +132,7 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
                   <span className={styles.detailValue}>
                     <img src={asset.icon} alt={asset.token} className={styles.assetIcon} />
                     {asset.token}
+                    {isNativeToken && <span className={styles.nativeBadge}>(Native)</span>}
                   </span>
                 </div>
                 <div className={styles.detailRow}>
@@ -208,6 +211,7 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
               >
                 <span className={styles.buttonIcon}>↓</span>
                 Withdraw {asset.token}
+                {isNativeToken ? ' (Native)' : ''}
               </button>
             </>
           )}

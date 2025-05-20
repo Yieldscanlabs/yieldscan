@@ -6,6 +6,7 @@ import radiant from '../assets/protocols/radiant.png'
 import venus from '../assets/protocols/venus.svg'
 import morphoblue from '../assets/protocols/morphoblue.svg'
 import compound from '../assets/protocols/compound.svg'
+import lido from '../assets/protocols/lido.svg'
 
 interface ProtocolProps {
   name: string | null;
@@ -24,7 +25,7 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Radiant': radiant,
   'Curve': 'https://cryptologos.cc/logos/curve-dao-token-crv-logo.png',
   'Yearn': 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png',
-  'Lido': 'https://cryptologos.cc/logos/lido-dao-ldo-logo.png',
+  'Lido': lido,
   // Add more protocols as needed
 };
 
@@ -51,7 +52,6 @@ const Protocol: React.FC<ProtocolProps> = ({
   const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name}` : null;
   const tooltipId = name ? `protocol-tooltip-${name.toLowerCase()}` : 'protocol-tooltip';
-  
   return (
     <>
       <div 

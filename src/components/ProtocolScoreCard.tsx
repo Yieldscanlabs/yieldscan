@@ -12,8 +12,13 @@ interface ProtocolScore {
 export const protocolScores: ProtocolScore[] = [
   { 
     name: 'Aave', 
-    trustScore: 95, 
-    liquidity: 95
+    trustScore: 96, 
+    liquidity: 98
+  },
+    { 
+    name: 'Lido', 
+    trustScore: 93, 
+    liquidity: 97
   },
       { 
     name: 'Morpho Blue', 
