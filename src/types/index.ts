@@ -1,5 +1,3 @@
-import type { withdraw } from "viem/zksync";
-
 export type SupportedChain = 'ETH' | 'BSC' | 'ARBITRUM_ONE';
 
 export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH' | 'aUSDC' | 'aUSDT v2' | 'AUSDT' | 'cUSDC' | 'cUSDT';

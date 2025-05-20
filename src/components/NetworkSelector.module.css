@@ -15,7 +15,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
+.networkIconImage {
+  width: 30px;
+  height: auto;
+}
 .networkOption:hover {
   background-color: var(--surface-light);
   box-shadow: var(--shadow-md);

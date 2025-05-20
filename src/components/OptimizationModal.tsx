@@ -9,16 +9,10 @@ import useUnifiedYield from '../hooks/useUnifiedYield';
 import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import tokens from '../utils/tokens';
+import { setupProtocol } from './DepositModal';
 
 // Helper to get the protocol contract address
-const getProtocolAddress = (protocol: string, token: SupportedToken, chainId: number): `0x${string}` => {
-  if(protocol === PROTOCOL_NAMES.COMPOUND) {
-    return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;
-  } else if(protocol === PROTOCOL_NAMES.AAVE) {
-    return AAVE_V3_MARKETS[chainId][token] as `0x${string}`;
-  }
-  return '0x' as `0x${string}`;
-};
+
 
 // Helper to find the underlying token
 const getUnderlyingToken = (asset: Asset) => {
@@ -65,7 +59,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   const underlyingToken = getUnderlyingToken(asset);
   // Protocol addresses
   const betterProtocolAddress = underlyingToken ? 
-    getProtocolAddress(betterProtocol, underlyingToken.token as SupportedToken, asset.chainId) : 
+    setupProtocol(betterProtocol, underlyingToken.token as SupportedToken, asset.chainId) : 
     '0x' as `0x${string}`;
   
   // Initialize yield hooks for both protocols
@@ -143,6 +137,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   useEffect(() => {
     if (isConfirmedSupply && step === 3) {
       // Complete the process
+      setIsLoading(false);
       setTimeout(() => {
         onComplete(true);
       }, 1500);

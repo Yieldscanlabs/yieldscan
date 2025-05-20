@@ -50,7 +50,7 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
               <span className={styles['asset-chain']}>{CHAIN_NAMES[asset.chain]}</span>
             </div>
             <div className={styles['asset-balance']}>
-              {formatNumber(asset.balance)} <span className={styles['asset-balance-usd']}>(${formatNumber(asset.balanceUsd)})</span>
+              {formatNumber(asset.balance, asset.maxDecimalsShow)} <span className={styles['asset-balance-usd']}>(${formatNumber(asset.balanceUsd)})</span>
             </div>
           </div>
         </div>

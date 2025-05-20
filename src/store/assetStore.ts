@@ -5,8 +5,6 @@ import { readContracts } from 'wagmi/actions';
 import { useEffect } from 'react'; // Missing import
 import type { Asset } from '../types';
 import tokens from '../utils/tokens';
-import { mainnet, arbitrum } from 'wagmi/chains'
-import { createConfig, useReadContracts } from 'wagmi';
 import { config } from '../main';
 
 // ERC20 ABI (minimal for balance checking)

@@ -12,7 +12,7 @@ import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
 import { RADIANT_V3_MARKETS, VENUS_V3_MARKETS } from '../utils/markets';
 
-const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
+export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.AAVE) {

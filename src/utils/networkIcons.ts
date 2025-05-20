@@ -1,5 +1,6 @@
 import ethereumIcon from '../assets/networks/ethereum.svg';
 import arbitrumIcon from '../assets/networks/arbitrum.svg';
+import bscIcon from '../assets/networks/bsc.png';
 import type { SupportedChain } from '../types';
 // import polygonIcon from '../assets/networks/polygon.svg';
 // import bscIcon from '../assets/networks/bsc.svg';
@@ -18,8 +19,8 @@ export function getNetworkIcon(chainId: number | SupportedChain): string {
       return arbitrumIcon;
     // case 137:
     //   return polygonIcon;
-    // case 56:
-    //   return bscIcon;
+    case 56:
+      return bscIcon;
     // case 10:
     //   return optimismIcon;
     default:
