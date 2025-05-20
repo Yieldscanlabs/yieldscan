@@ -74,7 +74,7 @@ export const useAssetStore = create<AssetStore>()(
               abi: erc20ABI,
               functionName: 'balanceOf',
               args: [walletAddress as `0x${string}`],
-              chainId: token.chainId as 1 | 42161 | 56  // Restrict to supported chain IDs
+              chainId: token.chainId as 1 | 42161 | 56 | 8453  // Restrict to supported chain IDs
             }
           ]);
         

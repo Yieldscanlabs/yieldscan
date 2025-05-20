@@ -2,8 +2,9 @@ import type { Asset, YieldOption } from '../types';
 
 export const CHAIN_NAMES = {
   ETH: 'Ethereum',
-  BSC: 'BSC',
-  ARBITRUM_ONE: 'Arbitrum One'
+  BSC: 'BNB Chain',
+  ARBITRUM_ONE: 'Arbitrum One',
+  BASE: 'Base',
 };
 
 export const TOKEN_NAMES = {

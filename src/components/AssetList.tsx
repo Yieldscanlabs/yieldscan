@@ -4,6 +4,7 @@ import { formatNumber, getBestYieldOptionForAsset, calculateDailyYield } from '.
 import AssetComponent from './AssetComponent';
 import NetworkSelector from './NetworkSelector';
 import styles from './AssetList.module.css';
+import { AVAILABLE_NETWORKS } from '../utils/markets';
 
 interface AssetListProps {
   assets: Asset[];
@@ -90,7 +91,7 @@ const AssetList: React.FC<AssetListProps> = ({
       <div className={styles['network-filter']}>
         <NetworkSelector
           selectedNetwork={selectedNetwork}
-          networks={[1, 42161]} // Example chain IDs
+          networks={AVAILABLE_NETWORKS} // Example chain IDs
           //@ts-ignore
           onChange={setSelectedNetwork}
           className={styles.networkSelector}

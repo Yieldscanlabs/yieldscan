@@ -1,6 +1,7 @@
 import { withdraw } from "viem/zksync";
 import ethTokens from "./eth.tokens";
 import bnbTokens from "./bnb.tokens";
+import baseTokens from "./base.tokens";
 
 const tokens = [
   ...ethTokens,
@@ -46,7 +47,8 @@ const tokens = [
     decimals: 6, // Note: cTokens typically have 8 decimals
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
-  ...bnbTokens
+  ...bnbTokens,
+  // ...baseTokens
 ];
 
 export default tokens

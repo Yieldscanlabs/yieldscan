@@ -5,7 +5,7 @@ const CHAIN_NAMES: Record<number, string> = {
   137: 'Polygon',
   42161: 'Arbitrum',
   43114: 'Avalanche',
-  56: 'BSC',
+  56: 'BNB Chain',
   // Add more chains as needed
 };
 

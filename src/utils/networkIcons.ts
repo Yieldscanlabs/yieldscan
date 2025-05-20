@@ -65,7 +65,7 @@ export function getNetworkName(chainId: number | SupportedChain): string {
     case 137:
       return 'Polygon';
     case 56:
-      return 'BSC';
+      return 'BNB Chain';
     case 10:
       return 'Optimism';
     default:

@@ -4,6 +4,7 @@ import type { Asset } from '../types';
 import styles from './WithdrawModal.module.css';
 import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
+import Protocol from './Protocol';
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -134,12 +135,12 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Available Balance</span>
                   <span className={styles.detailValue}>
-                    {formatNumber(balance, maxDecimals)} {asset.token}
+                    {formatNumber(balance, maxDecimals)}
                   </span>
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Protocol</span>
-                  <span className={styles.detailValue}>{protocol}</span>
+                  <Protocol name={protocol} className={styles.detailValue} />
                 </div>
               </div>
 

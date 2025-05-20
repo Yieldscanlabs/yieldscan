@@ -104,6 +104,20 @@ export default [
     decimals: 8, // 
     usdPrice: 1 //
   },
+      {
+    token: 'Venus USDC' as const,
+    chain: 'BSC' as const,
+    address: '0xecA88125a5ADbe82614ffC12D0DB554E2e2867C8', // C
+    icon: 'https://static.cx.metamask.io/api/v1/tokenIcons/56/0xeca88125a5adbe82614ffc12d0db554e2e2867c8.png',
+    chainId: 56, // mainnet
+    withdrawContract: '0xecA88125a5ADbe82614ffC12D0DB554E2e2867C8', // 
+    underlyingAsset: BNB_USDC, // 
+    protocol: 'Venus',
+    yieldBearingToken: true,
+    maxDecimalsShow: 2,
+    decimals: 8, // 
+    usdPrice: 1 //
+  },
   {
     token: 'Venus DAI',
     chain: 'BSC' as const,
@@ -117,5 +131,19 @@ export default [
     maxDecimalsShow: 2,
     decimals: 18, //
     usdPrice: 1 // Stablecoin pegged to USD
+  },
+  {
+    token: 'Venus wBNB',
+    chain: 'BSC' as const,
+    address: '0xe10E80B7FD3a29fE46E16C30CC8F4dd938B742e2', // C
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2710.png',
+    chainId: 56, // mainnet
+    withdrawContract: '0xe10E80B7FD3a29fE46E16C30CC8F4dd938B742e2', //
+    underlyingAsset: BNB_WBNB, //
+    protocol: 'Venus',
+    yieldBearingToken: true,
+    maxDecimalsShow: 6,
+    decimals: 18, //
+    usdPrice: 650 // Stablecoin pegged to USD
   }
 ]

@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './NetworkSelector.module.css';
 import { getNetworkIcon, getNetworkName, getNetworkIconDataUrl } from '../utils/networkIcons';
 import type { SupportedChain } from '../types';
+import { AVAILABLE_NETWORKS } from '../utils/markets';
 
 export interface NetworkOption {
   id: number;
@@ -11,14 +12,12 @@ export interface NetworkOption {
 
 interface NetworkSelectorProps {
   selectedNetwork: number | 'all';
-  networks: number[] | SupportedChain[];
   onChange: (chainId: number | SupportedChain | 'all') => void;
   className?: string;
 }
 
 const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   selectedNetwork,
-  networks,
   onChange,
   className = ''
 }) => {
@@ -77,7 +76,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
         <span className={styles.networkName}>All Networks</span>
       </div>
       
-      {networks.map(chainId => (
+      {AVAILABLE_NETWORKS.map(chainId => (
         <div 
           key={chainId}
           className={`${styles.networkOption} ${selectedNetwork === chainId ? styles.selected : ''}`}

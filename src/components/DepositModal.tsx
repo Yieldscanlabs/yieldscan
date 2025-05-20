@@ -11,6 +11,7 @@ import { PROTOCOL_NAMES } from '../utils/constants';
 import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
 import { RADIANT_V3_MARKETS, VENUS_V3_MARKETS } from '../utils/markets';
+import Protocol from './Protocol';
 
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
@@ -182,7 +183,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Protocol</span>
-              <span className={styles.detailValue}>{protocol}</span>
+              <Protocol name={protocol} className={styles.detailValue} />
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Expected Yield</span>

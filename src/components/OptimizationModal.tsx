@@ -10,6 +10,7 @@ import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import tokens from '../utils/tokens';
 import { setupProtocol } from './DepositModal';
+import Protocol from './Protocol';
 
 // Helper to get the protocol contract address
 
@@ -258,13 +259,13 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>From</span>
               <span className={styles.detailValue}>
-                {currentProtocol} <span className={styles.subDetail}>({currentApy.toFixed(2)}% APY)</span>
+                <Protocol name={currentProtocol} /> <span className={styles.subDetail}>({currentApy.toFixed(2)}% APY)</span>
               </span>
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>To</span>
               <span className={styles.detailValue}>
-                {betterProtocol} <span className={styles.subDetail}>({betterApy.toFixed(2)}% APY)</span>
+                <Protocol name={betterProtocol}/> <span className={styles.subDetail}>({betterApy.toFixed(2)}% APY)</span>
               </span>
             </div>
             <div className={styles.detailRow}>
