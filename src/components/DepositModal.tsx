@@ -3,14 +3,12 @@ import styles from './DepositModal.module.css';
 import { formatNumber } from '../utils/helpers';
 import type { Asset, SupportedToken } from '../types';
 import useERC20 from '../hooks/useERC20';
-import { COMPOUND_V3_MARKETS } from '../hooks/useCompoundApy';
 import type {SupportedProtocol} from '../hooks/useUnifiedYield';
 import useUnifiedYield from '../hooks/useUnifiedYield';
-import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
-import { RADIANT_V3_MARKETS, VENUS_V3_MARKETS } from '../utils/markets';
+import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS } from '../utils/markets';
 import Protocol from './Protocol';
 
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
@@ -49,13 +47,17 @@ const DepositModal: React.FC<DepositModalProps> = ({
   dailyYieldUsd,
   yearlyYieldUsd
 }) => {
-  const [step, setStep] = useState(1); // Start directly at step 1 (approval)
+  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const { wallet }  = useWalletConnection()
   const [error, setError] = useState<string | null>(null);
   const { fetchAssets } = useAssetStore()
+  
+  // Check if the token is native (address is '0x')
+  const isNativeToken = asset.address === '0x';
+  
   // Protocol contract address - in a real app this would come from a config or lookup
-  const protocolAddress: `0x${string}` = setupProtocol(protocol, asset.token, asset.chainId);
+  const protocolAddress: `0x${string}` = setupProtocol(protocol, asset.token as SupportedToken, asset.chainId);
   
   // Initialize ERC20 hook for approval checking
   const { 
@@ -70,20 +72,38 @@ const DepositModal: React.FC<DepositModalProps> = ({
     tokenDecimals: asset.decimals
   });
 
-  const { supply, isSupplying, isConfirmed } = useUnifiedYield({
-        protocol: protocol as SupportedProtocol, // or 'Aave'
-        contractAddress: protocolAddress as `0x${string}` || '0x', // Protocol contract address
-        tokenAddress: asset.address as `0x${string}`, // Token address
-        tokenDecimals: asset.decimals, // optional, defaults to 18
-        chainId: asset.chainId // optional 
+  const { 
+    supply, 
+    isSupplying, 
+    isConfirmed,
+    supplyETH,
+    withdrawETH
+  } = useUnifiedYield({
+        protocol: protocol as SupportedProtocol,
+        contractAddress: protocolAddress as `0x${string}` || '0x',
+        tokenAddress: asset.address as `0x${string}`,
+        tokenDecimals: asset.decimals,
+        chainId: asset.chainId
     });
 
   // Check if we need approval or already have enough allowance
   useEffect(() => {
     if (isOpen) {
-      setStep(1);
+      // For native tokens, skip to deposit step
+      if (isNativeToken) {
+        setStep(1); // Only one step needed for native tokens
+      } else {
+        setStep(1); // Start at approval step for ERC20 tokens
+      }
       setError(null);
+      
+      if (isNativeToken) {
+        // Skip approval for native tokens
+        handleSupply();
+      } else {
+        // Check approval for ERC20 tokens
         handleApprove();
+      }
     }
   }, [isOpen, hasEnoughAllowance]);
   
@@ -94,6 +114,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
   
   // Handle the approval
   const handleApprove = async () => {
+    if (isNativeToken) {
+      // Skip approval for native tokens
+      handleSupply();
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     
@@ -119,13 +145,31 @@ const DepositModal: React.FC<DepositModalProps> = ({
   };
 
   const handleSupply = async () => {
-    setStep(2)
+    // For ERC20 tokens, move to step 2
+    // For native tokens, stay at step 1 (only step)
+    if (!isNativeToken) {
+      setStep(2);
+    }
+    
     setIsLoading(true);
     setError(null);
     try {
-      const success = await supply(amount);
+      let success = false;
+      
+      // For Aave protocol and native ETH, use the special depositETH function
+      if (isNativeToken && protocol === PROTOCOL_NAMES.AAVE) {
+        // For native ETH on Aave, we use the supplyETH function which calls depositETH on the gateway contract
+        // onBehalfOf parameter is the user's address
+        success = await supplyETH(amount, wallet.address);
+      } else {
+        // For all other tokens/protocols, use the regular supply function
+        success = await supply(amount);
+      }
+      
       if (success) {
-        setStep(3);
+        // For ERC20 tokens, move to step 3
+        // For native tokens, move to step 2 (complete)
+        setStep(isNativeToken ? 2 : 3);
         // Move to complete after a brief delay
         fetchAssets(wallet.address, false);
         setTimeout(() => {
@@ -145,7 +189,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
   // Handle retry if approval fails
   const handleRetry = () => {
     setError(null);
-    handleApprove();
+    if (isNativeToken) {
+      handleSupply();
+    } else {
+      handleApprove();
+    }
   };
 
   if (!isOpen) return null;
@@ -188,40 +236,49 @@ const DepositModal: React.FC<DepositModalProps> = ({
           
           <div className={styles.progressContainer}>
             <div className={styles.verticalProgressSteps}>
-              <div className={`${styles.verticalProgressStep} ${step >= 1 ? styles.active : ''} ${step > 1 ? styles.completed : ''}`}>
-                <div className={styles.stepDot}>
-                  {step > 1 ? '✓' : '1'}
-                </div>
-                <div className={styles.stepContent}>
-                  <div className={styles.stepLabel}>Approval</div>
-                  <div className={styles.stepDescription}>
-                    {step === 1 && isLoading ? (
-                      <>Approving {asset.token} to be used by {protocol}...</>
-                    ) : step === 1 && error ? (
-                      <span className={styles.errorText}>Approval failed. Please retry.</span>
-                    ) : step > 1 ? (
-                      <span className={styles.successText}>Approval successful</span>
-                    ) : null}
+              {!isNativeToken && (
+                <>
+                  <div className={`${styles.verticalProgressStep} ${step >= 1 ? styles.active : ''} ${step > 1 ? styles.completed : ''}`}>
+                    <div className={styles.stepDot}>
+                      {step > 1 ? '✓' : '1'}
+                    </div>
+                    <div className={styles.stepContent}>
+                      <div className={styles.stepLabel}>Approval</div>
+                      <div className={styles.stepDescription}>
+                        {step === 1 && isLoading ? (
+                          <>Approving {asset.token} to be used by {protocol}...</>
+                        ) : step === 1 && error ? (
+                          <span className={styles.errorText}>Approval failed. Please retry.</span>
+                        ) : step > 1 ? (
+                          <span className={styles.successText}>Approval successful</span>
+                        ) : null}
+                      </div>
+                      {step === 1 && isLoading && <div className={styles.stepSpinner}></div>}
+                    </div>
                   </div>
-                  {step === 1 && isLoading && <div className={styles.stepSpinner}></div>}
-                </div>
-              </div>
+                  
+                  <div className={styles.verticalProgressLine}></div>
+                </>
+              )}
               
-              <div className={styles.verticalProgressLine}></div>
-              
-              <div className={`${styles.verticalProgressStep} ${step >= 2 ? styles.active : ''}`}>
+              <div className={`${styles.verticalProgressStep} ${step >= (isNativeToken ? 1 : 2) ? styles.active : ''}`}>
                 <div className={styles.stepDot}>
-                  {step > 2 ? '✓' : '2'}
+                  {step > (isNativeToken ? 1 : 2) ? '✓' : isNativeToken ? '1' : '2'}
                 </div>
                 <div className={styles.stepContent}>
                   <div className={styles.stepLabel}>Deposit</div>
                   <div className={styles.stepDescription}>
-                    {step === 2 ? (
-                      <>Ready to deposit {formatNumber(parseFloat(amount), 4)} {asset.token} to {protocol}</>
+                    {(isNativeToken && step === 1) || (!isNativeToken && step === 2) ? (
+                      isLoading ? (
+                        <>Depositing {formatNumber(parseFloat(amount), 4)} {asset.token} to {protocol}...</>
+                      ) : (
+                        <>Ready to deposit {formatNumber(parseFloat(amount), 4)} {asset.token} to {protocol}</>
+                      )
                     ) : (
-                      <>Waiting for approval...</>
+                      !isNativeToken && <>Waiting for approval...</>
                     )}
                   </div>
+                  {((isNativeToken && step === 1) || (!isNativeToken && step === 2)) && isLoading && <div className={styles.stepSpinner}></div>}
                 </div>
               </div>
             </div>

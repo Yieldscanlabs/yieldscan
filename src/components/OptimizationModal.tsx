@@ -3,11 +3,8 @@ import styles from './DepositModal.module.css'; // Reuse the deposit modal style
 import { formatNumber } from '../utils/helpers';
 import type { Asset, SupportedToken } from '../types';
 import useERC20 from '../hooks/useERC20';
-import { COMPOUND_V3_MARKETS } from '../hooks/useCompoundApy';
 import type { SupportedProtocol } from '../hooks/useUnifiedYield';
 import useUnifiedYield from '../hooks/useUnifiedYield';
-import { AAVE_V3_MARKETS } from '../hooks/useAaveYield';
-import { PROTOCOL_NAMES } from '../utils/constants';
 import tokens from '../utils/tokens';
 import { setupProtocol } from './DepositModal';
 import Protocol from './Protocol';

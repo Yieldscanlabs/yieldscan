@@ -31,6 +31,28 @@ const protocolAbis = {
       outputs: [{ name: '', type: 'uint256' }],
       stateMutability: 'nonpayable',
       type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'target', type: 'address' },
+        { name: 'onBehalfOf', type: 'address' },
+        { name: 'referralCode', type: 'uint16' },
+      ],
+      name: 'depositETH',
+      outputs: [],
+      stateMutability: 'payable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'target', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'to', type: 'address' },
+      ],
+      name: 'withdrawETH',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
     }
   ],
   Compound: [
@@ -251,6 +273,59 @@ export default function useUnifiedYield({
     
     // Functions
     supply,
-    withdraw
+    withdraw,
+    
+    // Native ETH support for Aave
+    supplyETH: useCallback(async (amount: string, onBehalfOf: Address): Promise<boolean> => {
+      if (!contractAddress || protocol !== PROTOCOL_NAMES.AAVE) return false;
+      
+      try {
+        setIsSupplying(true);
+        const amountInWei = parseUnits(amount, tokenDecimals);
+        
+        // Send ETH value with the transaction
+        const hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Aave,
+          functionName: 'depositETH',
+          args: ['0x0000000000000000000000000000000000000001', onBehalfOf, 0], // Use placeholder address for target
+          value: amountInWei, // Send ETH value
+          chainId
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (error) {
+        console.error('Error supplying ETH to Aave:', error);
+        return false;
+      } finally {
+        setIsSupplying(false);
+      }
+    }, [address, contractAddress, protocol, tokenDecimals, writeContractAsync, chainId]),
+    
+    withdrawETH: useCallback(async (amount: string, to: Address): Promise<boolean> => {
+      if (!contractAddress || protocol !== PROTOCOL_NAMES.AAVE) return false;
+      
+      try {
+        setIsWithdrawing(true);
+        const amountInWei = parseUnits(amount, tokenDecimals);
+        
+        const hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Aave,
+          functionName: 'withdrawETH',
+          args: ['0x0000000000000000000000000000000000000001', amountInWei, to], // Use placeholder address for target
+          chainId
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (error) {
+        console.error('Error withdrawing ETH from Aave:', error);
+        return false;
+      } finally {
+        setIsWithdrawing(false);
+      }
+    }, [address, contractAddress, protocol, tokenDecimals, writeContractAsync, chainId])
   };
 }
