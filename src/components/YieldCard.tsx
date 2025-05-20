@@ -38,6 +38,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
       const protocolKey = protocol.toLowerCase() as keyof typeof tokenApyData;
       apy = tokenApyData[protocolKey] || 0;
     } else {
+      console.log('helasdas')
       // Fallback detection
       if (token.token.startsWith('a')) {
         protocol = PROTOCOL_NAMES.AAVE;

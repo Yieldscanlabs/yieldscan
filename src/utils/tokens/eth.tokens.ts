@@ -1,5 +1,16 @@
 export default [
   {
+    token: 'ETH' as const,
+    chain: 'ETH' as const,
+    address: '0x',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+    chainId: 1, // mainnet
+    yieldBearingToken: false,
+    decimals: 18,
+    maxDecimalsShow: 8,
+    usdPrice: 2500 // Approximate value (will need to be updated dynamically in production)
+  },
+  {
     token: 'USDC' as const,
     chain: 'ETH' as const,
     address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDC
@@ -192,4 +203,16 @@ export default [
     decimals: 6, // Note: cTokens typically have 8 decimals
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
+  {
+    token: 'stETH' as const,
+    chain: 'ETH' as const,
+    address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84', // Lido stETH on Ethereum
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png',
+    chainId: 1, // mainnet
+    protocol: 'Lido',
+    yieldBearingToken: true,
+    decimals: 18,
+    maxDecimalsShow: 2,
+    usdPrice: 2500 // Approximate value (will need to be updated dynamically in production)
+  }
 ]

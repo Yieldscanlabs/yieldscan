@@ -3,7 +3,7 @@ export type SupportedChain = 'ETH' | 'BSC' | 'ARBITRUM_ONE' | 'BASE';
 export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH' | 'aUSDC' | 'aUSDT v2' | 'AUSDT' | 'cUSDC' | 'cUSDT';
 
 export interface Asset {
-  token: SupportedToken;
+  token: string;
   address: string;
   chain: SupportedChain;
   balance: string;

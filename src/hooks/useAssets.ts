@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useReadContracts, useAccount } from 'wagmi';
+import { useReadContracts, useAccount, useBalance } from 'wagmi';
 import { formatUnits } from 'viem';
 import type { Asset } from '../types';
 import tokens from '../utils/tokens';
@@ -28,9 +28,16 @@ const erc20ABI = [
 export default function useAssets(walletAddress: string) {
   const { address: connectedAddress } = useAccount();
   const userAddress = walletAddress || connectedAddress || '0x';
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   
-  // Create contract calls for all tokens
-  const contractCalls = tokens.flatMap(token => [
+  // Separate tokens into native and ERC20 tokens
+  const nativeTokens = tokens.filter(token => token.address === '0x');
+  const erc20Tokens = tokens.filter(token => token.address !== '0x');
+  
+  // Create contract calls for ERC20 tokens
+  const contractCalls = erc20Tokens.flatMap(token => [
     {
       address: token.address as `0x${string}`,
       abi: erc20ABI,
@@ -40,22 +47,66 @@ export default function useAssets(walletAddress: string) {
     }
   ]);
   
-  const { data, isLoading, isError } = useReadContracts({
+  const { data: erc20Data, isLoading: erc20Loading, isError: erc20Error } = useReadContracts({
     contracts: contractCalls
   });
   
-  const assets: Asset[] = [];
+  // Create separate balance requests for each native token
+  const nativeBalanceResults = nativeTokens.map(token => {
+    const { data, isLoading, isError } = useBalance({
+      address: userAddress as `0x${string}`,
+      chainId: token.chainId,
+    });
+    
+    return { data, isLoading, isError, token };
+  });
   
-  // Process the results if data is available
-  if (data && !isLoading) {
-    tokens.forEach((token, index) => {
-      if (data[index]?.result) {
-        const rawBalance = BigInt(data[index]?.result || 0);
-        if (rawBalance > 0n) {
-          const balance = formatUnits(rawBalance, token.decimals);
+  useEffect(() => {
+    const areNativeBalancesLoading = nativeBalanceResults.some(result => result.isLoading);
+    const hasNativeBalanceError = nativeBalanceResults.some(result => result.isError);
+    
+    setIsLoading(erc20Loading || areNativeBalancesLoading);
+    setIsError(erc20Error || hasNativeBalanceError);
+    
+    if (!isLoading && !isError) {
+      const newAssets: Asset[] = [];
+      
+      // Process ERC20 tokens
+      if (erc20Data) {
+        erc20Tokens.forEach((token, index) => {
+          if (erc20Data[index]?.result) {
+            const rawBalance = BigInt(erc20Data[index]?.result || 0n);
+            if (rawBalance > 0n) {
+              const balance = formatUnits(rawBalance, token.decimals);
+              const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+              
+              newAssets.push({
+                token: token.token,
+                address: token.address,
+                chain: token.chain,
+                maxDecimalsShow: token.maxDecimalsShow,
+                protocol: token.protocol,
+                withdrawContract: token.withdrawContract,
+                balance,
+                yieldBearingToken: token.yieldBearingToken ? true : false,
+                chainId: token.chainId,
+                decimals: token.decimals,
+                balanceUsd,
+                icon: token.icon
+              });
+            }
+          }
+        });
+      }
+      
+      // Process native tokens
+      nativeBalanceResults.forEach(result => {
+        if (result.data && result.data.value > 0n) {
+          const token = result.token;
+          const balance = result.data.formatted;
           const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
           
-          assets.push({
+          newAssets.push({
             token: token.token,
             address: token.address,
             chain: token.chain,
@@ -63,16 +114,18 @@ export default function useAssets(walletAddress: string) {
             protocol: token.protocol,
             withdrawContract: token.withdrawContract,
             balance,
-            yieldBearingToken: token.yieldBearingToken ? true : false,
+            yieldBearingToken: false,
             chainId: token.chainId,
             decimals: token.decimals,
             balanceUsd,
             icon: token.icon
           });
         }
-      }
-    });
-  }
+      });
+      
+      setAssets(newAssets);
+    }
+  }, [erc20Data, erc20Loading, erc20Error, nativeBalanceResults, userAddress]);
   
   return { 
     assets,

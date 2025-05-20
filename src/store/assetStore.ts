@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { formatUnits } from 'viem';
-import { readContracts } from 'wagmi/actions';
+import { readContracts, getBalance } from 'wagmi/actions';
 import { useEffect } from 'react'; // Missing import
 import type { Asset } from '../types';
 import tokens from '../utils/tokens';
@@ -67,18 +67,20 @@ export const useAssetStore = create<AssetStore>()(
         set({ error: null });
         
         try {
-          // Create contract calls for all tokens
-          const contractCalls = tokens.flatMap(token => [
-            {
-              address: token.address as `0x${string}`,
-              abi: erc20ABI,
-              functionName: 'balanceOf',
-              args: [walletAddress as `0x${string}`],
-              chainId: token.chainId as 1 | 42161 | 56 | 8453  // Restrict to supported chain IDs
-            }
-          ]);
+          // Create contract calls for all non-native tokens
+          const contractCalls = tokens
+            .filter(token => token.address !== '0x')
+            .flatMap(token => [
+              {
+                address: token.address as `0x${string}`,
+                abi: erc20ABI,
+                functionName: 'balanceOf',
+                args: [walletAddress as `0x${string}`],
+                chainId: token.chainId as 1 | 42161 | 56 | 8453
+              }
+            ]);
         
-          // Use readContracts action instead of useReadContracts hook
+          // Use readContracts action for ERC20 tokens
           const data = await readContracts(config, {
             contracts: contractCalls
           });
@@ -86,15 +88,48 @@ export const useAssetStore = create<AssetStore>()(
           // Process the results
           const assets: Asset[] = [];
           
-          tokens.forEach((token, index) => {
-            if (data && data[index]?.result) {
-              const rawBalance = BigInt(data[index]?.result || 0);
+          // Process ERC20 tokens
+          let dataIndex = 0;
+          
+          // Process all tokens
+          for (const token of tokens) {
+            if (token.address === '0x') {
+              // Handle native token
+              try {
+                const balance = await getBalance(config, {
+                  address: walletAddress as `0x${string}`,
+                  chainId: token.chainId as 1 | 42161 | 56 | 8453
+                });
+                
+                if (balance.value > 0n) {
+                  const balanceStr = formatUnits(balance.value, token.decimals);
+                  const balanceUsd = (parseFloat(balanceStr) * token.usdPrice).toString();
+                  
+                  assets.push({
+                    token: token.token,
+                    address: token.address,
+                    chain: token.chain,
+                    maxDecimalsShow: token.maxDecimalsShow,
+                    protocol: token.protocol,
+                    withdrawContract: token.withdrawContract,
+                    balance: balanceStr,
+                    yieldBearingToken: Boolean(token.yieldBearingToken),
+                    chainId: token.chainId,
+                    decimals: token.decimals,
+                    balanceUsd,
+                    icon: token.icon
+                  });
+                }
+              } catch (error) {
+                console.error(`Error fetching native token balance for ${token.token}:`, error);
+              }
+            } else if (data && data[dataIndex]?.result) {
+              const rawBalance = BigInt(data[dataIndex]?.result || 0);
               if (rawBalance > 0n) {
                 const balance = formatUnits(rawBalance, token.decimals);
                 const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
                 
                 assets.push({
-                  //@ts-ignore
                   token: token.token,
                   address: token.address,
                   chain: token.chain,
@@ -109,8 +144,9 @@ export const useAssetStore = create<AssetStore>()(
                   icon: token.icon
                 });
               }
+              dataIndex++;
             }
-          });
+          }
           
           set({ 
             assets,

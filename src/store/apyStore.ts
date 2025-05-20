@@ -89,7 +89,9 @@ export const useApyStore = create<ApyStore>()(
             venus: 3.67,
             radiant: 4
           }
-
+          data['1']['0x'] = {
+            aave: 1.23
+          }
           data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'] = {
             ...data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'],
             venus: 2.38
