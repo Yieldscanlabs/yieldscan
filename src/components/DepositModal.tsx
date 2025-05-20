@@ -67,6 +67,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
     tokenAddress: asset.address as `0x${string}`,
     spenderAddress: protocolAddress,
     chainId: asset.chainId,
+    tokenDecimals: asset.decimals
   });
 
   const { supply, isSupplying, isConfirmed } = useUnifiedYield({
@@ -82,15 +83,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
     if (isOpen) {
       setStep(1);
       setError(null);
-        
-      const hasEnough = hasEnoughAllowance(amount);
-      // Check if we already have approval
-      if (hasEnough) {
-        handleSupply();
-      } else {
-        // Start approval process
         handleApprove();
-      }
     }
   }, [isOpen, hasEnoughAllowance]);
   

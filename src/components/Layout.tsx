@@ -26,19 +26,19 @@ const Layout = () => {
   
   // Initialize auto-refresh for APY, Assets, and Earnings
   useApyAutoRefresh();
-  useAssetAutoRefresh(wallet.address);
+  // useAssetAutoRefresh(wallet.address);
   useEarningsAutoRefresh(wallet.address);
   
   // Fetch assets and earnings when wallet connection changes
   useEffect(() => {
     if (wallet.isConnected && wallet.address) {
       // Manually trigger a fetch when wallet connects
-      fetchAssets(wallet.address, true);
+      // fetchAssets(wallet.address, true);
       
       // Also fetch earnings data
       fetchEarnings(wallet.address, true);
     }
-  }, [wallet.isConnected, wallet.address, fetchAssets, fetchEarnings]);
+  }, [wallet.isConnected, wallet.address, fetchEarnings]);
   
   useEffect(() => {
     if (apyLastUpdated) {
