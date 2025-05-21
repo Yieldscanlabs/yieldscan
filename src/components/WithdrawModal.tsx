@@ -56,8 +56,14 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     setPercentage(value);
-    const calculatedAmount = (balance * value / 100).toFixed(6);
-    setWithdrawAmount(calculatedAmount);
+    
+    // If 100% is selected, use the exact balance value to avoid rounding errors
+    if (value === 100) {
+      setWithdrawAmount(balance.toString());
+    } else {
+      const calculatedAmount = (balance * value / 100).toFixed(6);
+      setWithdrawAmount(calculatedAmount);
+    }
     setActivePercentage(null);
   };
   
@@ -65,13 +71,30 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
   const handleQuickPercentage = (percent: number) => {
     setPercentage(percent);
     setActivePercentage(percent);
-    const calculatedAmount = (balance * percent / 100).toFixed(6);
-    setWithdrawAmount(calculatedAmount);
+    
+    // If 100% is selected, use the exact balance value to avoid rounding errors
+    if (percent === 100) {
+      setWithdrawAmount(balance.toString());
+    } else {
+      const calculatedAmount = (balance * percent / 100).toFixed(6);
+      setWithdrawAmount(calculatedAmount);
+    }
   };
 
   // Handle withdrawal
   const handleWithdraw = async () => {
-    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > balance) {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      setError('Please enter a valid amount');
+      return;
+    }
+    
+    // Add a small tolerance for 100% withdrawals to account for floating point precision
+    const withdrawValue = parseFloat(withdrawAmount);
+    if (withdrawValue > balance && withdrawValue <= balance * 1.0001) {
+      // If the amount is very slightly over balance (likely due to floating point precision),
+      // adjust it to the exact balance
+      setWithdrawAmount(balance.toString());
+    } else if (withdrawValue > balance) {
       setError('Please enter a valid amount');
       return;
     }

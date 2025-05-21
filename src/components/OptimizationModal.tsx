@@ -6,7 +6,7 @@ import useERC20 from '../hooks/useERC20';
 import type { SupportedProtocol } from '../hooks/useUnifiedYield';
 import useUnifiedYield from '../hooks/useUnifiedYield';
 import tokens from '../utils/tokens';
-import { setupProtocol } from './DepositModal';
+import { setupProtocol } from '../utils/protocolUtils';
 import Protocol from './Protocol';
 
 // Helper to get the protocol contract address

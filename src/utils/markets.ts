@@ -96,11 +96,9 @@ export const SPARK_MARKETS: Record<number, Record<string, string>> = {
   }
 }
 
-// export const MORPHO_BLUE_MARKETS: Record<number, Record<string, { approval: string; deposit: string }>> = {
-//   1: {
-//     USDC: {
-//       approval: '0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0',
-//       deposit: ''
-//     }
-//   }
-// }
+export const MORPHO_BLUE_MARKETS: Record<number, Record<string, string>> = {
+  // Ethereum Mainnet
+  1: {
+    'USDC': '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
+  }
+}

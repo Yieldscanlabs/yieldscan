@@ -132,6 +132,29 @@ const protocolAbis = {
       stateMutability: 'payable', 
       type: 'function'
     }
+  ],
+  MorphoBlue: [
+    {
+      inputs: [
+        { name: 'assets', type: 'uint256' },
+        { name: 'receiver', type: 'address' }
+      ],
+      name: 'deposit',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'assets', type: 'uint256' },
+        { name: 'receiver', type: 'address' },
+        { name: 'owner', type: 'address' }
+      ],
+      name: 'withdraw',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    }
   ]
 } as const;
 
@@ -213,8 +236,20 @@ export default function useUnifiedYield({
           value: amountInWei, // Send ETH value
           chainId: 1
         });
-      }
-       else {
+      } else if (protocol === PROTOCOL_NAMES.MORPHO_BLUE) {
+        // For Morpho Blue, we need to use the underlying asset's decimals (USDC = 6)
+        // rather than the vault token's decimals
+        const underlyingDecimals = 6; // USDC has 6 decimals
+        const amountInUnderlyingDecimals = parseUnits(amount, underlyingDecimals);
+        
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.MorphoBlue,
+          functionName: 'deposit',
+          args: [amountInUnderlyingDecimals, address as `0x${string}`], // Morpho Blue deposit - assets, receiver (ERC4626 standard)
+          chainId
+        });
+      } else {
         throw new Error(`Protocol ${protocol} not supported`);
       }
       
@@ -268,6 +303,19 @@ export default function useUnifiedYield({
           abi: protocolAbis.Radiant,
           functionName: 'withdraw',
           args: [tokenAddress, amountInWei, address], // Radiant withdraw parameters
+          chainId
+        });
+      } else if (protocol === PROTOCOL_NAMES.MORPHO_BLUE) {
+        // For Morpho Blue, we need to use the underlying asset's decimals (USDC = 6)
+        // rather than the vault token's decimals
+        const underlyingDecimals = 6; // USDC has 6 decimals
+        const amountInUnderlyingDecimals = parseUnits(amount, underlyingDecimals);
+        
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.MorphoBlue,
+          functionName: 'withdraw',
+          args: [amountInUnderlyingDecimals, address as `0x${string}`, address as `0x${string}`], // Morpho Blue withdraw - assets, receiver, owner (ERC4626 standard)
           chainId
         });
       } else {

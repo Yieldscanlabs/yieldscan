@@ -1,4 +1,3 @@
-
 export const CHAIN_NAMES = {
   ETH: 'Ethereum',
   BSC: 'BNB Chain',
@@ -21,4 +20,5 @@ export const PROTOCOL_NAMES = {
   RADIANT: 'Radiant',
   LIDO: 'Lido',
   SPARK: 'Spark',
+  MORPHO_BLUE: 'Morpho Blue',
 }

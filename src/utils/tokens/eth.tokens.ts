@@ -124,16 +124,15 @@ export default [
     {
     token: 'USUALUSDC+' as const,
     chain: 'ETH' as const,
-    address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D', // Compound cUSDT v2 on Ethereum
+    address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D', // Morpho Blue USDC vault
     icon: 'https://assets.coingecko.com/coins/images/51339/standard/usdc.png?1730814974',
     chainId: 1, // mainnet
-    withdrawContract: '0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245', // compound usdt v3 withdraw contract
-    approvalContract: '0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0', // compound usdt v3 withdraw contract
-    underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDT
+    withdrawContract: '0xd63070114470f685b75B74D60EEc7c1113d33a3D', // Morpho Blue USDC vault address
+    underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDC
     protocol: 'Morpho Blue',
     yieldBearingToken: true,
     maxDecimalsShow: 2,
-    decimals: 18, // Note: cTokens typically have 8 decimals
+    decimals: 18, // ERC4626 vault typically has 18 decimals
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
 
