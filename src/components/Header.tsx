@@ -24,6 +24,10 @@ const Header: React.FC<HeaderProps> = ({
   const { assets } = useAssetStore();
   const { apyData } = useApyStore();
   
+  // Scroll state for header visibility
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  
   // Calculate total yield-bearing holdings (with fallback to 0)
   const totalHoldings = assets
     .filter(asset => asset.yieldBearingToken)
@@ -81,6 +85,32 @@ const Header: React.FC<HeaderProps> = ({
       return '1000.000000000000000000';
     }
   };
+
+  // Handle scroll events for header visibility
+  useEffect(() => {
+    const controlHeader = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Determine if should show or hide based on scroll direction
+      if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setIsVisible(true);
+      } else if (currentScrollY > 50 && currentScrollY > lastScrollY) {
+        // Scrolling down and not at the top
+        setIsVisible(false);
+      }
+      
+      // Update last scroll position
+      setLastScrollY(currentScrollY);
+    };
+    
+    window.addEventListener('scroll', controlHeader);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', controlHeader);
+    };
+  }, [lastScrollY]);
 
   // Live ticker effect - update total value every 100ms for more visible decimal changes
   useEffect(() => {
@@ -144,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${isVisible ? styles.headerVisible : styles.headerHidden}`}>
       <div className={styles.headerLeft}>
         <Link to="/" className={styles.titleLink}>
           <Logo />

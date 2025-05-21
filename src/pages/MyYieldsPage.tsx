@@ -227,7 +227,7 @@ const MyYieldsPage: React.FC = () => {
 
         
         {/* Daily and total earnings summary */}
-        <div className={styles.filterItem}>
+        {/* <div className={styles.filterItem}>
           <div className={styles.earningsSnapshot}>
             <div className={styles.earningsItem}>
               <span className={styles.earningsLabel}>Daily</span>
@@ -238,7 +238,7 @@ const MyYieldsPage: React.FC = () => {
               <span className={styles.earningsValue}>${totalEarnings.lifetime.toFixed(2)}</span>
             </div>
           </div>
-        </div>
+        </div> */}
                 <div className={styles.filterItem}>
           <label className={styles.filterLabel}>Protocol</label>
           <ProtocolSelector

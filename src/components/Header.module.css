@@ -6,7 +6,25 @@
   background-color: var(--surface-dark);
   border-bottom: 1px solid var(--border-color);
   height: 70px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: transform 0.3s ease;
 }
+
+/* Header visibility classes */
+.headerVisible {
+  transform: translateY(0);
+}
+
+.headerHidden {
+  transform: translateY(-100%);
+}
+
+/* Remove the global body padding since we've added it to the Layout component */
 
 .headerLeft {
   display: flex;

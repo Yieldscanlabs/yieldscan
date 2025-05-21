@@ -7,6 +7,7 @@ import venus from '../assets/protocols/venus.svg'
 import morphoblue from '../assets/protocols/morphoblue.svg'
 import compound from '../assets/protocols/compound.svg'
 import lido from '../assets/protocols/lido.svg'
+import spark from '../assets/protocols/spark.png'
 
 interface ProtocolProps {
   name: string | null;
@@ -26,6 +27,7 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Curve': 'https://cryptologos.cc/logos/curve-dao-token-crv-logo.png',
   'Yearn': 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png',
   'Lido': lido,
+  'Spark': spark,
   // Add more protocols as needed
 };
 
