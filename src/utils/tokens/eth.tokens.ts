@@ -1,3 +1,6 @@
+export const ETH_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'; 
+export const ETH_USDT = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
+
 export default [
   {
     token: 'ETH' as const,
@@ -13,7 +16,7 @@ export default [
   {
     token: 'USDC' as const,
     chain: 'ETH' as const,
-    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum USDC
+    address: ETH_USDC, // Ethereum USDC
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
     chainId: 1, // mainnet
     yieldbearingToken: false,
@@ -24,7 +27,7 @@ export default [
   {
     token: 'USDT' as const,
     chain: 'ETH' as const, 
-    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // Ethereum USDT
+    address: ETH_USDT, // Ethereum USDT
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
     yieldbearingToken: false,
     chainId: 1, // mainnet
@@ -32,29 +35,6 @@ export default [
     maxDecimalsShow: 2,
     usdPrice: 1 // Stablecoin pegged to USD
   },
-  {
-    token: 'USDC' as const,
-    chain: 'ARBITRUM_ONE' as const,
-    address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum USDC
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8/logo.png',
-    yieldbearingToken: false,
-    chainId: 42161, // arbitrum
-    decimals: 6,
-    maxDecimalsShow: 2,
-    usdPrice: 1 // Stablecoin pegged to USD
-  },
-  {
-    token: 'USDT' as const,
-    chain: 'ARBITRUM_ONE' as const,
-    address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // Arbitrum USDT
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9/logo.png',
-    yieldbearingToken: false,
-    chainId: 42161, // arbitrum
-    decimals: 6,
-    maxDecimalsShow: 2,
-    usdPrice: 1 // Stablecoin pegged to USD
-  },
-  
   {
     token: 'aUSDC' as const,
     chain: 'ETH' as const,
@@ -228,5 +208,18 @@ export default [
     decimals: 18,
     maxDecimalsShow: 6,
     usdPrice: 2500 // Approximate value (will need to be updated dynamically in production)
-  }
+  },
+    {
+    token: 'Spark USDC' as const,
+    chain: 'ETH' as const,
+    address: '0xbc65ad17c5c0a2a4d159fa5a503f4992c7b545fe', // Lido stETH on Ethereum
+    icon: 'https://etherscan.io/token/images/savingsusdc_32.svg',
+    chainId: 1, // mainnet
+    protocol: 'Spark',
+    yieldBearingToken: true,
+    underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    decimals: 18,
+    maxDecimalsShow: 2,
+    usdPrice: 0.95 // Approximate value (will need to be updated dynamically in production)
+  },
 ]

@@ -108,7 +108,7 @@ const AssetList: React.FC<AssetListProps> = ({
             <AssetComponent
               key={assetKey}
               asset={asset}
-              price={price}
+              price={price ? price : undefined}
               yieldInfo={yieldInfo}
               isSelected={selectedAsset === asset}
               onSelect={handleSelectAsset}

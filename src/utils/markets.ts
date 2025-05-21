@@ -89,3 +89,18 @@ export const LIDO_V3_MARKETS: Record<number, Record<string, string>> = {
     'ETH': '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84'
   }
 }
+export const SPARK_MARKETS: Record<number, Record<string, string>> = {
+  // Ethereum
+  1: {
+    'USDC': '0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE'
+  }
+}
+
+// export const MORPHO_BLUE_MARKETS: Record<number, Record<string, { approval: string; deposit: string }>> = {
+//   1: {
+//     USDC: {
+//       approval: '0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0',
+//       deposit: ''
+//     }
+//   }
+// }

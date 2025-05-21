@@ -6,29 +6,22 @@ import useWalletConnection from '../hooks/useWalletConnection';
 import { useApyAutoRefresh, useApyStore } from '../store/apyStore';
 import { useAssetAutoRefresh, useAssetStore } from '../store/assetStore';
 import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
 import { usePriceStore } from '../store/priceStore';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
-  const { lastUpdated: apyLastUpdated, autoRefreshEnabled: apyAutoRefresh, setAutoRefresh: setApyAutoRefresh } = useApyStore();
-  const {} = usePriceStore()
+  const { lastUpdated: apyLastUpdated } = useApyStore();
+  const {} = usePriceStore();
   const { fetchAssets } = useAssetStore();
   const { 
     fetchEarnings, 
-    getTotalEarnings, 
-    lastUpdated: earningsLastUpdated,
-    autoRefreshEnabled: earningsAutoRefresh,
-    setAutoRefresh: setEarningsAutoRefresh
+    lastUpdated: earningsLastUpdated
   } = useEarnStore();
-  
-  // Get total earnings for display in header
-  const totalEarnings = useMemo(() => getTotalEarnings(), [getTotalEarnings, earningsLastUpdated]);
   
   // Initialize auto-refresh for APY, Assets, and Earnings
   useApyAutoRefresh();
-  // useAssetAutoRefresh(wallet.address);
   useEarningsAutoRefresh(wallet.address);
   
   // Fetch assets and earnings when wallet connection changes
@@ -45,13 +38,12 @@ const Layout = () => {
     }
   }, [apyLastUpdated]);
 
-
   useEffect(() => {
     if (earningsLastUpdated && wallet.isConnected) {
       // Any code to run when Earnings data is refreshed
-      console.log('Earnings data refreshed:', totalEarnings);
+      console.log('Earnings data refreshed');
     }
-  }, [earningsLastUpdated, wallet.isConnected, totalEarnings]);
+  }, [earningsLastUpdated, wallet.isConnected]);
 
   return (
     <div className={styles.layout}>
@@ -59,7 +51,6 @@ const Layout = () => {
         isConnected={wallet.isConnected}
         address={wallet.address}
         disconnectWallet={disconnectWallet}
-        totalEarnings={totalEarnings.lifetime}
       />
       <main className={styles.main}>
         <Outlet />

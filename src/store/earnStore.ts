@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
+import { useAssetStore } from './assetStore';
+import { useApyStore } from './apyStore';
+import type { ProtocolApys as BaseProtocolApys } from './apyStore';
+
+// Extended version of ProtocolApys with an index signature
+interface ProtocolApysWithIndex extends BaseProtocolApys {
+  [key: string]: number | undefined;
+}
 
 // Define types for the earnings data structure
 export interface ProtocolEarnings {
@@ -9,6 +17,9 @@ export interface ProtocolEarnings {
   venus?: number;
   radiant?: number;
   gmx?: number;
+  lido?: number;
+  morpho?: number;
+  [key: string]: number | undefined; // Add index signature to allow string indexing
   // Add other protocols as needed
 }
 
@@ -31,6 +42,7 @@ export interface EarnStore {
   error: string | null;
   lastUpdated: number | null;
   autoRefreshEnabled: boolean;
+  earningsStartDate: number | null; // Timestamp when we started tracking earnings
   
   // Actions
   fetchEarnings: (walletAddress: string, showLoading?: boolean) => Promise<void>;
@@ -38,13 +50,17 @@ export interface EarnStore {
   clearErrors: () => void;
   getTotalEarnings: () => { daily: number; weekly: number; monthly: number; yearly: number; lifetime: number };
   setAutoRefresh: (enabled: boolean) => void;
+  resetEarningsStartDate: () => void;
 }
-
-// API endpoint for fetching earnings data (to be implemented)
-const EARNINGS_API_ENDPOINT = 'https://api.yieldscan.io/earnings';
 
 // Auto-refresh interval in milliseconds (30 seconds)
 const AUTO_REFRESH_INTERVAL = 30000;
+
+// Constants for time calculations
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_WEEK_MS = 7 * ONE_DAY_MS;
+const ONE_MONTH_MS = 30 * ONE_DAY_MS;
+const ONE_YEAR_MS = 365 * ONE_DAY_MS;
 
 export const useEarnStore = create<EarnStore>()(
   persist(
@@ -62,6 +78,7 @@ export const useEarnStore = create<EarnStore>()(
       error: null,
       lastUpdated: null,
       autoRefreshEnabled: true,
+      earningsStartDate: null,
 
       // Fetch earnings for all chains and tokens for a specific wallet
       fetchEarnings: async (walletAddress: string, showLoading = true) => {
@@ -78,38 +95,84 @@ export const useEarnStore = create<EarnStore>()(
         set({ error: null });
         
         try {
-          // MOCK DATA - Replace with actual API call when ready
-          // This mock data simulates the structure of the API response
-          const mockData: EarningsDataStructure = generateMockEarningsData();
+          // Get token balances from assetStore
+          const assets = useAssetStore.getState().assets;
           
-          // In real implementation, replace with:
-          // const url = `${EARNINGS_API_ENDPOINT}/${walletAddress}`;
-          // const response = await fetch(url);
-          // if (!response.ok) {
-          //   throw new Error(`API response error: ${response.statusText}`);
-          // }
-          // const data: EarningsDataStructure = await response.json();
-
-          // Ensure all addresses are lowercase for consistency
-          const normalizedData: EarningsDataStructure = {
-            total: mockData.total
+          // Get APY data from apyStore
+          const apyData = useApyStore.getState().apyData;
+          
+          // Initialize earnings data structure
+          const earningsData: EarningsDataStructure = {
+            total: {
+              daily: 0,
+              weekly: 0,
+              monthly: 0,
+              yearly: 0,
+              lifetime: 0
+            }
           };
+
+          // Set earningsStartDate if not already set
+          const state = get();
+          const now = Date.now();
+          const earningsStartDate = state.earningsStartDate || now;
+          if (!state.earningsStartDate) {
+            set({ earningsStartDate });
+          }
           
-          Object.entries(mockData).forEach(([chainIdStr, chainData]) => {
-            if (chainIdStr === 'total') return;
+          // Calculate time elapsed since we started tracking earnings
+          const timeElapsedMs = now - earningsStartDate;
+          
+          // Filter yield-bearing tokens with balances
+          const yieldBearingAssets = assets.filter(asset => asset.yieldBearingToken);
+          
+          // Calculate earnings for each yield-bearing token
+          yieldBearingAssets.forEach(asset => {
+            const { chainId, address, protocol, balance } = asset;
+            const balanceNum = parseFloat(balance);
             
-            const chainId = parseInt(chainIdStr, 10);
-            normalizedData[chainId] = {};
+            if (!earningsData[chainId]) {
+              earningsData[chainId] = {};
+            }
             
-            Object.entries(chainData).forEach(([address, earnings]) => {
-              normalizedData[chainId][address.toLowerCase()] = earnings;
-            });
+            if (!earningsData[chainId][address.toLowerCase()]) {
+              earningsData[chainId][address.toLowerCase()] = {};
+            }
+            
+            // Make non-null assertion for protocol since we've filtered for it
+            const protocolKey = protocol!.toLowerCase();
+            
+            // Get APY for this token from apyStore
+            const tokenApys = apyData[chainId]?.[address.toLowerCase()] as ProtocolApysWithIndex | undefined;
+            
+            if (tokenApys && tokenApys[protocolKey] !== undefined) {
+              const apy = tokenApys[protocolKey]!;
+              
+              // Calculate earnings
+              const yearlyEarnings = balanceNum * (apy / 100);
+              const dailyEarnings = yearlyEarnings / 365;
+              const weeklyEarnings = dailyEarnings * 7;
+              const monthlyEarnings = dailyEarnings * 30;
+              
+              // Calculate lifetime earnings based on how long we've been tracking
+              const lifetimeEarnings = (yearlyEarnings / ONE_YEAR_MS) * timeElapsedMs;
+              
+              // Add to token-specific earnings
+              earningsData[chainId][address.toLowerCase()][protocolKey] = lifetimeEarnings;
+              
+              // Add to total earnings
+              earningsData.total.daily += dailyEarnings;
+              earningsData.total.weekly += weeklyEarnings;
+              earningsData.total.monthly += monthlyEarnings;
+              earningsData.total.yearly += yearlyEarnings;
+              earningsData.total.lifetime += lifetimeEarnings;
+            }
           });
           
           set({ 
-            earningsData: normalizedData,
+            earningsData,
             isLoading: false,
-            lastUpdated: Date.now()
+            lastUpdated: now
           });
         } catch (error) {
           set({ 
@@ -135,33 +198,98 @@ export const useEarnStore = create<EarnStore>()(
         try {
           const normalizedAddress = address.toLowerCase();
           
-          // MOCK DATA - Replace with actual API call when ready
-          // This simulates fetching data for a single token
-          const mockTokenData = generateMockEarningsForToken(chainId, normalizedAddress);
+          // Get this specific asset from assetStore
+          const asset = useAssetStore.getState().getAssetByAddress(address, chainId);
           
-          // In real implementation, replace with:
-          // const url = `${EARNINGS_API_ENDPOINT}/${walletAddress}/${chainId}/${normalizedAddress}`;
-          // const response = await fetch(url);
-          // if (!response.ok) {
-          //   throw new Error(`API response error: ${response.statusText}`);
-          // }
-          // const tokenEarningsData: ProtocolEarnings = await response.json();
+          // Get APY data from apyStore for this token
+          const tokenApys = useApyStore.getState().apyData[chainId]?.[normalizedAddress] as ProtocolApysWithIndex | undefined;
+          
+          if (!asset || !asset.yieldBearingToken || !tokenApys || !asset.protocol) {
+            // Not a yield-bearing token or no APY data available
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Get APY for the token's protocol
+          const protocolKey = asset.protocol.toLowerCase();
+          const apy = tokenApys[protocolKey];
+          
+          if (apy === undefined) {
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Set earningsStartDate if not already set
+          const state = get();
+          const now = Date.now();
+          const earningsStartDate = state.earningsStartDate || now;
+          if (!state.earningsStartDate) {
+            set({ earningsStartDate });
+          }
+          
+          // Calculate time elapsed since we started tracking earnings
+          const timeElapsedMs = now - earningsStartDate;
+          
+          // Calculate earnings
+          const balanceNum = parseFloat(asset.balance);
+          const yearlyEarnings = balanceNum * (apy / 100);
+          const dailyEarnings = yearlyEarnings / 365;
+          const weeklyEarnings = dailyEarnings * 7;
+          const monthlyEarnings = dailyEarnings * 30;
+          const lifetimeEarnings = (yearlyEarnings / ONE_YEAR_MS) * timeElapsedMs;
           
           set(state => {
-            const newEarningsData = { ...state.earningsData };
+            // Create a deep copy of the existing earnings data
+            const newEarningsData = JSON.parse(JSON.stringify(state.earningsData));
             
-            // Initialize the chain object if it doesn't exist
+            // Initialize chain and token objects if they don't exist
             if (!newEarningsData[chainId]) {
               newEarningsData[chainId] = {};
             }
             
-            // Update the token's earnings data
-            newEarningsData[chainId][normalizedAddress] = mockTokenData;
+            if (!newEarningsData[chainId][normalizedAddress]) {
+              newEarningsData[chainId][normalizedAddress] = {};
+            }
+            
+            // Previous values for this protocol (if any)
+            const prevProtocolEarnings = newEarningsData[chainId][normalizedAddress][protocolKey] || 0;
+            
+            // Update token's protocol earnings
+            newEarningsData[chainId][normalizedAddress][protocolKey] = lifetimeEarnings;
+            
+            // Update total earnings by adjusting the difference
+            const difference = lifetimeEarnings - prevProtocolEarnings;
+            newEarningsData.total.lifetime += difference;
+            
+            // Recalculate projected earnings
+            newEarningsData.total.daily = 0;
+            newEarningsData.total.weekly = 0;
+            newEarningsData.total.monthly = 0;
+            newEarningsData.total.yearly = 0;
+            
+            // Sum up all projected earnings based on APYs
+            const assets = useAssetStore.getState().assets;
+            const apyData = useApyStore.getState().apyData;
+            
+            assets.filter(a => a.yieldBearingToken && a.protocol).forEach(a => {
+              const tokenApy = apyData[a.chainId]?.[a.address.toLowerCase()] as ProtocolApysWithIndex | undefined;
+              const protocolKey = a.protocol!.toLowerCase();
+              if (tokenApy && tokenApy[protocolKey] !== undefined) {
+                const tokenApyValue = tokenApy[protocolKey]!;
+                const tokenBalanceNum = parseFloat(a.balance);
+                const tokenYearlyEarnings = tokenBalanceNum * (tokenApyValue / 100);
+                
+                newEarningsData.total.daily += tokenYearlyEarnings / 365;
+                newEarningsData.total.weekly += (tokenYearlyEarnings / 365) * 7;
+                newEarningsData.total.monthly += (tokenYearlyEarnings / 365) * 30;
+                newEarningsData.total.yearly += tokenYearlyEarnings;
+              }
+            });
             
             return {
               earningsData: newEarningsData,
               isLoading: false,
-              lastUpdated: Date.now()
+              lastUpdated: now
             };
           });
         } catch (error) {
@@ -183,6 +311,9 @@ export const useEarnStore = create<EarnStore>()(
       
       // Enable or disable auto-refresh
       setAutoRefresh: (enabled: boolean) => set({ autoRefreshEnabled: enabled }),
+      
+      // Reset earnings tracking start date (useful for testing or resetting earnings tracking)
+      resetEarningsStartDate: () => set({ earningsStartDate: Date.now() })
     }),
     {
       name: 'yieldscan-earn-store',
@@ -190,6 +321,7 @@ export const useEarnStore = create<EarnStore>()(
         earningsData: state.earningsData,
         lastUpdated: state.lastUpdated,
         autoRefreshEnabled: state.autoRefreshEnabled,
+        earningsStartDate: state.earningsStartDate,
       }),
     }
   )
@@ -204,6 +336,8 @@ let autoRefreshInitialized = false;
  */
 export function useEarningsAutoRefresh(walletAddress: string) {
   const { fetchEarnings, autoRefreshEnabled } = useEarnStore();
+  const { assets } = useAssetStore();
+  const { apyData } = useApyStore();
   
   useEffect(() => {
     if (!walletAddress || walletAddress === '0x' || autoRefreshInitialized) {
@@ -229,7 +363,7 @@ export function useEarningsAutoRefresh(walletAddress: string) {
       clearInterval(intervalId);
       autoRefreshInitialized = false;
     };
-  }, [walletAddress, fetchEarnings, autoRefreshEnabled]);
+  }, [walletAddress, fetchEarnings, autoRefreshEnabled, assets, apyData]);
 }
 
 // Track token-specific auto-refresh with a Map
@@ -243,6 +377,8 @@ const tokenAutoRefreshMap = new Map<string, boolean>();
  */
 export function useTokenEarningsAutoRefresh(walletAddress: string, chainId: number, address: string) {
   const { fetchEarningsForToken, autoRefreshEnabled } = useEarnStore();
+  const { assets } = useAssetStore();
+  const { apyData } = useApyStore();
   
   useEffect(() => {
     if (!walletAddress || !chainId || !address) return;
@@ -274,61 +410,5 @@ export function useTokenEarningsAutoRefresh(walletAddress: string, chainId: numb
       clearInterval(intervalId);
       tokenAutoRefreshMap.delete(tokenKey);
     };
-  }, [walletAddress, chainId, address]); // Only re-run if these change
-}
-
-// Helper function to generate mock earnings data
-// This will be removed when the API is available
-function generateMockEarningsData(): EarningsDataStructure {
-  return {
-    // Ethereum mainnet
-    1: {
-      // USDC
-      '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
-        aave: 2.34,
-        compound: 1.98,
-        venus: 0.75
-      },
-      // USDT
-      '0xdac17f958d2ee523a2206206994597c13d831ec7': {
-        aave: 1.56,
-        compound: 1.23,
-        radiant: 0.89
-      }
-    },
-    // Arbitrum
-    42161: {
-      // USDC on Arbitrum
-      '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
-        aave: 3.21,
-        compound: 2.87
-      }
-    },
-    // Totals across all chains and tokens
-    total: {
-      daily: 0.63,
-      weekly: 4.41,
-      monthly: 18.9,
-      yearly: 230.1,
-      lifetime: 347.5
-    }
-  };
-}
-
-// Helper function to generate mock earnings for a specific token
-// This will be removed when the API is available
-function generateMockEarningsForToken(chainId: number, address: string): ProtocolEarnings {
-  // Default mock data if we don't have specific data for this token
-  const defaultData: ProtocolEarnings = {
-    aave: Math.random() * 2 + 1,
-    compound: Math.random() * 2 + 0.5
-  };
-  
-  // If we have predefined mock data for this token, return it
-  const mockData = generateMockEarningsData();
-  if (mockData[chainId] && mockData[chainId][address]) {
-    return mockData[chainId][address];
-  }
-  
-  return defaultData;
+  }, [walletAddress, chainId, address, assets, apyData]); // Re-run if these change
 }

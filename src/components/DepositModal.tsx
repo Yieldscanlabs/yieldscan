@@ -8,7 +8,7 @@ import useUnifiedYield from '../hooks/useUnifiedYield';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
-import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS } from '../utils/markets';
+import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS, SPARK_MARKETS } from '../utils/markets';
 import Protocol from './Protocol';
 
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
@@ -22,6 +22,8 @@ export const setupProtocol = (protocol: string, token: SupportedToken, chainId: 
       return RADIANT_V3_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.LIDO) { 
       return '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84'
+    } else if(protocol === PROTOCOL_NAMES.SPARK) {
+      return SPARK_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'
 }

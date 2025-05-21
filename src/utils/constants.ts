@@ -21,4 +21,5 @@ export const PROTOCOL_NAMES = {
   GMX: 'GMX',
   RADIANT: 'Radiant',
   LIDO: 'Lido',
+  SPARK: 'Spark',
 }

@@ -10,7 +10,8 @@ import tokens from '../utils/tokens';
 const AUTO_REFRESH_INTERVAL = 60000;
 
 // Moralis API configuration
-const MORALIS_API_KEY = process.env.MORALIS_API;
+const MORALIS_API_KEY = import.meta.env.VITE_MORALIS_API;
+console.log(import.meta.env)
 
 // Initialize Moralis SDK
 if (!Moralis.Core.isStarted) {
