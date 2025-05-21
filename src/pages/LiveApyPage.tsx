@@ -13,13 +13,30 @@ import Protocol from '../components/Protocol';
 const LiveApyPage: React.FC = () => {
   const { apyData, isLoading, error, fetchApys } = useApyStore();
   const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
-  const { wallet } = useWalletConnection(); // Add this line
+  const { wallet } = useWalletConnection();
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  // Format timestamp for last updated
+  const formattedLastUpdate = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true
+  }).format(lastUpdated);
 
   // Refresh data on mount
   useEffect(() => {
     fetchApys(true);
+    setLastUpdated(new Date());
+    // Set up interval to refresh data every 5 minutes
+    const intervalId = setInterval(() => {
+      fetchApys(true);
+      setLastUpdated(new Date());
+    }, 5 * 60 * 1000);
+    
+    return () => clearInterval(intervalId);
   }, [fetchApys]);
 
   // Group tokens by chain for filter dropdown
@@ -27,8 +44,6 @@ const LiveApyPage: React.FC = () => {
     const uniqueChains = new Set(tokens.map(t => t.chainId));
     return Array.from(uniqueChains).sort((a, b) => a - b);
   }, []);
-
-  // Format timestamp for last updated
 
   // Filter tokens by selected chain
   const filteredTokens = React.useMemo(() => {
@@ -102,7 +117,7 @@ const LiveApyPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* <div className={styles.pageHeader}>
+      <div className={styles.pageHeader}>
         <div className={styles.titleSection}>
           <h1>Live APY Rates</h1>
           <p className={styles.subtitle}>Real-time yield opportunities across major DeFi protocols</p>
@@ -111,7 +126,7 @@ const LiveApyPage: React.FC = () => {
           <div className={isLoading ? styles.pulsingDot : styles.statusDot}></div>
           <span>Last updated: {formattedLastUpdate}</span>
         </div>
-      </div> */}
+      </div>
       
       {error && (
         <div className={styles.errorCard}>
@@ -123,7 +138,20 @@ const LiveApyPage: React.FC = () => {
         </div>
       )}
 
-  
+      <div className={styles.trustBanner}>
+        <div className={styles.trustItem}>
+          <div className={styles.trustIcon}>🔒</div>
+          <div className={styles.trustText}>Verified Protocols</div>
+        </div>
+        <div className={styles.trustItem}>
+          <div className={styles.trustIcon}>⚡</div>
+          <div className={styles.trustText}>Real-time Data</div>
+        </div>
+        <div className={styles.trustItem}>
+          <div className={styles.trustIcon}>📊</div>
+          <div className={styles.trustText}>Transparent Metrics</div>
+        </div>
+      </div>
       
       <div className={styles.filterToolbar}>
         <div className={styles.filterControls}>
@@ -146,56 +174,41 @@ const LiveApyPage: React.FC = () => {
       </div>
       
       <div className={styles.tableCard}>
-        <div className={styles.tableResponsive}>
-          <table className={styles.apyTable}>
-            <thead>
-              <tr>
-                <th onClick={() => toggleSort('token')} className={styles.sortableHeader}>
-                  Asset
-                  {sortBy === 'token' && (
-                    <span className={styles.sortIndicator}>
-                      {sortDirection === 'asc' ? '↑' : '↓'}
-                    </span>
-                  )}
-                </th>
-                <th>Network</th>
-                {protocols.map(protocol => (
-                  <th key={protocol} className={styles.protocolHeader}>
-                  <Protocol name={protocol} showLogo={true}/>
+        <div className={styles.tableLayout}>
+          {/* Fixed left columns */}
+          <div className={styles.fixedLeft}>
+            <table className={styles.apyTable}>
+              <thead>
+                <tr>
+                  <th onClick={() => toggleSort('token')} className={styles.sortableHeader}>
+                    Asset
+                    {sortBy === 'token' && (
+                      <span className={styles.sortIndicator}>
+                        {sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
                   </th>
-                ))}
-                <th onClick={() => toggleSort('highestApy')} className={`${styles.sortableHeader} ${styles.bestApyHeader}`}>
-                  Best Yield
-                  {sortBy === 'highestApy' && (
-                    <span className={styles.sortIndicator}>
-                      {sortDirection === 'asc' ? '↑' : '↓'}
-                    </span>
-                  )}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && sortedTokens.length === 0 ? (
-                <tr>
-                  <td colSpan={protocols.length + 3} className={styles.loadingRow}>
-                    <div className={styles.loadingSpinner}></div>
-                    <div>Fetching latest APY data...</div>
-                  </td>
+                  <th>Network</th>
                 </tr>
-              ) : sortedTokens.length === 0 ? (
-                <tr>
-                  <td colSpan={protocols.length + 3} className={styles.emptyRow}>
-                    <div className={styles.emptyStateIcon}>🔍</div>
-                    <div className={styles.emptyStateText}>No assets found for the selected network</div>
-                  </td>
-                </tr>
-              ) : (
-                sortedTokens.map(token => {
-                  const tokenData = apyData[token.chainId]?.[token.address.toLowerCase()];
-                  const { apy: bestApy, protocol: bestProtocol } = getBestApyForToken(token);
-                  
-                  return (
-                    <tr key={`${token.chain}-${token.token}`}>
+              </thead>
+              <tbody>
+                {isLoading && sortedTokens.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className={styles.loadingRow}>
+                      <div className={styles.loadingSpinner}></div>
+                      <div>Loading...</div>
+                    </td>
+                  </tr>
+                ) : sortedTokens.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className={styles.emptyRow}>
+                      <div className={styles.emptyStateIcon}>🔍</div>
+                      <div className={styles.emptyStateText}>No assets</div>
+                    </td>
+                  </tr>
+                ) : (
+                  sortedTokens.map(token => (
+                    <tr key={`left-${token.chain}-${token.token}`}>
                       <td className={styles.tokenCell}>
                         <img 
                           src={token.icon} 
@@ -209,68 +222,168 @@ const LiveApyPage: React.FC = () => {
                           {token.chainId === 1 ? 'Ethereum' : token.chainId === 42161 ? 'Arbitrum' : token.chainId}
                         </div>
                       </td>
-                      {protocols.map(protocol => {
-                        const protocolKey = Object.entries(PROTOCOL_NAMES)
-                          .find(([_, value]) => value === protocol)?.[0]?.toLowerCase();
-                        
-                        const apy = protocolKey && tokenData ? tokenData[protocolKey as keyof typeof tokenData] : undefined;
-                        const isBest = bestProtocol === protocol;
-                        
-                        return (
-                          <td 
-                            key={protocol} 
-                            className={isBest ? styles.bestApyCell : styles.apyCell}
-                          >
-                            {apy !== undefined ? (
-                              <span className={styles.apyValue}>{formatNumber(apy, 2)}%</span>
-                            ) : (
-                              <span className={styles.notAvailable}>-</span>
-                            )}
-                          </td>
-                        );
-                      })}
-                      <td className={styles.bestApyColumn}>
-                        {bestApy !== null ? (
-                          <div className={styles.bestApyWrapper}>
-                            <span className={styles.bestApyValue}>
-                              {formatNumber(bestApy, 2)}%
-                            </span>
-                            <span className={styles.bestProtocol}>
-                              {bestProtocol}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className={styles.notAvailable}>Not available</span>
-                        )}
-                      </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Scrollable middle (protocols) */}
+          <div className={styles.scrollableMiddle}>
+            <table className={styles.apyTable}>
+              <thead>
+                <tr>
+                  {protocols.map(protocol => (
+                    <th key={protocol} className={styles.protocolHeader}>
+                      <Protocol name={protocol} showLogo={true}/>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && sortedTokens.length === 0 ? (
+                  <tr>
+                    <td colSpan={protocols.length} className={styles.loadingRow}>
+                      <div className={styles.loadingSpinner}></div>
+                      <div>Fetching...</div>
+                    </td>
+                  </tr>
+                ) : sortedTokens.length === 0 ? (
+                  <tr>
+                    <td colSpan={protocols.length} className={styles.emptyRow}>
+                      <div className={styles.emptyStateIcon}>🔍</div>
+                      <div className={styles.emptyStateText}>No data</div>
+                    </td>
+                  </tr>
+                ) : (
+                  sortedTokens.map(token => {
+                    const tokenData = apyData[token.chainId]?.[token.address.toLowerCase()];
+                    const { protocol: bestProtocol } = getBestApyForToken(token);
+                    
+                    return (
+                      <tr key={`middle-${token.chain}-${token.token}`}>
+                        {protocols.map(protocol => {
+                          const protocolKey = Object.entries(PROTOCOL_NAMES)
+                            .find(([_, value]) => value === protocol)?.[0]?.toLowerCase();
+                          
+                          const apy = protocolKey && tokenData ? tokenData[protocolKey as keyof typeof tokenData] : undefined;
+                          const isBest = bestProtocol === protocol;
+                          
+                          return (
+                            <td 
+                              key={protocol} 
+                              className={isBest ? styles.bestApyCell : styles.apyCell}
+                            >
+                              {apy !== undefined ? (
+                                <span className={styles.apyValue}>{formatNumber(apy, 2)}%</span>
+                              ) : (
+                                <span className={styles.notAvailable}>-</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Fixed right column (best yield) */}
+          <div className={styles.fixedRight}>
+            <table className={styles.apyTable}>
+              <thead>
+                <tr>
+                  <th onClick={() => toggleSort('highestApy')} className={`${styles.sortableHeader} ${styles.bestApyHeader}`}>
+                    Best Yield
+                    {sortBy === 'highestApy' && (
+                      <span className={styles.sortIndicator}>
+                        {sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && sortedTokens.length === 0 ? (
+                  <tr>
+                    <td className={styles.loadingRow}>
+                      <div className={styles.loadingSpinner}></div>
+                      <div>Loading...</div>
+                    </td>
+                  </tr>
+                ) : sortedTokens.length === 0 ? (
+                  <tr>
+                    <td className={styles.emptyRow}>
+                      <div className={styles.emptyStateIcon}>🔍</div>
+                      <div className={styles.emptyStateText}>No data</div>
+                    </td>
+                  </tr>
+                ) : (
+                  sortedTokens.map(token => {
+                    const { apy: bestApy, protocol: bestProtocol } = getBestApyForToken(token);
+                    
+                    return (
+                      <tr key={`right-${token.chain}-${token.token}`}>
+                        <td className={styles.bestApyColumn}>
+                          {bestApy !== null ? (
+                            <div className={styles.bestApyWrapper}>
+                              <span className={styles.bestApyValue}>
+                                {formatNumber(bestApy, 2)}%
+                              </span>
+                              <span className={styles.bestProtocol}>
+                                {bestProtocol}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className={styles.notAvailable}>Not available</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+      
+      <div className={styles.twoColumnLayout}>
+        <div className={styles.column}>
+          <ProtocolScoreCard />
+        </div>
+        <div className={styles.column}>
           {!wallet.isConnected && (
-         <WalletCtaCard />
-      )}
-      <ProtocolScoreCard />
-      {/* <div className={styles.infoCard}>
-        <div className={styles.infoHeader}>
-          <div className={styles.infoIcon}>ℹ️</div>
-          <h3>Understanding APY Comparisons</h3>
+            <WalletCtaCard />
+          )}
+          <div className={styles.infoCard}>
+            <div className={styles.infoHeader}>
+              <div className={styles.infoIcon}>ℹ️</div>
+              <h3>Understanding APY Comparisons</h3>
+            </div>
+            <div className={styles.infoContent}>
+              <p>
+                This table displays real-time Annual Percentage Yield (APY) rates across major DeFi protocols for all supported assets. 
+                Rates are sourced directly from protocol APIs and smart contracts to provide the most up-to-date information.
+              </p>
+              <p>
+                <strong>Best Yield</strong> highlights the optimal opportunity for each asset, allowing you to identify the most 
+                rewarding strategies at a glance. Rates are subject to market conditions and protocol parameters.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className={styles.infoContent}>
-          <p>
-            This table displays real-time Annual Percentage Yield (APY) rates across major DeFi protocols for all supported assets. 
-            Rates are sourced directly from protocol APIs and smart contracts to provide the most up-to-date information.
-          </p>
-          <p>
-            <strong>Best Yield</strong> highlights the optimal opportunity for each asset, allowing you to identify the most 
-            rewarding strategies at a glance. Rates are subject to market conditions and protocol parameters.
-          </p>
-        </div>
-      </div> */}
+      </div>
+      
+      <div className={styles.dataSourcesFooter}>
+        <p>
+          <strong>Data Sources:</strong> On-chain data, protocol APIs, and verified market feeds. 
+          <span className={styles.refreshNotice}>Data refreshes every 5 minutes</span>
+        </p>
+      </div>
     </div>
   );
 };
