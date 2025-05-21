@@ -1,5 +1,4 @@
 import React from 'react';
-import { Tooltip } from 'react-tooltip';
 import styles from './Protocol.module.css';
 import aave from '../assets/protocols/aave.png'
 import radiant from '../assets/protocols/radiant.png'

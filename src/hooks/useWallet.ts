@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { WalletInfo } from '../types';
 
 export default function useWallet() {

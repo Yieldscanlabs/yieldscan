@@ -21,7 +21,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
   const { apyData } = useApyStore();
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const chainId = useChainId();
-  const { chains, switchChain } = useSwitchChain();
+  const { switchChain } = useSwitchChain();
   const { wallet } = useWalletConnection();
   
   // Check if the token is native (address is '0x')

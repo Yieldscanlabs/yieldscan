@@ -217,7 +217,7 @@ let autoRefreshInitialized = false;
  * Hook that sets up auto-refresh for APY data once
  */
 export function useApyAutoRefresh() {
-  const { fetchApys, autoRefreshEnabled } = useApyStore();
+  const { fetchApys } = useApyStore();
   
   useEffect(() => {
     // Skip if already initialized
@@ -256,7 +256,7 @@ const tokenAutoRefreshMap = new Map<string, boolean>();
  * @param address The token address
  */
 export function useTokenApyAutoRefresh(chainId: number, address: string) {
-  const { fetchApyForToken, autoRefreshEnabled } = useApyStore();
+  const { fetchApyForToken } = useApyStore();
   
   useEffect(() => {
     if (!chainId || !address) return;

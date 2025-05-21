@@ -14,7 +14,7 @@ import Logo from './components/Logo';
 import { Link } from 'react-router-dom';
 
 function App() {
-  const { wallet, isModalOpen, openConnectModal, closeConnectModal, disconnectWallet } = useWalletConnection();
+  const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [bestApyData, setBestApyData] = useState<BestApyResult | null>(null);
@@ -45,7 +45,6 @@ function App() {
   };
 
   const handleDeposit = ({ amount, dailyYield, yearlyYield }: { amount: string; dailyYield: string; yearlyYield: string }) => {
-    const protocol = bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
     
     setDepositAmount(amount);
     setDepositDailyYield(dailyYield);

@@ -1,4 +1,4 @@
-import type { SupportedChain, SupportedToken, YieldOption } from '../types';
+import type { SupportedChain, SupportedToken } from '../types';
 export function formatNumber(number: number | string, decimals: number = 2): string {
   const num = typeof number === 'string' ? parseFloat(number) : number;
   return num.toLocaleString(undefined, {

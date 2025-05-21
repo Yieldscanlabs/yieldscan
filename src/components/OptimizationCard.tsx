@@ -3,7 +3,6 @@ import styles from '../pages/MyYieldsPage.module.css';
 import type { Asset } from '../types';
 import { useChainId, useSwitchChain } from 'wagmi';
 import { useOptimizationStore } from '../store/optimizationStore';
-import OptimizationModal from './OptimizationModal';
 import Protocol from './Protocol';
 
 interface OptimizationCardProps {

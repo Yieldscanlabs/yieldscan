@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBrowserRouter, ScrollRestoration } from 'react-router-dom';
 import App from './App';
 import TermsPage from './pages/TermsPage';

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
 import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
@@ -12,13 +11,9 @@ import OptimizationCard from '../components/OptimizationCard';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
-import EarningsSummary from '../components/EarningsSummary';
 
 const MyYieldsPage: React.FC = () => {
-  const { address } = useAccount();
   const { assets, error, isLoading: loading } = useAssetStore();
-  const [totalDailyYield, setTotalDailyYield] = useState('0.00');
-  const [totalYearlyYield, setTotalYearlyYield] = useState('0.00');
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
   const [optimizations, setOptimizations] = useState<{
@@ -35,15 +30,12 @@ const MyYieldsPage: React.FC = () => {
   
   // Get the earnings data from the earnStore
   const { 
-    earningsData, 
-    getTotalEarnings,
     isLoading: earningsLoading
   } = useEarnStore();
   
   // No need to fetch manually here since it's now handled in Layout
   
   // Get total earnings for display
-  const totalEarnings = useMemo(() => getTotalEarnings(), [getTotalEarnings]);
 
   // Get unique protocols from tokens
   const uniqueProtocols = useMemo(() => 
@@ -158,8 +150,6 @@ const MyYieldsPage: React.FC = () => {
           });
         }
       }
-      setTotalDailyYield(formatNumber(dailyYieldTotal, 2));
-      setTotalYearlyYield(formatNumber(yearlyYieldTotal, 2));
       setOptimizations(potentialOptimizations);
     };
     
@@ -202,7 +192,7 @@ const MyYieldsPage: React.FC = () => {
   }
 
   // Add a handler for optimization button clicks
-  const handleOptimize = (optimization: typeof optimizations[0]) => {
+  const handleOptimize = () => {
     // Implement the optimization logic here
     // In a real app, this would initiate the token migration process
   };
@@ -218,6 +208,7 @@ const MyYieldsPage: React.FC = () => {
           <NetworkSelector
             selectedNetwork={selectedNetwork}
             networks={uniqueChainIds}
+            //@ts-ignore
             onChange={setSelectedNetwork}
             className={styles.networkSelector}
           />
@@ -243,6 +234,7 @@ const MyYieldsPage: React.FC = () => {
           <label className={styles.filterLabel}>Protocol</label>
           <ProtocolSelector
             selectedProtocol={selectedProtocol}
+            //@ts-ignore
             protocols={uniqueProtocols}
             onChange={setSelectedProtocol}
             className={styles.protocolSelector}
@@ -302,7 +294,7 @@ const MyYieldsPage: React.FC = () => {
                   betterProtocol={opt.betterProtocol}
                   betterApy={opt.betterApy}
                   additionalYearlyUsd={opt.additionalYearlyUsd}
-                  onOptimize={() => handleOptimize(opt)}
+                  onOptimize={() => handleOptimize()}
                 />
               ))}
             </div>

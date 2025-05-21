@@ -11,9 +11,9 @@ import ProtocolScoreCard from '../components/ProtocolScoreCard';
 import Protocol from '../components/Protocol';
 
 const LiveApyPage: React.FC = () => {
-  const { apyData, isLoading, error, lastUpdated, fetchApys } = useApyStore();
+  const { apyData, isLoading, error, fetchApys } = useApyStore();
   const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
-  const { wallet, openConnectModal } = useWalletConnection(); // Add this line
+  const { wallet } = useWalletConnection(); // Add this line
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -29,9 +29,6 @@ const LiveApyPage: React.FC = () => {
   }, []);
 
   // Format timestamp for last updated
-  const formattedLastUpdate = lastUpdated 
-    ? new Date(lastUpdated).toLocaleTimeString() 
-    : 'Never';
 
   // Filter tokens by selected chain
   const filteredTokens = React.useMemo(() => {

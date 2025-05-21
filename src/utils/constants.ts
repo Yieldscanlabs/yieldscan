@@ -1,4 +1,3 @@
-import type { Asset, YieldOption } from '../types';
 
 export const CHAIN_NAMES = {
   ETH: 'Ethereum',

@@ -15,13 +15,13 @@ export interface Asset {
     yieldBearingToken: boolean;
   balanceUsd: string;
     maxDecimalsShow: number;
-  icon: string;
+  icon?: string;
 }
 
 export interface YieldOption {
   id: string;
   protocol: string;
-  token: SupportedToken;
+  token: string;
   chain: SupportedChain;
   apy: number;
   tvl: string;

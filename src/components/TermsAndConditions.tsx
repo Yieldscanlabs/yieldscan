@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import styles from './TermsAndConditions.module.css';
 
 interface TermsAndConditionsProps {
@@ -20,7 +20,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ onAccept, onClo
       }
     }
   };
-
+console.log(hasAccepted)
   const handleAccept = () => {
     setHasAccepted(true);
     onAccept();

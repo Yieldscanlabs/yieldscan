@@ -1,7 +1,5 @@
-import { withdraw } from "viem/zksync";
 import ethTokens from "./eth.tokens";
 import bnbTokens from "./bnb.tokens";
-import baseTokens from "./base.tokens";
 
 const tokens = [
   ...ethTokens,

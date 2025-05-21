@@ -12,6 +12,7 @@ export interface NetworkOption {
 
 interface NetworkSelectorProps {
   selectedNetwork: number | 'all';
+  //@ts-ignore
   onChange: (chainId: number | SupportedChain | 'all') => void;
   className?: string;
 }

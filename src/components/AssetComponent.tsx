@@ -22,14 +22,13 @@ interface AssetComponentProps {
 
 const AssetComponent: React.FC<AssetComponentProps> = ({
   asset,
-  yieldInfo,
   isSelected,
   price,
   onSelect
 }) => {
   
   // Move useBestApy here from YieldOption component
-  const { apyData, isLoading: apyLoading, error: apyError } = useApyStore();
+  const { apyData, isLoading: apyLoading  } = useApyStore();
   const bestApyData = getBestYield(apyData, asset.chainId, asset.address);
   
   // Enhanced onSelect handler that includes bestApy data

@@ -63,8 +63,6 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   // Initialize yield hooks for both protocols
   const { 
     withdraw,
-    isWithdrawing,
-    isConfirming: isConfirmingWithdraw,
     isConfirmed: isConfirmedWithdraw
   } = useUnifiedYield({
     protocol: currentProtocol as SupportedProtocol,
@@ -76,8 +74,6 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   
   const {
     supply,
-    isSupplying,
-    isConfirming: isConfirmingSupply,
     isConfirmed: isConfirmedSupply
   } = useUnifiedYield({
     protocol: betterProtocol as SupportedProtocol,
@@ -91,7 +87,6 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   const {
     hasEnoughAllowance,
     approve,
-    isApproving
   } = useERC20({
     tokenAddress: underlyingToken?.address as `0x${string}` || '0x',
     spenderAddress: betterProtocolAddress,

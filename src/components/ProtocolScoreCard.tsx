@@ -1,6 +1,5 @@
 import React from 'react';
 import styles from './ProtocolScoreCard.module.css';
-import { PROTOCOL_NAMES } from '../utils/constants';
 import Protocol from './Protocol';
 
 interface ProtocolScore {

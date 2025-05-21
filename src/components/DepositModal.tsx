@@ -48,7 +48,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
   amount,
   amountUsd,
   protocol,
-  dailyYieldUsd,
   yearlyYieldUsd
 }) => {
   const [step, setStep] = useState(1);
@@ -65,7 +64,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
   
   // Initialize ERC20 hook for approval checking
   const { 
-    allowance,
     hasEnoughAllowance,
     approve,
     isApproving
@@ -78,10 +76,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   const { 
     supply, 
-    isSupplying, 
-    isConfirmed,
     supplyETH,
-    withdrawETH
   } = useUnifiedYield({
         protocol: protocol as SupportedProtocol,
         contractAddress: protocolAddress as `0x${string}` || '0x',

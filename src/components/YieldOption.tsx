@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import type { YieldOption as YieldOptionType } from '../types';
 import type { Asset } from '../types';
 import styles from './AssetList.module.css';
 import type { BestApyResult } from '../hooks/useBestApy';

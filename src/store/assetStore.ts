@@ -143,6 +143,7 @@ export const useAssetStore = create<AssetStore>()(
                   protocol: token.protocol,
                   withdrawContract: token.withdrawContract,
                   balance,
+                  //@ts-ignore
                   withdrawUri: token?.withdrawUri,
                   yieldBearingToken: Boolean(token.yieldBearingToken),
                   chainId: token.chainId,

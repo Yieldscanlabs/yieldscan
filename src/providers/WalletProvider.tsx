@@ -1,7 +1,7 @@
 import { WagmiProvider } from 'wagmi'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { config, queryClient } from '../config/wagmi'
+// import { QueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { config } from '../main'
 
 interface WalletProviderProps {
   children: ReactNode
@@ -10,9 +10,9 @@ interface WalletProviderProps {
 export function WalletProvider({ children }: WalletProviderProps) {
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
+      {/* <QueryClientProvider client={QueryClient }> */}
         {children}
-      </QueryClientProvider>
+      {/* </QueryClientProvider> */}
     </WagmiProvider>
   )
 }

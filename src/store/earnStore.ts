@@ -58,8 +58,6 @@ const AUTO_REFRESH_INTERVAL = 30000;
 
 // Constants for time calculations
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-const ONE_WEEK_MS = 7 * ONE_DAY_MS;
-const ONE_MONTH_MS = 30 * ONE_DAY_MS;
 const ONE_YEAR_MS = 365 * ONE_DAY_MS;
 
 export const useEarnStore = create<EarnStore>()(
@@ -233,9 +231,6 @@ export const useEarnStore = create<EarnStore>()(
           // Calculate earnings
           const balanceNum = parseFloat(asset.balance);
           const yearlyEarnings = balanceNum * (apy / 100);
-          const dailyEarnings = yearlyEarnings / 365;
-          const weeklyEarnings = dailyEarnings * 7;
-          const monthlyEarnings = dailyEarnings * 30;
           const lifetimeEarnings = (yearlyEarnings / ONE_YEAR_MS) * timeElapsedMs;
           
           set(state => {
@@ -376,7 +371,7 @@ const tokenAutoRefreshMap = new Map<string, boolean>();
  * @param address The token address
  */
 export function useTokenEarningsAutoRefresh(walletAddress: string, chainId: number, address: string) {
-  const { fetchEarningsForToken, autoRefreshEnabled } = useEarnStore();
+  const { fetchEarningsForToken } = useEarnStore();
   const { assets } = useAssetStore();
   const { apyData } = useApyStore();
   

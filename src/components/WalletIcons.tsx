@@ -1,4 +1,3 @@
-import React from 'react'
 import metamask from '../assets/metamask.svg'
 import phantom from '../assets/phantom.png'
 export const MetaMaskIcon = () => <img src={metamask} />

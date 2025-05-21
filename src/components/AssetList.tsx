@@ -70,7 +70,6 @@ const AssetList: React.FC<AssetListProps> = ({
   }
   
   // Get unique chain IDs from assets for the network selector
-  const uniqueChainIds = Array.from(new Set(assets.map(asset => asset.chain)))
   
   // Filter assets by selected network
   const regularAssets = assets.filter(asset => 
@@ -78,13 +77,6 @@ const AssetList: React.FC<AssetListProps> = ({
     (selectedNetwork === 'all' || asset.chainId === selectedNetwork)
   );
   
-  if (regularAssets.length === 0) {
-    return (
-      <div className={styles['no-assets']}>
-        <p>No valid assets found in your wallet</p>
-      </div>
-    );
-  }
   
   return (
     <div className={styles['asset-list']}>
@@ -98,8 +90,12 @@ const AssetList: React.FC<AssetListProps> = ({
           className={styles.networkSelector}
         />
       </div>
-      
-      <div className={styles['asset-grid']}>
+      {
+        regularAssets.length === 0 && (
+          <div className={styles['no-assets']}>
+            <p>No valid assets found in your wallet</p>
+          </div>
+        ) || <div className={styles['asset-grid']}>
         {regularAssets.map((asset) => {
           const assetKey = `${asset.token}-${asset.chain}`;
           const yieldInfo = assetYields[assetKey];
@@ -116,6 +112,8 @@ const AssetList: React.FC<AssetListProps> = ({
           );
         })}
       </div>
+      }
+      
     </div>
   );
 };

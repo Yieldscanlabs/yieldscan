@@ -4,7 +4,7 @@ import Footer from './Footer';
 import styles from './Layout.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import { useApyAutoRefresh, useApyStore } from '../store/apyStore';
-import { useAssetAutoRefresh, useAssetStore } from '../store/assetStore';
+import { useAssetStore } from '../store/assetStore';
 import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
 import { useEffect } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
