@@ -519,6 +519,11 @@
   gap: 10px;
 }
 
+.assetIconWrapper {
+  position: relative;
+  min-width: 32px;
+}
+
 .assetIconSmall {
   width: 32px;
   height: 32px;
@@ -738,16 +743,17 @@
 .optimizationCardCompact {
   background-color: var(--surface-dark);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: 1.25rem;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
 .optimizationCardCompact:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -763,15 +769,31 @@
   gap: 0.5rem;
 }
 
-.assetIconSmall {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+.assetIconWrapper {
+  position: relative;
+  margin-right: 10px;
 }
 
-.assetNameBold {
-  font-weight: 600;
-  color: var(--text-primary);
+.assetIconSmall {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chainIconOverlay {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.arrowIcon, .arrowRightIcon {
+  color: var(--primary-color);
 }
 
 .improvementBadge {
@@ -811,6 +833,17 @@
   flex-direction: column;
 }
 
+.arrowContainer {
+  padding: 0 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrowIcon, .arrowRightIcon {
+  color: var(--primary-color);
+}
+
 .protocolName {
   font-weight: 500;
   font-size: 0.85rem;
@@ -828,15 +861,6 @@
   font-size: 0.9rem;
   color: var(--success-color);
   font-weight: 700;
-}
-
-.arrowContainer {
-  padding: 0 0.5rem;
-}
-
-.arrow {
-  color: var(--text-tertiary);
-  font-size: 1.1rem;
 }
 
 .benefitRow {
@@ -868,6 +892,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 2.5rem;
 }
 
@@ -883,6 +908,13 @@
   transform: none;
 }
 
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
 .loadingIndicatorSmall {
   width: 1rem;
   height: 1rem;
@@ -890,16 +922,12 @@
   border-left-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto;
+  margin: 0;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .optimizationEmptyState {

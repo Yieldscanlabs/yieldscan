@@ -11,6 +11,7 @@ import WithdrawModal from './WithdrawModal';
 import { useChainId, useSwitchChain } from 'wagmi';
 import Protocol from './Protocol';
 import useWalletConnection from '../hooks/useWalletConnection';
+import { getNetworkIcon } from '../utils/networkIcons';
 
 interface YieldCardProps {
   asset: Asset;
@@ -131,18 +132,21 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
     }
   };
 
-  const chainName = getChainName(asset.chainId);
+  // Get chain icon for overlay
+  const chainIcon = getNetworkIcon(asset.chainId);
   
   return (
     <div className={styles.yieldCardSlim}>
       <div className={styles.cardTopSection}>
         <div className={styles.assetInfoSlim}>
-          <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
+          <div className={styles.assetIconWrapper}>
+            <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
+            <img src={chainIcon} alt="Chain" className={styles.chainIconOverlay} />
+          </div>
           <div>
             <div className={styles.assetNameBold}>{asset.token}</div>
             <div className={styles.detailsRow}>
               <Protocol name={protocol} showLogo={true} className={styles.protocolBadge} />
-              <span className={styles.chainBadge}>{chainName}</span>
             </div>
           </div>
         </div>
@@ -171,33 +175,33 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
         </div>
       </div>
       
-<div className={styles.cardActionRow}>
-  {asset.withdrawUri ? (
-    <a 
-      href={asset.withdrawUri} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      className={styles.actionButton}
-    >
-      <span className={styles.buttonIcon}>↗</span> 
-      Withdraw on {new URL(asset.withdrawUri).hostname.replace('www.', '')}
-    </a>
-  ) : (
-    <button className={styles.actionButton} onClick={openWithdrawModal}>
-      <span className={styles.buttonIcon}>↓</span> 
-      {chainId !== asset.chainId 
-        ? `Withdraw`
-        : 'Withdraw'
-      }
-    </button>
-  )}
-  
-  {onOptimize && (
-    <button className={styles.actionButtonAccent} onClick={onOptimize}>
-      <span className={styles.buttonIcon}>↗</span> Optimize
-    </button>
-  )}
-</div>
+      <div className={styles.cardActionRow}>
+        {asset.withdrawUri ? (
+          <a 
+            href={asset.withdrawUri} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={styles.actionButton}
+          >
+            <span className={styles.buttonIcon}>↗</span> 
+            Withdraw on {new URL(asset.withdrawUri).hostname.replace('www.', '')}
+          </a>
+        ) : (
+          <button className={styles.actionButton} onClick={openWithdrawModal}>
+            <span className={styles.buttonIcon}>↓</span> 
+            {chainId !== asset.chainId 
+              ? `Withdraw`
+              : 'Withdraw'
+            }
+          </button>
+        )}
+        
+        {onOptimize && (
+          <button className={styles.actionButtonAccent} onClick={onOptimize}>
+            <span className={styles.buttonIcon}>↗</span> Optimize
+          </button>
+        )}
+      </div>
       
       <WithdrawModal
         isOpen={isWithdrawModalOpen}

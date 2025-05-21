@@ -4,6 +4,7 @@ import type { Asset } from '../types';
 import { useChainId, useSwitchChain } from 'wagmi';
 import { useOptimizationStore } from '../store/optimizationStore';
 import Protocol from './Protocol';
+import { getNetworkIcon } from '../utils/networkIcons';
 
 interface OptimizationCardProps {
   asset: Asset;
@@ -79,12 +80,18 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
       });
     }
   };
+
+  // Get chain icon based on asset's chainId
+  const chainIcon = getNetworkIcon(asset.chainId);
   
   return (
     <div className={styles.optimizationCardCompact}>
       <div className={styles.cardHeader}>
         <div className={styles.assetInfoCompact}>
-          <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
+          <div className={styles.assetIconWrapper}>
+            <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
+            <img src={chainIcon} alt="Chain" className={styles.chainIconOverlay} />
+          </div>
           <span className={styles.assetNameBold}>{asset.token}</span>
         </div>
         <div className={styles.improvementBadge}>+{apyImprovement}%</div>
@@ -100,7 +107,9 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
         </div>
         
         <div className={styles.arrowContainer}>
-          <span className={styles.arrow}>→</span>
+          <svg className={styles.arrowIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
         
         <div className={styles.protocolItem}>
@@ -123,9 +132,17 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
         disabled={isSwitchingNetwork}
       >
         {networkSwitchStatus === 'switching' ? (
-          <span className={styles.loadingIndicatorSmall}></span>
+          <div className={styles.loadingContainer}>
+            <span className={styles.loadingIndicatorSmall}></span>
+            <span>Switching network...</span>
+          </div>
         ) : (
-          'Optimize'
+          <>
+            <span>Optimize</span>
+            <svg className={styles.arrowRightIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 5L20 12L13 19M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </>
         )}
       </button>
     </div>
