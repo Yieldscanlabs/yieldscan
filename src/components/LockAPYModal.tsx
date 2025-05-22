@@ -2,6 +2,8 @@ import React from 'react';
 import styles from '../pages/MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import type { Asset } from '../types';
+import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
+import Protocol from './Protocol';
 
 interface LockAPYModalProps {
   isOpen: boolean;
@@ -31,6 +33,10 @@ const LockAPYModal: React.FC<LockAPYModalProps> = ({
   isProcessing = false
 }) => {
   if (!isOpen) return null;
+
+  // Get the chain icon for the asset
+  const chainIcon = getNetworkIcon(asset.chainId);
+  const chainName = getNetworkName(asset.chainId);
 
   // Format expiration date for display
   const formattedExpirationDate = new Date(expirationDate).toLocaleDateString('en-US', {
@@ -79,9 +85,13 @@ const LockAPYModal: React.FC<LockAPYModalProps> = ({
             <div className={styles.assetInfoLarge}>
               <div className={styles.assetIconWrapperLarge}>
                 <img src={asset.icon} alt={asset.token} className={styles.assetIconMedium} />
+                <img src={chainIcon} alt={chainName} className={styles.chainIconOverlayLarge} />
               </div>
               <div>
                 <div className={styles.assetNameBold}>{asset.token}</div>
+                <div className={styles.protocolRow}>
+                  <Protocol name={asset.protocol || protocol.name} showLogo={true} />
+                </div>
                 <div className={styles.assetBalance}>
                   Balance: {formatNumber(parseFloat(asset.balance), asset.maxDecimalsShow || 6)} {asset.token}
                 </div>
@@ -99,6 +109,13 @@ const LockAPYModal: React.FC<LockAPYModalProps> = ({
               <div className={styles.lockDetailRow}>
                 <span className={styles.lockDetailLabel}>Protocol:</span>
                 <span className={styles.lockDetailValue}>{protocol.name}</span>
+              </div>
+              <div className={styles.lockDetailRow}>
+                <span className={styles.lockDetailLabel}>Network:</span>
+                <span className={styles.lockDetailValue}>
+                  <img src={chainIcon} alt={chainName} className={styles.chainIconTiny} />
+                  {chainName}
+                </span>
               </div>
               <div className={styles.lockDetailRow}>
                 <span className={styles.lockDetailLabel}>Locks until:</span>

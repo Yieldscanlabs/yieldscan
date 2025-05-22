@@ -1,0 +1,485 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid var(--border-color);
+}
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background-color: var(--surface-medium);
+  color: var(--text-primary);
+}
+
+.modalContent {
+  padding: 1.5rem;
+}
+
+.assetInfo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.assetIconWrapper {
+  position: relative;
+  margin-right: 1rem;
+}
+
+.assetIcon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+}
+
+.chainIconOverlay {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.chainIconSmall {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.assetDetails {
+  flex: 1;
+}
+
+.assetName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.protocolWrapper {
+  margin-bottom: 0.4rem;
+}
+
+.assetBalance {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.assetBalanceUsd {
+  margin-left: 0.5rem;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+}
+
+.lockDetails {
+  margin-bottom: 1.5rem;
+}
+
+.explanation {
+  background-color: var(--surface-medium);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.lockInfo {
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.lockInfoRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.lockInfoRow:last-child {
+  margin-bottom: 0;
+}
+
+.lockInfoLabel {
+  color: var(--text-tertiary);
+}
+
+.lockInfoValue {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+}
+
+.progressSection {
+  margin-top: 1.5rem;
+}
+
+.progressBarWrapper {
+  height: 6px;
+  background-color: var(--surface-medium);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.statusMessage {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  min-height: 1.5rem;
+}
+
+.modalFooter {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+}
+
+.cancelButton, .retryButton {
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  min-width: 150px;
+}
+
+.cancelButton {
+  background-color: var(--surface-medium);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.cancelButton:hover {
+  background-color: var(--surface-light);
+}
+
+.retryButton {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.retryButton:hover {
+  background-color: var(--primary-dark-color);
+}
+
+.cancelButton:disabled, .retryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Detail rows for asset info */
+.depositDetails {
+  margin-bottom: 1.5rem;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.detailLabel {
+  color: var(--text-tertiary);
+}
+
+.detailValue {
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subDetail {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin-left: 0.5rem;
+}
+
+.assetIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chainIconSmall {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+
+.chainIconOverlay {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.explanation {
+  background-color: var(--surface-medium);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* Progress Steps Styling */
+.progressContainer {
+  margin-top: 1.5rem;
+}
+
+.verticalProgressSteps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin: 1.5rem 0;
+  padding: 0.5rem 0;
+}
+
+.verticalProgressStep {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0.5rem 0;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.verticalProgressStep.active {
+  opacity: 1;
+}
+
+.verticalProgressStep.completed .stepDot {
+  background-color: var(--success-color, #00e679);
+  border-color: var(--success-color, #00e679);
+  color: white;
+}
+
+.verticalProgressLine {
+  width: 2px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.15);
+  margin-left: 16px;
+}
+
+.stepDot {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background-color: var(--surface-medium, #1e1e1e);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 12px;
+  transition: all 0.3s;
+  color: var(--text-secondary);
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stepLabel {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.stepDescription {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #a0a0a0);
+  margin-top: 2px;
+}
+
+.stepSpinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary-color, #6c5ce7);
+  animation: spin 1s linear infinite;
+  margin-top: 8px;
+}
+
+.successText {
+  color: var(--success-color, #00e679);
+}
+
+.errorText {
+  color: var(--error-color, #ff5e5b);
+}
+
+/* Success container */
+.successContainer {
+  background-color: rgba(0, 230, 121, 0.1);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(0, 230, 121, 0.2);
+}
+
+.successIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--success-color);
+  color: white;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.successTitle {
+  color: var(--success-color);
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.successMessage {
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.completeButton {
+  background: var(--success-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.completeButton:hover {
+  filter: brightness(1.1);
+}
+
+/* Error section */
+.error {
+  margin-top: 1rem;
+  color: var(--error-color, #ff5e5b);
+  text-align: center;
+  background-color: rgba(255, 94, 91, 0.1);
+  padding: 1rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(255, 94, 91, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.retryButton {
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.75rem;
+}
+
+.retryButton:hover {
+  filter: brightness(1.1);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 

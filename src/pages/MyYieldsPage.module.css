@@ -1444,3 +1444,45 @@
   transform: none;
   box-shadow: none;
 }
+
+/* Chain icon styles for Lock APY Modal */
+.chainIconOverlayLarge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.chainIconSmall {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.chainIconTiny {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.assetChainRow {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.protocolRow {
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+}

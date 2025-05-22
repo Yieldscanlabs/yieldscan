@@ -9,6 +9,7 @@ import { useApyStore } from '../store/apyStore';
 import useUnifiedYield from '../hooks/useUnifiedYield';
 import WithdrawModal from './WithdrawModal';
 import LockAPYModal from './LockAPYModal';
+import LockModal from './LockModal';
 import { useChainId, useSwitchChain } from 'wagmi';
 import Protocol from './Protocol';
 import useWalletConnection from '../hooks/useWalletConnection';
@@ -40,6 +41,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
   const { apyData } = useApyStore();
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isLockAPYModalOpen, setIsLockAPYModalOpen] = useState(false);
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [isProcessingLock, setIsProcessingLock] = useState(false);
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
@@ -151,22 +153,29 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
     setIsLockAPYModalOpen(false);
   };
   
-  // Handle lock APY confirm
+  // Handle lock APY confirm - when user confirms in the LockAPYModal
   const handleLockAPYConfirm = async () => {
-    if (onLockAPY) {
-      setIsProcessingLock(true);
-      try {
-        // Call the parent's onLockAPY function
+    // Close the explanation modal
+    setIsLockAPYModalOpen(false);
+    
+    // Open the transaction modal
+    setIsLockModalOpen(true);
+  };
+  
+  // Close lock modal
+  const closeLockModal = () => {
+    setIsLockModalOpen(false);
+  };
+  
+  // Handle lock modal completion
+  const handleLockComplete = (success: boolean) => {
+    setIsLockModalOpen(false);
+    
+    if (success && onLockAPY) {
+      // Call the parent's onLockAPY function if provided
+      setTimeout(() => {
         onLockAPY();
-        // Close the modal after a short delay to simulate processing
-        setTimeout(() => {
-          setIsProcessingLock(false);
-          setIsLockAPYModalOpen(false);
-        }, 1000);
-      } catch (error) {
-        console.error('Error locking APY:', error);
-        setIsProcessingLock(false);
-      }
+      }, 1000);
     }
   };
   
@@ -295,15 +304,27 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
       />
       
       {lockYieldDetails && (
-        <LockAPYModal
-          isOpen={isLockAPYModalOpen}
-          onClose={closeLockAPYModal}
-          onConfirm={handleLockAPYConfirm}
-          asset={asset}
-          protocol={lockYieldDetails.protocol}
-          expirationDate={lockYieldDetails.expirationDate}
-          isProcessing={isProcessingLock}
-        />
+        <>
+          <LockAPYModal
+            isOpen={isLockAPYModalOpen}
+            onClose={closeLockAPYModal}
+            onConfirm={handleLockAPYConfirm}
+            asset={asset}
+            protocol={lockYieldDetails.protocol}
+            expirationDate={lockYieldDetails.expirationDate}
+            isProcessing={isProcessingLock}
+          />
+          
+          <LockModal
+            isOpen={isLockModalOpen}
+            onClose={closeLockModal}
+            onComplete={handleLockComplete}
+            asset={asset}
+            protocol={lockYieldDetails.protocol.name}
+            expirationDate={lockYieldDetails.expirationDate}
+            lockDetails={lockYieldDetails.protocol}
+          />
+        </>
       )}
     </div>
   );
