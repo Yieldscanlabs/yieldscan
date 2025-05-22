@@ -1,20 +1,76 @@
-import React from 'react';
-import { Tooltip } from 'react-tooltip';
+import React, { useEffect } from 'react';
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
+import 'tippy.js/animations/shift-away.css';
 import type { MaturityBadgeProps } from './types';
+
+// Create a style object for the Tippy tooltip
+const tippyStyles = {
+  backgroundColor: '#2D3748',
+  color: '#fff',
+  borderRadius: '6px',
+  fontSize: '12px',
+  lineHeight: 1.5,
+  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  padding: '10px 14px',
+};
 
 const MaturityBadge: React.FC<MaturityBadgeProps> = ({
   maturityDate,
   formattedMaturityDate,
   daysUntilMaturity
 }) => {
-  const tooltipId = `maturity-tooltip-${daysUntilMaturity}`;
   const maturityLabel = daysUntilMaturity === 0 ? 'Matured' : `${daysUntilMaturity}d`;
 
+  // Add custom styles once when component mounts
+  useEffect(() => {
+    const styleElement = document.getElementById('tippy-custom-styles');
+    
+    if (!styleElement) {
+      const style = document.createElement('style');
+      style.id = 'tippy-custom-styles';
+      style.innerHTML = `
+        .tippy-box[data-theme='dark'] {
+          background-color: #2D3748;
+          color: #fff;
+          border-radius: 6px;
+          font-size: 12px;
+          line-height: 1.5;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .tippy-box[data-theme='dark'] .tippy-content {
+          padding: 10px 14px;
+        }
+        .tippy-box[data-theme='dark'] .tippy-arrow {
+          color: #2D3748;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
+  const tooltipContent = (
+    <div style={tippyStyles}>
+      <div style={{ fontWeight: 600, marginBottom: '4px' }}>Maturity: {formattedMaturityDate}</div>
+      <p style={{ margin: 0, textAlign: 'left' }}>
+        The PT can be redeemed only with the YT before the maturity date, and after the maturity the PT can be redeemed alone.
+      </p>
+    </div>
+  );
+
   return (
-    <>
+    <Tippy
+      content={tooltipContent}
+      animation="shift-away"
+      placement="top"
+      arrow={true}
+      duration={200}
+      maxWidth={350}
+      interactive={true}
+      appendTo={document.body}
+    >
       <div 
         className="maturityBadge"
-        data-tooltip-id={tooltipId}
         style={{
           position: 'relative',
           marginLeft: '8px',
@@ -37,30 +93,7 @@ const MaturityBadge: React.FC<MaturityBadgeProps> = ({
         </svg>
         {maturityLabel}
       </div>
-
-      <Tooltip 
-        id={tooltipId}
-        place="top"
-        style={{
-          backgroundColor: '#2D3748',
-          color: '#fff',
-          borderRadius: '6px',
-          fontSize: '12px',
-          lineHeight: '1.5',
-          maxWidth: '350px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          padding: '10px 14px',
-          zIndex: 9999
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 600, marginBottom: '4px' }}>Maturity: {formattedMaturityDate}</div>
-          <p style={{ margin: 0, textAlign: 'left' }}>
-            The PT can be redeemed only with the YT before the maturity date, and after the maturity the PT can be redeemed alone.
-          </p>
-        </div>
-      </Tooltip>
-    </>
+    </Tippy>
   );
 };
 
