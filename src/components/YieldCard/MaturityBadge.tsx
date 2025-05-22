@@ -21,7 +21,7 @@ const MaturityBadge: React.FC<MaturityBadgeProps> = ({
       <div className="tooltip">
         <div className="tooltip-title">Maturity: {formattedMaturityDate}</div>
         <p className="tooltip-description">
-          The PT can be redeemed only with the YT before the maturity date, and after the maturity the PT can be redeemed alone.
+          Before maturity, Principal Tokens (PT) can only be redeemed together with their corresponding Yield Tokens (YT). After the maturity date, PT can be redeemed on its own without needing the YT.
         </p>
       </div>
     </div>
