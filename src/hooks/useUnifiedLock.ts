@@ -1,5 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Asset } from '../types';
+import { parseUnits, type Address } from 'viem';
+import axios from 'axios';
+import { useAccount, useChainId, useWriteContract, useWaitForTransactionReceipt, useSendTransaction, useReadContract } from 'wagmi';
+import { erc20Abi, hasEnoughAllowance, approveExact, approveUnlimited, safeApprove, getTokenAllowance } from '../utils/erc20Utils';
+
+const HOSTED_SDK_URL = 'https://api-v2.pendle.finance/core';
 
 interface LockDetails {
   name: string;
@@ -7,6 +13,7 @@ interface LockDetails {
   ytAddress: string;
   ptAddress: string;
   swapAddress: string;
+  ytMarketAddress: string;
   ytDecimals: number;
   ptDecimals: number;
 }
@@ -16,6 +23,56 @@ interface UseUnifiedLockProps {
   lockDetails: LockDetails;
   asset: Asset;
   expirationDate: string;
+}
+
+interface MintPyData {
+  amountOut: string;
+  priceImpact: string;
+}
+
+interface SwapData {
+  amountOut: string;
+  priceImpact: string;
+}
+
+type MethodReturnType<Data> = {
+  tx: {
+    data: string;
+    to: string;
+    value: string;
+  };
+  data: Data;
+};
+
+/**
+ * Call Pendle SDK API endpoints
+ */
+async function callSDK<Data>(path: string, params: Record<string, any> = {}) {
+  const response = await axios.get<MethodReturnType<Data>>(HOSTED_SDK_URL + path, {
+    params
+  });
+  return response.data;
+}
+
+/**
+ * Check if an error is a user transaction rejection
+ */
+function isUserRejection(error: any): boolean {
+  if (!error) return false;
+  
+  // Get the error message as a string
+  const errorMessage = (error.message || error.toString()).toLowerCase();
+  
+  // Check for common wallet rejection patterns
+  return (
+    errorMessage.includes('user rejected') || 
+    errorMessage.includes('user denied') || 
+    errorMessage.includes('user cancelled') ||
+    errorMessage.includes('rejected by user') ||
+    errorMessage.includes('transaction was rejected') ||
+    errorMessage.includes('rejected transaction') ||
+    errorMessage.includes('user declined')
+  );
 }
 
 /**
@@ -28,15 +85,154 @@ export default function useUnifiedLock({
   asset,
   expirationDate
 }: UseUnifiedLockProps) {
+  // Get wallet and chain information using wagmi
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const { writeContractAsync } = useWriteContract();
+  const { sendTransactionAsync } = useSendTransaction();
+  const isPendle = protocol.toLowerCase() === 'pendle';
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLocking, setIsLocking] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [ytAmountOut, setYtAmountOut] = useState<string>('0');
+  const [ptAmountOut, setPtAmountOut] = useState<string>('0');
+  const [swappedTokenAmount, setSwappedTokenAmount] = useState<string>('0');
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [isApproving, setIsApproving] = useState(false);
+  
+  // Transaction receipt for last transaction
+  const { isLoading: isWaitingForTx, isSuccess: isTxConfirmed } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  // Update isConfirming and isConfirmed based on transaction status
+  useEffect(() => {
+    setIsConfirming(isWaitingForTx);
+    setIsConfirmed(isTxConfirmed);
+  }, [isWaitingForTx, isTxConfirmed]);
   
   // Determine total steps based on protocol
-  const totalSteps = protocol.toLowerCase() === 'pendle' ? 4 : 2;
+  const totalSteps = isPendle ? 4 : 2;
+  
+
+
+  const mintPyFromSy = async (amount: string): Promise<string | undefined> => {
+    try {
+      if (!address) {
+        throw new Error('No wallet connected');
+      }
+      
+      // Convert amount to proper decimals format (bigint)
+      const amountInWei = parseUnits(amount, asset.decimals).toString();
+      
+      // Call Pendle SDK to get transaction data
+      const res = await callSDK<MintPyData>(`/v1/sdk/${chainId}/mint`, {
+        receiver: address,
+        yt: lockDetails.ytAddress,
+        slippage: 0.01, // 1% slippage
+        tokenIn: asset.address,
+        amountIn: amountInWei, // Now using the proper bigint format
+      });
+      
+      console.log(res);
+      setYtAmountOut(res.data.amountOut);
+      setPtAmountOut(res.data.amountOut); 
+      
+      // Send transaction using sendTransaction hook which supports raw transactions
+      try {
+        const hash = await sendTransactionAsync({
+          to: res.tx.to as `0x${string}`,
+          data: res.tx.data as `0x${string}`,
+          value: res.tx.value ? BigInt(res.tx.value) : undefined,
+        });
+        
+        setTxHash(hash);
+        return res.data.amountOut;
+      } catch (txError) {
+        console.error('Transaction submission error:', txError);
+        
+        // Check if user rejected the transaction
+        if (isUserRejection(txError)) {
+          // Propagate this specific error upward so it can be handled properly
+          throw txError;
+        }
+        
+      }
+    } catch (error) {
+      console.error('Error in mintPyFromSy:', error);
+      
+      // Re-throw user rejection errors so they propagate up
+      if (isUserRejection(error)) {
+        throw error;
+      }
+    }
+  };
+  
+  /**
+   * Swap YT tokens for the underlying token
+   */
+  const swapYtToToken = async (ytAmount: string): Promise<boolean> => {
+    try {
+      if (!address) {
+        throw new Error('No wallet connected');
+      }
+      
+      // Convert amount to proper decimals format (bigint)
+      const amountInWei = ytAmount;
+      console.log("YT amount to swap:", amountInWei, lockDetails.ytDecimals);
+      
+      // Call Pendle SDK to get transaction data for the swap
+      const marketAddress = lockDetails.ytMarketAddress;
+      const res = await callSDK<SwapData>(`/v1/sdk/${chainId}/markets/${marketAddress}/swap`, {
+        receiver: address,
+        slippage: 0.01, // 1% slippage
+        tokenIn: lockDetails.ytAddress,
+        tokenOut: asset.address, // Swapping back to the original asset
+        amountIn: amountInWei,
+      });
+      
+      console.log("Swap response:", res);
+      console.log("Amount out:", res.data.amountOut);
+      console.log("Price impact:", res.data.priceImpact);
+      
+      // Store the amount of tokens received from the swap
+      setSwappedTokenAmount(res.data.amountOut);
+      
+      // Send transaction using sendTransaction hook
+      try {
+        const hash = await sendTransactionAsync({
+          to: res.tx.to as `0x${string}`,
+          data: res.tx.data as `0x${string}`,
+          value: res.tx.value ? BigInt(res.tx.value) : undefined,
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (txError) {
+        console.error('Transaction submission error:', txError);
+        
+        // Check if user rejected the transaction
+        if (isUserRejection(txError)) {
+          // Propagate this specific error upward so it can be handled properly
+          throw txError;
+        }
+        
+        return false;
+      }
+    } catch (error) {
+      console.error('Error in swapYtToToken:', error);
+      
+      // Re-throw user rejection errors so they propagate up
+      if (isUserRejection(error)) {
+        throw error;
+      }
+      
+      return false;
+    }
+  };
   
   /**
    * Lock the yield until the expiration date
@@ -45,46 +241,135 @@ export default function useUnifiedLock({
   const lock = async (amount: string): Promise<boolean> => {
     try {
       // Simulate a protocol-specific flow
-      if (protocol.toLowerCase() === 'pendle') {
+      if (isPendle) {
         // Pendle flow: approve > swap > approve YT > sell YT
         
-        // Step 1: Approve the underlying token for swap
-        setIsApproving(true);
+        // Step 1: Check if approval is needed, then approve the underlying token for swap
         setCurrentStep(1);
-        await simulateDelay(1500); // Simulate approval delay
+        
+        setIsApproving(true);
+        try {
+          const allowance = await getTokenAllowance(
+            asset.address as Address,
+            address as Address,
+            lockDetails.swapAddress as Address
+          );
+          if(allowance < parseUnits(amount, asset.decimals)) {
+          const hash = await safeApprove(
+            asset.address as Address, 
+            lockDetails.swapAddress as Address,
+            amount,
+            asset.decimals,
+            writeContractAsync
+          );
+          if (!hash) {
+            setIsApproving(false);
+            return false;
+          }
+          setTxHash(hash);
+          
+          // Wait for confirmation
+          await new Promise(resolve => {
+            const checkConfirmation = () => {
+              if (isTxConfirmed) {
+                resolve(true);
+              } else {
+                setTimeout(checkConfirmation, 1000);
+              }
+            };
+            checkConfirmation();
+          });
+        } 
+        } catch (error) {
+          console.error('Error in asset approval:', error);
+          setIsApproving(false);
+          
+          // Propagate user rejection errors
+          if (isUserRejection(error)) {
+            throw error;
+          }
+          
+          return false;
+        }
         setIsApproving(false);
         
         // Step 2: Swap the underlying token for PT/YT
         setIsSwapping(true);
         setCurrentStep(2);
-        await simulateDelay(2000); // Simulate swap delay
+        
+        // Use Pendle SDK to mint PT/YT tokens
+        const mintResult = await mintPyFromSy(amount);
+        if (!mintResult) {
+          setIsSwapping(false);
+          return false;
+        }
+        
         setIsSwapping(false);
         
-        // Step 3: Approve YT for selling
-        setIsApproving(true);
+        // Step 3: Approve YT for selling to market
         setCurrentStep(3);
-        await simulateDelay(1500); // Simulate YT approval delay
+        
+        // Always approve YT tokens - don't rely on checking allowance as it might not be loaded yet
+        setIsApproving(true);
+        const ytAllowance = await getTokenAllowance(
+          lockDetails.ytAddress as Address,
+          address as Address,
+          lockDetails.ytMarketAddress as Address
+        );
+        if(parseUnits(ytAllowance.toString(), lockDetails.ytDecimals) < parseUnits(ytAmountOut, lockDetails.ytDecimals)) {
+        
+        try {
+          const hash = await safeApprove(
+            lockDetails.ytAddress as Address,
+            lockDetails.ytMarketAddress as Address,
+            ytAmountOut,
+            lockDetails.ytDecimals,
+            writeContractAsync
+          );
+          if (!hash) {
+            setIsApproving(false);
+            return false;
+          }
+          setTxHash(hash);
+          
+          // Wait for confirmation
+          await new Promise(resolve => {
+            const checkConfirmation = () => {
+              if (isTxConfirmed) {
+                resolve(true);
+              } else {
+                setTimeout(checkConfirmation, 1000);
+              }
+            };
+            checkConfirmation();
+          });
+          
+        } catch (error) {
+          console.error('Error in YT approval:', error);
+          setIsApproving(false);
+          
+          // Propagate user rejection errors
+          if (isUserRejection(error)) {
+            throw error;
+          }
+          
+          return false;
+        }
+      }
         setIsApproving(false);
         
         // Step 4: Sell YT to lock in yield
         setIsSwapping(true);
         setCurrentStep(4);
-        await simulateDelay(2000); // Simulate YT sale delay
+        
+        // Use the swapYtToToken function to sell YT tokens
+        const swapResult = await swapYtToToken(mintResult);
+        if (!swapResult) {
+          setIsSwapping(false);
+          return false;
+        }
+        
         setIsSwapping(false);
-      } else {
-        // Generic flow: approve > lock
-        
-        // Step 1: Approve tokens for the lock contract
-        setIsApproving(true);
-        setCurrentStep(1);
-        await simulateDelay(1500); // Simulate approval delay
-        setIsApproving(false);
-        
-        // Step 2: Lock the tokens
-        setIsLocking(true);
-        setCurrentStep(2);
-        await simulateDelay(2000); // Simulate locking delay
-        setIsLocking(false);
       }
       
       // Confirm transaction
@@ -96,6 +381,12 @@ export default function useUnifiedLock({
       return true;
     } catch (error) {
       console.error('Error in lock process:', error);
+      
+      // Propagate user rejection errors
+      if (isUserRejection(error)) {
+        throw error;
+      }
+      
       return false;
     }
   };
@@ -112,6 +403,9 @@ export default function useUnifiedLock({
     isConfirmed,
     currentStep,
     totalSteps,
+    ytAmountOut,
+    ptAmountOut,
+    swappedTokenAmount,
     
     // Actions
     lock

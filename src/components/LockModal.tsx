@@ -1,75 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import styles from './LockModal.module.css';
 import { formatNumber } from '../utils/helpers';
 import Protocol from './Protocol';
 import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
 import type { Asset } from '../types';
-
-// Mock hook until the real one is implemented
-const useUnifiedLock = ({ protocol, lockDetails, asset, expirationDate }: any) => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isLocking, setIsLocking] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
-  const [isSwapping, setIsSwapping] = useState(false);
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isConfirmed, setIsConfirmed] = useState(false);
-  
-  const lock = async (amount: string) => {
-    // Simulate a protocol-specific flow
-    if (protocol.toLowerCase() === 'pendle') {
-      // Pendle flow: approve > swap > approve YT > sell YT
-      setIsApproving(true);
-      setCurrentStep(1);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate approval
-      setIsApproving(false);
-      
-      setIsSwapping(true);
-      setCurrentStep(2);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate swap
-      setIsSwapping(false);
-      
-      setIsApproving(true);
-      setCurrentStep(3);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate YT approval
-      setIsApproving(false);
-      
-      setIsSwapping(true);
-      setCurrentStep(4);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate YT sale
-      setIsSwapping(false);
-    } else {
-      // Generic flow: approve > lock
-      setIsApproving(true);
-      setCurrentStep(1);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate approval
-      setIsApproving(false);
-      
-      setIsLocking(true);
-      setCurrentStep(2);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate locking
-      setIsLocking(false);
-    }
-    
-    // Confirm transaction
-    setIsConfirming(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsConfirming(false);
-    setIsConfirmed(true);
-    
-    return true;
-  };
-  
-  return {
-    lock,
-    isLocking,
-    isApproving,
-    isSwapping,
-    isConfirming,
-    isConfirmed,
-    currentStep,
-    totalSteps: protocol.toLowerCase() === 'pendle' ? 4 : 2
-  };
-};
+import useUnifiedLock from '../hooks/useUnifiedLock';
 
 interface LockModalProps {
   isOpen: boolean;
@@ -84,6 +19,7 @@ interface LockModalProps {
     ytAddress: string;
     ptAddress: string;
     swapAddress: string;
+    ytMarketAddress: string;
     ytDecimals: number;
     ptDecimals: number;
   };
@@ -98,21 +34,8 @@ const LockModal: React.FC<LockModalProps> = ({
   expirationDate,
   lockDetails
 }) => {
-  // Current step tracking (dynamic based on protocol)
-  const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  // State for handling the lock process
   const [error, setError] = useState<string | null>(null);
-  
-  // Format expiration date for display
-  const formattedExpirationDate = new Date(expirationDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  // Get chain information
-  const chainIcon = getNetworkIcon(asset.chainId);
-  const chainName = getNetworkName(asset.chainId);
   
   // Initialize useUnifiedLock hook based on protocol
   const {
@@ -125,14 +48,44 @@ const LockModal: React.FC<LockModalProps> = ({
     currentStep,
     totalSteps
   } = useUnifiedLock({
-    protocol: protocol,
+    protocol,
     lockDetails,
     asset,
     expirationDate
   });
   
+  // Format expiration date for display - memoize to prevent recalculation
+  const formattedExpirationDate = useMemo(() => {
+    return new Date(expirationDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }, [expirationDate]);
+  
+  // Get chain information - memoize to prevent recalculation
+  const chainIcon = useMemo(() => getNetworkIcon(asset.chainId), [asset.chainId]);
+  const chainName = useMemo(() => getNetworkName(asset.chainId), [asset.chainId]);
+  
   // Add a ref to track if the process has been started
   const hasStartedRef = React.useRef(false);
+  
+  // Handle the lock process with useCallback to prevent unnecessary recreations
+  const handleLock = useCallback(async () => {
+    setError(null);
+    
+    try {
+      const success = await lock(asset.balance);
+      
+      if (!success) {
+        setError("Lock process failed. Please try again.");
+      }
+      // Wait for confirmation via the useEffect
+    } catch (err) {
+      console.error("Error during lock process:", err);
+      setError("An error occurred during the lock process. Please try again.");
+    }
+  }, [lock, asset.balance]);
   
   // Start the lock process when modal opens
   useEffect(() => {
@@ -140,10 +93,8 @@ const LockModal: React.FC<LockModalProps> = ({
       // Set the ref to true to prevent multiple executions
       hasStartedRef.current = true;
       
-      // Reset states
-      setStep(1);
+      // Reset error state
       setError(null);
-      setIsLoading(false);
       
       // Begin the lock process
       handleLock();
@@ -153,71 +104,24 @@ const LockModal: React.FC<LockModalProps> = ({
     }
   }, [isOpen]);
   
-  // Update step based on current step from the hook
-  useEffect(() => {
-    if (currentStep) {
-      setStep(currentStep);
-    }
-  }, [currentStep]);
-  
   // Monitor the confirmation
   useEffect(() => {
     if (isConfirmed) {
       // Complete the process
-      setIsLoading(false);
       setTimeout(() => {
         onComplete(true);
       }, 1500);
     }
   }, [isConfirmed, onComplete]);
   
-  // Handle the lock process
-  const handleLock = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const success = await lock(asset.balance);
-      
-      if (!success) {
-        setError("Lock process failed. Please try again.");
-        setIsLoading(false);
-      }
-      // Wait for confirmation via the useEffect
-    } catch (err) {
-      console.error("Error during lock process:", err);
-      setError("An error occurred during the lock process. Please try again.");
-      setIsLoading(false);
-    }
-  };
-  
   // Handle retry if any step fails
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     setError(null);
     handleLock();
-  };
+  }, []);
   
-  // Get protocol-specific explanation
-  const getProtocolExplanation = () => {
-    switch (protocol.toLowerCase()) {
-      case 'pendle':
-        return (
-          <p>
-            Your {asset.token} will be swapped to Principal Tokens (PT) and Yield Tokens (YT) on Pendle.
-            The YT will be sold to guarantee your yield until {formattedExpirationDate}.
-          </p>
-        );
-      default:
-        return (
-          <p>
-            Your {asset.token} will be locked to guarantee the yield until {formattedExpirationDate}.
-          </p>
-        );
-    }
-  };
-  
-  // Get the steps based on protocol
-  const getSteps = () => {
+  // Get the steps based on protocol - memoize to prevent recreation on each render
+  const steps = useMemo(() => {
     if (protocol.toLowerCase() === 'pendle') {
       return [
         { label: 'Approve Asset', description: 'Approve your tokens for swapping' },
@@ -231,32 +135,29 @@ const LockModal: React.FC<LockModalProps> = ({
         { label: 'Lock', description: 'Lock your tokens to guarantee yield' }
       ];
     }
-  };
+  }, [protocol]);
   
   // Get current step status description
-  const getStepDescription = (index: number) => {
-    const steps = getSteps();
+  const getStepDescription = useCallback((index: number) => {
     const stepInfo = steps[index - 1];
     
     if (!stepInfo) return '';
     
-    if (step === index && isLoading) {
+    if (currentStep === index) {
       if (isApproving) return `Approving ${asset.token}...`;
       if (isSwapping) return `Swapping ${asset.token}...`;
       if (isLocking) return `Locking ${asset.token}...`;
       return `Processing ${stepInfo.label.toLowerCase()}...`;
-    } else if (step === index && error) {
+    } else if (currentStep === index && error) {
       return <span className={styles.errorText}>{stepInfo.label} failed. Please retry.</span>;
-    } else if (step > index) {
+    } else if (currentStep > index) {
       return <span className={styles.successText}>{stepInfo.label} successful</span>;
     } else {
       return stepInfo.description;
     }
-  };
+  }, [currentStep, isApproving, isSwapping, isLocking, error, asset.token, steps]);
   
   if (!isOpen) return null;
-  
-  const steps = getSteps();
   
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -304,23 +205,23 @@ const LockModal: React.FC<LockModalProps> = ({
           </div>
           
           {/* <div className={styles.explanation}>
-            {getProtocolExplanation()}
+            {getProtocolExplanation}
           </div> */}
           
           <div className={styles.progressContainer}>
             <div className={styles.verticalProgressSteps}>
               {steps.map((stepInfo, index) => (
                 <React.Fragment key={index}>
-                  <div className={`${styles.verticalProgressStep} ${step >= index + 1 ? styles.active : ''} ${step > index + 1 ? styles.completed : ''}`}>
+                  <div className={`${styles.verticalProgressStep} ${currentStep >= index + 1 ? styles.active : ''} ${currentStep > index + 1 ? styles.completed : ''}`}>
                     <div className={styles.stepDot}>
-                      {step > index + 1 ? '✓' : (index + 1)}
+                      {currentStep > index + 1 ? '✓' : (index + 1)}
                     </div>
                     <div className={styles.stepContent}>
                       <div className={styles.stepLabel}>{stepInfo.label}</div>
                       <div className={styles.stepDescription}>
                         {getStepDescription(index + 1)}
                       </div>
-                      {step === index + 1 && isLoading && <div className={styles.stepSpinner}></div>}
+                      {currentStep === index + 1 && (isLocking || isApproving || isSwapping) && <div className={styles.stepSpinner}></div>}
                     </div>
                   </div>
                   

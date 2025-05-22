@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { formatNumber } from '../utils/helpers';
-import type { Asset } from '../types';
-import { PROTOCOL_NAMES } from '../utils/constants';
-import styles from '../pages/MyYieldsPage.module.css';
-import tokens from '../utils/tokens';
-import { getChainName } from '../utils/chains';
-import { useApyStore } from '../store/apyStore';
-import useUnifiedYield from '../hooks/useUnifiedYield';
+import Protocol from './Protocol';
 import WithdrawModal from './WithdrawModal';
 import LockAPYModal from './LockAPYModal';
-import LockModal from './LockModal';
-import { useChainId, useSwitchChain } from 'wagmi';
-import Protocol from './Protocol';
+import styles from '../pages/MyYieldsPage.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import { getNetworkIcon } from '../utils/networkIcons';
+import { PROTOCOL_NAMES } from '../utils/constants';
+import type { Asset } from '../types';
+import { useChainId, useSwitchChain } from 'wagmi';
+import { useApyStore } from '../store/apyStore';
+import { useLockStore } from '../store/lockStore';
+import useUnifiedYield from '../hooks/useUnifiedYield';
+import tokens from '../utils/tokens';
 
 interface YieldCardProps {
   asset: Asset;
@@ -41,7 +40,6 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
   const { apyData } = useApyStore();
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isLockAPYModalOpen, setIsLockAPYModalOpen] = useState(false);
-  const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [isProcessingLock, setIsProcessingLock] = useState(false);
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
@@ -60,13 +58,11 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
   
   // Check if token has lockYield option
   const hasLockYield = token !== undefined && (token as unknown as TokenWithLockYield).lockYield !== undefined;
-  console.log(token, token?.token, hasLockYield)
   
   // Get lockYield details if available
   const lockYieldDetails = hasLockYield ? (token as unknown as TokenWithLockYield).lockYield : undefined;
   
   if (token) {
-    console.log(asset.protocol)
     const tokenApyData = asset.protocol && token.underlyingAsset ? apyData[token.chainId]?.[token.underlyingAsset.toLowerCase()] : null;
     if (tokenApyData && asset.protocol) {
       protocol = asset.protocol;
@@ -153,29 +149,24 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
     setIsLockAPYModalOpen(false);
   };
   
-  // Handle lock APY confirm - when user confirms in the LockAPYModal
+  // Open the transaction modal using global store
   const handleLockAPYConfirm = async () => {
     // Close the explanation modal
     setIsLockAPYModalOpen(false);
     
-    // Open the transaction modal
-    setIsLockModalOpen(true);
-  };
-  
-  // Close lock modal
-  const closeLockModal = () => {
-    setIsLockModalOpen(false);
-  };
-  
-  // Handle lock modal completion
-  const handleLockComplete = (success: boolean) => {
-    setIsLockModalOpen(false);
-    
-    if (success && onLockAPY) {
-      // Call the parent's onLockAPY function if provided
-      setTimeout(() => {
-        onLockAPY();
-      }, 1000);
+    if (lockYieldDetails) {
+      // Use the global lock store to open the modal
+      useLockStore.getState().openModal({
+        asset,
+        protocol: lockYieldDetails.protocol.name,
+        expirationDate: lockYieldDetails.expirationDate,
+        lockDetails: lockYieldDetails.protocol,
+        onLock: () => {
+          if (onLockAPY) {
+            onLockAPY();
+          }
+        }
+      });
     }
   };
   
@@ -304,27 +295,14 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
       />
       
       {lockYieldDetails && (
-        <>
-          <LockAPYModal
-            isOpen={isLockAPYModalOpen}
-            onClose={closeLockAPYModal}
-            onConfirm={handleLockAPYConfirm}
-            asset={asset}
-            protocol={lockYieldDetails.protocol}
-            expirationDate={lockYieldDetails.expirationDate}
-            isProcessing={isProcessingLock}
-          />
-          
-          <LockModal
-            isOpen={isLockModalOpen}
-            onClose={closeLockModal}
-            onComplete={handleLockComplete}
-            asset={asset}
-            protocol={lockYieldDetails.protocol.name}
-            expirationDate={lockYieldDetails.expirationDate}
-            lockDetails={lockYieldDetails.protocol}
-          />
-        </>
+        <LockAPYModal
+          isOpen={isLockAPYModalOpen}
+          onClose={closeLockAPYModal}
+          onConfirm={handleLockAPYConfirm}
+          asset={asset}
+          protocol={lockYieldDetails.protocol}
+          expirationDate={lockYieldDetails.expirationDate}
+        />
       )}
     </div>
   );

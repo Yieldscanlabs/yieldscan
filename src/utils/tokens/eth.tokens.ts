@@ -208,9 +208,10 @@ export default [
       protocol: {
         name: 'Pendle',
         swap: true,
-        ytAddress: '0x0000000000000000000000000000000000000000',
-        ptAddress: '0x0000000000000000000000000000000000000000',
-        swapAddress: '0x0000000000000000000000000000000000000000',
+        ytAddress: '0xf3aBC972A0f537c1119C990d422463b93227Cd83',
+        ptAddress: '0xf99985822fb361117FCf3768D34a6353E6022F5F',
+        swapAddress: '0x888888888889758F76e7103c6CbF23ABbF58F946',
+        ytMarketAddress: '0xc374f7ec85f8c7de3207a10bb1978ba104bda3b2',
         ytDecimals: 18,
         ptDecimals: 18
       }

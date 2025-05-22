@@ -20,7 +20,6 @@ interface LockAPYModalProps {
     ptDecimals: number;
   };
   expirationDate: string;
-  isProcessing?: boolean;
 }
 
 const LockAPYModal: React.FC<LockAPYModalProps> = ({
@@ -29,8 +28,7 @@ const LockAPYModal: React.FC<LockAPYModalProps> = ({
   onConfirm,
   asset,
   protocol,
-  expirationDate,
-  isProcessing = false
+  expirationDate
 }) => {
   if (!isOpen) return null;
 
@@ -129,9 +127,8 @@ const LockAPYModal: React.FC<LockAPYModalProps> = ({
           <button 
             className={styles.lockButton} 
             onClick={onConfirm}
-            disabled={isProcessing}
           >
-            {isProcessing ? 'Processing...' : 'Lock APY'}
+            Lock APY
           </button>
         </div>
       </div>

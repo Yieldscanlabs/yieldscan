@@ -8,12 +8,11 @@ import { useAssetStore } from '../store/assetStore';
 import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
 import { useEffect } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
+import GlobalLockModal from './GlobalLockModal';
 import { usePriceStore } from '../store/priceStore';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
-  const { lastUpdated: apyLastUpdated } = useApyStore();
-  const {} = usePriceStore();
   const { fetchAssets } = useAssetStore();
   const { 
     fetchEarnings, 
@@ -32,16 +31,10 @@ const Layout = () => {
     }
   }, [wallet.address]);
   
-  useEffect(() => {
-    if (apyLastUpdated) {
-      // Any code to run when APY data is refreshed
-    }
-  }, [apyLastUpdated]);
 
   useEffect(() => {
     if (earningsLastUpdated && wallet.isConnected) {
       // Any code to run when Earnings data is refreshed
-      console.log('Earnings data refreshed');
     }
   }, [earningsLastUpdated, wallet.isConnected]);
 
@@ -55,7 +48,8 @@ const Layout = () => {
       <main className={styles.main}>
         <Outlet />
       </main>
-      <GlobalOptimizationModal />
+      {/* <GlobalOptimizationModal /> */}
+      <GlobalLockModal />
       <Footer />
     </div>
   );

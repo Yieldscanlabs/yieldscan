@@ -13,6 +13,7 @@
     "@morpho-org/blue-sdk": "^3.0.7",
     "@morpho-org/morpho-ts": "^2.3.0",
     "@tanstack/react-query": "^5.75.7",
+    "ethers": "^6.14.1",
     "global": "^4.4.0",
     "moralis": "^2.27.2",
     "react": "^19.1.0",

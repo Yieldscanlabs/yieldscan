@@ -11,14 +11,14 @@ import './index.css';
 export const config = createConfig({
   chains: [mainnet, arbitrum, bsc, base],
   transports: {
-    [mainnet.id]: http(),
-    [arbitrum.id]: http(),
-    [bsc.id]: http(),
-    [base.id]: http(),
+    [mainnet.id]: http(import.meta.env.VITE_MAINNET_RPC_URL ),
+    [arbitrum.id]: http(import.meta.env.VITE_ARBITRUM_RPC_URL),
+    [bsc.id]: http(import.meta.env.VITE_BSC_RPC_URL),
+    [base.id]: http(import.meta.env.VITE_BASE_RPC_URL),
   },
 });
 
-// Create a client for TanStack Query
+// Create a query client
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -28,5 +28,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <RouterProvider router={router} />
       </QueryClientProvider>
     </WagmiProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

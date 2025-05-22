@@ -122,7 +122,6 @@ const Header: React.FC<HeaderProps> = ({
     setTotalValue(initialValue);
     setApy(weightedApy);
     
-    console.log('Initial setup:', { initialValue, apy: weightedApy });
     
     // Calculate the per-tick growth rate based on APY
     // Formula: value * (1 + APY/100)^(tick/ticks_per_year) - value
@@ -138,12 +137,7 @@ const Header: React.FC<HeaderProps> = ({
         
         // Log occasionally to verify growth in the decimal places
         if (Math.random() < 0.01) {
-          console.log('Growth:', {
-            prevValue: formatValue(prevValue),
-            growthRate,
-            newValue: formatValue(newValue),
-            diff: formatValue(newValue - prevValue)
-          });
+       
         }
         
         return newValue;

@@ -430,8 +430,39 @@
 
 .successMessage {
   color: var(--text-secondary);
-  margin-bottom: 1.25rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
   font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.tokenDetails {
+  background-color: var(--surface-medium);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.tokenDetailRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.tokenDetailRow:last-child {
+  margin-bottom: 0;
+}
+
+.tokenDetailLabel {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.tokenDetailValue {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .completeButton {
