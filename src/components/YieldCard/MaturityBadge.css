@@ -1,0 +1,67 @@
+.maturityBadge {
+  position: relative;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  background-color: rgba(79, 209, 197, 0.15);
+  color: #4FD1C5;
+  border: 1px solid rgba(79, 209, 197, 0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  cursor: help;
+}
+
+/* CSS-only tooltip */
+.maturityBadge .tooltip {
+  visibility: hidden;
+  position: absolute;
+  z-index: 9999;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  max-width: 100vw;
+  background-color: #2D3748;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+  pointer-events: none;
+}
+
+/* Arrow at the bottom of the tooltip */
+.maturityBadge .tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #2D3748 transparent transparent transparent;
+}
+
+/* Show the tooltip when hovering over the badge */
+.maturityBadge:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Tooltip title */
+.maturityBadge .tooltip-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Tooltip description */
+.maturityBadge .tooltip-description {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+} 
