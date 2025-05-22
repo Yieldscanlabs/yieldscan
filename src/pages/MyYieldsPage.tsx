@@ -6,7 +6,7 @@ import { useApyStore } from '../store/apyStore';
 import { useEarnStore } from '../store/earnStore';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
-import YieldCard from '../components/YieldCard';
+import YieldCard from '../components/YieldCard/YieldCard';
 import OptimizationCard from '../components/OptimizationCard';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';

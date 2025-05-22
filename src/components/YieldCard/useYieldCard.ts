@@ -1,46 +1,17 @@
-import React, { useState } from 'react';
-import { formatNumber } from '../utils/helpers';
-import Protocol from './Protocol';
-import WithdrawModal from './WithdrawModal';
-import LockAPYModal from './LockAPYModal';
-import styles from '../pages/MyYieldsPage.module.css';
-import useWalletConnection from '../hooks/useWalletConnection';
-import { getNetworkIcon } from '../utils/networkIcons';
-import { PROTOCOL_NAMES } from '../utils/constants';
-import type { Asset } from '../types';
+import { useState } from 'react';
 import { useChainId, useSwitchChain } from 'wagmi';
-import { useApyStore } from '../store/apyStore';
-import { useLockStore } from '../store/lockStore';
-import useUnifiedYield from '../hooks/useUnifiedYield';
-import tokens from '../utils/tokens';
+import { useApyStore } from '../../store/apyStore';
+import { useLockStore } from '../../store/lockStore';
+import useUnifiedYield from '../../hooks/useUnifiedYield';
+import useWalletConnection from '../../hooks/useWalletConnection';
+import tokens from '../../utils/tokens';
+import { PROTOCOL_NAMES } from '../../utils/constants';
+import type { YieldCardProps, TokenWithLockYield } from './types';
 
-interface YieldCardProps {
-  asset: Asset;
-  onOptimize?: () => void;
-  onLockAPY?: () => void;
-}
-
-// Type for the token with lockYield property
-type TokenWithLockYield = {
-  lockYield?: {
-    expirationDate: string;
-    protocol: {
-      name: string;
-      swap: boolean;
-      ytAddress: string;
-      ptAddress: string;
-      swapAddress: string;
-      ytDecimals: number;
-      ptDecimals: number;
-    };
-  };
-};
-
-const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) => {
+export function useYieldCard({ asset, onOptimize, onLockAPY }: YieldCardProps) {
   const { apyData } = useApyStore();
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isLockAPYModalOpen, setIsLockAPYModalOpen] = useState(false);
-  const [isProcessingLock, setIsProcessingLock] = useState(false);
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { wallet } = useWalletConnection();
@@ -52,6 +23,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
   const token = tokens.find(
     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
   );
+  
   // Get protocol and APY data
   let protocol = asset.protocol || '';
   let apy = 0;
@@ -61,6 +33,29 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
   
   // Get lockYield details if available
   const lockYieldDetails = hasLockYield ? (token as unknown as TokenWithLockYield).lockYield : undefined;
+
+  // Check if token has maturity and protocol is Pendle
+  const hasMaturity = token !== undefined && (token as unknown as TokenWithLockYield).maturity !== undefined;
+  const isPendleProtocol = protocol.toLowerCase() === 'pendle';
+  const showMaturity = hasMaturity && isPendleProtocol;
+  const maturityDate = showMaturity ? (token as unknown as TokenWithLockYield).maturity : undefined;
+  
+  // Format maturity date for display if it exists
+  const formattedMaturityDate = maturityDate ? new Date(maturityDate).toLocaleDateString() : '';
+  
+  // Calculate days until maturity
+  const calculateDaysUntilMaturity = () => {
+    if (!maturityDate) return 0;
+    
+    const today = new Date();
+    const maturity = new Date(maturityDate);
+    const diffTime = maturity.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays < 0 ? 0 : diffDays;
+  };
+  
+  const daysUntilMaturity = calculateDaysUntilMaturity();
   
   if (token) {
     const tokenApyData = asset.protocol && token.underlyingAsset ? apyData[token.chainId]?.[token.underlyingAsset.toLowerCase()] : null;
@@ -112,7 +107,6 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
         setIsWithdrawModalOpen(true);
       } catch (error) {
         console.error('Failed to switch networks:', error);
-        // Could add user notification here
       }
     } else {
       // Already on correct network, just open the modal
@@ -136,7 +130,6 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
         setIsLockAPYModalOpen(true);
       } catch (error) {
         console.error('Failed to switch networks:', error);
-        // Could add user notification here
       }
     } else {
       // Already on correct network, just open the modal
@@ -202,110 +195,39 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) =
     }
   };
 
-  // Get chain icon for overlay
-  const chainIcon = getNetworkIcon(asset.chainId);
-  
-  return (
-    <div className={styles.yieldCardSlim}>
-      <div className={styles.cardTopSection}>
-        <div className={styles.assetInfoSlim}>
-          <div className={styles.assetIconWrapper}>
-            <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
-            <img src={chainIcon} alt="Chain" className={styles.chainIconOverlay} />
-          </div>
-          <div>
-            <div className={styles.assetNameBold}>{asset.token}</div>
-            <div className={styles.detailsRow}>
-              <Protocol name={protocol} showLogo={true} className={styles.protocolBadge} />
-            </div>
-          </div>
-        </div>
-        
-        <div className={styles.apyBadge}>
-          <span className={styles.apyValue}>{apy.toFixed(2)}%</span>
-          <span className={styles.apyLabel}>APY</span>
-        </div>
-      </div>
-      
-      <div className={styles.cardMiddleSection}>
-        <div className={styles.balanceColumn}>
-          <div className={styles.balanceAmount}>
-            {formatNumber(balanceNum, asset.maxDecimalsShow)} {asset.token}
-          </div>
-          <div className={styles.balanceUsd}>${formatNumber(parseFloat(asset.balanceUsd), 2)}</div>
-        </div>
-        
-        <div className={styles.yieldsColumn}>
-          <div className={styles.yieldRow}>
-            <span>Daily:</span> <span>${formatNumber(dailyYieldUsd, 2)}</span>
-          </div>
-          <div className={styles.yieldRow}>
-            <span>Yearly:</span> <span className={styles.yearlyYield}>${formatNumber(yearlyYieldUsd, 2)}</span>
-          </div>
-        </div>
-      </div>
-      
-      <div className={styles.cardActionRow}>
-        {asset.withdrawUri ? (
-          <a 
-            href={asset.withdrawUri} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className={styles.actionButton}
-          >
-            <span className={styles.buttonIcon}>↗</span> 
-            Withdraw
-          </a>
-        ) : (
-          <button className={styles.actionButton} onClick={openWithdrawModal}>
-            <span className={styles.buttonIcon}>↓</span> 
-            {chainId !== asset.chainId 
-              ? `Withdraw`
-              : 'Withdraw'
-            }
-          </button>
-        )}
-        
-        {onOptimize && (
-          <button className={styles.actionButtonAccent} onClick={onOptimize}>
-            <span className={styles.buttonIcon}>↗</span> Optimize
-          </button>
-        )}
-
-        {hasLockYield && (
-          <button className={styles.actionButtonAccent} onClick={openLockAPYModal}>
-            <span className={styles.buttonIcon}>🔒</span> Lock APY
-          </button>
-        )}
-      </div>
-      
-      <WithdrawModal
-        isOpen={isWithdrawModalOpen}
-        onClose={closeWithdrawModal}
-        onComplete={handleWithdrawComplete}
-        asset={asset}
-        protocol={protocol}
-        balance={balanceNum}
-        maxDecimals={asset.maxDecimalsShow || 6}
-        onWithdraw={handleWithdraw}
-        isProcessing={isProcessingWithdrawal}
-        isConfirming={isConfirming}
-        isConfirmed={isConfirmed}
-        isNativeToken={isNativeToken}
-      />
-      
-      {lockYieldDetails && (
-        <LockAPYModal
-          isOpen={isLockAPYModalOpen}
-          onClose={closeLockAPYModal}
-          onConfirm={handleLockAPYConfirm}
-          asset={asset}
-          protocol={lockYieldDetails.protocol}
-          expirationDate={lockYieldDetails.expirationDate}
-        />
-      )}
-    </div>
-  );
-};
-
-export default YieldCard;
+  return {
+    // State
+    isWithdrawModalOpen,
+    isLockAPYModalOpen,
+    isProcessingWithdrawal,
+    isConfirming,
+    isConfirmed,
+    
+    // Token and protocol info
+    token,
+    protocol,
+    apy,
+    hasLockYield,
+    lockYieldDetails,
+    showMaturity,
+    maturityDate,
+    formattedMaturityDate,
+    daysUntilMaturity,
+    isNativeToken,
+    chainId,
+    
+    // Calculated values
+    balanceNum,
+    dailyYieldUsd,
+    yearlyYieldUsd,
+    
+    // Event handlers
+    openWithdrawModal,
+    closeWithdrawModal,
+    openLockAPYModal,
+    closeLockAPYModal,
+    handleLockAPYConfirm,
+    handleWithdrawComplete,
+    handleWithdraw
+  };
+} 
