@@ -8,6 +8,7 @@ import { getChainName } from '../utils/chains';
 import { useApyStore } from '../store/apyStore';
 import useUnifiedYield from '../hooks/useUnifiedYield';
 import WithdrawModal from './WithdrawModal';
+import LockAPYModal from './LockAPYModal';
 import { useChainId, useSwitchChain } from 'wagmi';
 import Protocol from './Protocol';
 import useWalletConnection from '../hooks/useWalletConnection';
@@ -16,11 +17,30 @@ import { getNetworkIcon } from '../utils/networkIcons';
 interface YieldCardProps {
   asset: Asset;
   onOptimize?: () => void;
+  onLockAPY?: () => void;
 }
 
-const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
+// Type for the token with lockYield property
+type TokenWithLockYield = {
+  lockYield?: {
+    expirationDate: string;
+    protocol: {
+      name: string;
+      swap: boolean;
+      ytAddress: string;
+      ptAddress: string;
+      swapAddress: string;
+      ytDecimals: number;
+      ptDecimals: number;
+    };
+  };
+};
+
+const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize, onLockAPY }) => {
   const { apyData } = useApyStore();
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isLockAPYModalOpen, setIsLockAPYModalOpen] = useState(false);
+  const [isProcessingLock, setIsProcessingLock] = useState(false);
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { wallet } = useWalletConnection();
@@ -35,6 +55,13 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
   // Get protocol and APY data
   let protocol = asset.protocol || '';
   let apy = 0;
+  
+  // Check if token has lockYield option
+  const hasLockYield = token !== undefined && (token as unknown as TokenWithLockYield).lockYield !== undefined;
+  console.log(token, token?.token, hasLockYield)
+  
+  // Get lockYield details if available
+  const lockYieldDetails = hasLockYield ? (token as unknown as TokenWithLockYield).lockYield : undefined;
   
   if (token) {
     console.log(asset.protocol)
@@ -98,6 +125,49 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
   // Close withdraw modal
   const closeWithdrawModal = () => {
     setIsWithdrawModalOpen(false);
+  };
+  
+  // Open lock APY modal
+  const openLockAPYModal = async () => {
+    // Check if we're on the correct network before opening the modal
+    if (chainId !== asset.chainId) {
+      // If not on the correct network, switch to it first
+      try {
+        await switchChain({ chainId: asset.chainId });
+        // Once switched, open the modal
+        setIsLockAPYModalOpen(true);
+      } catch (error) {
+        console.error('Failed to switch networks:', error);
+        // Could add user notification here
+      }
+    } else {
+      // Already on correct network, just open the modal
+      setIsLockAPYModalOpen(true);
+    }
+  };
+  
+  // Close lock APY modal
+  const closeLockAPYModal = () => {
+    setIsLockAPYModalOpen(false);
+  };
+  
+  // Handle lock APY confirm
+  const handleLockAPYConfirm = async () => {
+    if (onLockAPY) {
+      setIsProcessingLock(true);
+      try {
+        // Call the parent's onLockAPY function
+        onLockAPY();
+        // Close the modal after a short delay to simulate processing
+        setTimeout(() => {
+          setIsProcessingLock(false);
+          setIsLockAPYModalOpen(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error locking APY:', error);
+        setIsProcessingLock(false);
+      }
+    }
   };
   
   // Handle withdraw modal completion
@@ -184,7 +254,7 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
             className={styles.actionButton}
           >
             <span className={styles.buttonIcon}>↗</span> 
-            Withdraw on {new URL(asset.withdrawUri).hostname.replace('www.', '')}
+            Withdraw
           </a>
         ) : (
           <button className={styles.actionButton} onClick={openWithdrawModal}>
@@ -199,6 +269,12 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
         {onOptimize && (
           <button className={styles.actionButtonAccent} onClick={onOptimize}>
             <span className={styles.buttonIcon}>↗</span> Optimize
+          </button>
+        )}
+
+        {hasLockYield && (
+          <button className={styles.actionButtonAccent} onClick={openLockAPYModal}>
+            <span className={styles.buttonIcon}>🔒</span> Lock APY
           </button>
         )}
       </div>
@@ -217,6 +293,18 @@ const YieldCard: React.FC<YieldCardProps> = ({ asset, onOptimize }) => {
         isConfirmed={isConfirmed}
         isNativeToken={isNativeToken}
       />
+      
+      {lockYieldDetails && (
+        <LockAPYModal
+          isOpen={isLockAPYModalOpen}
+          onClose={closeLockAPYModal}
+          onConfirm={handleLockAPYConfirm}
+          asset={asset}
+          protocol={lockYieldDetails.protocol}
+          expirationDate={lockYieldDetails.expirationDate}
+          isProcessing={isProcessingLock}
+        />
+      )}
     </div>
   );
 };

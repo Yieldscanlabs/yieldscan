@@ -203,6 +203,18 @@ export default [
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png',
     chainId: 1, // mainnet
     protocol: 'Lido',
+    lockYield: {
+      expirationDate: '2025-06-22',
+      protocol: {
+        name: 'Pendle',
+        swap: true,
+        ytAddress: '0x0000000000000000000000000000000000000000',
+        ptAddress: '0x0000000000000000000000000000000000000000',
+        swapAddress: '0x0000000000000000000000000000000000000000',
+        ytDecimals: 18,
+        ptDecimals: 18
+      }
+    },
     yieldBearingToken: true,
     decimals: 18,
     maxDecimalsShow: 6,
