@@ -105,15 +105,7 @@ const LockModal: React.FC<LockModalProps> = ({
   }, [isOpen]);
   
   // Monitor the confirmation
-  useEffect(() => {
-    if (isConfirmed) {
-      // Complete the process
-      setTimeout(() => {
-        onComplete(true);
-      }, 1500);
-    }
-  }, [isConfirmed, onComplete]);
-  
+
   // Handle retry if any step fails
   const handleRetry = useCallback(() => {
     setError(null);
@@ -209,7 +201,17 @@ const LockModal: React.FC<LockModalProps> = ({
           </div> */}
           
           <div className={styles.progressContainer}>
-            <div className={styles.verticalProgressSteps}>
+            {
+              isConfirmed ?            <div className={styles.successContainer}>
+              <div className={styles.successIcon}>✓</div>
+              <h4 className={styles.successTitle}>Lock Complete!</h4>
+              <p className={styles.successMessage}>
+                Your {asset.token} yield has been successfully locked until {formattedExpirationDate}.
+              </p>
+              <button className={styles.completeButton} onClick={() => onComplete(true)}>
+                Done
+              </button>
+            </div> :            <div className={styles.verticalProgressSteps}>
               {steps.map((stepInfo, index) => (
                 <React.Fragment key={index}>
                   <div className={`${styles.verticalProgressStep} ${currentStep >= index + 1 ? styles.active : ''} ${currentStep > index + 1 ? styles.completed : ''}`}>
@@ -231,6 +233,8 @@ const LockModal: React.FC<LockModalProps> = ({
                 </React.Fragment>
               ))}
             </div>
+            }
+
             
             {error && (
               <div className={styles.error}>
@@ -240,19 +244,7 @@ const LockModal: React.FC<LockModalProps> = ({
                 </button>
               </div>
             )}
-            
-            {isConfirmed && (
-              <div className={styles.successContainer}>
-                <div className={styles.successIcon}>✓</div>
-                <h4 className={styles.successTitle}>Lock Complete!</h4>
-                <p className={styles.successMessage}>
-                  Your {asset.token} yield has been successfully locked until {formattedExpirationDate}.
-                </p>
-                <button className={styles.completeButton} onClick={() => onComplete(true)}>
-                  Done
-                </button>
-              </div>
-            )}
+  
           </div>
         </div>
       </div>

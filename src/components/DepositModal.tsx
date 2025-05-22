@@ -15,6 +15,8 @@ interface DepositModalProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: (success: boolean) => void;
+  onLockInitiate?: () => void;
+  isLocked?: boolean;
   asset: Asset;
   amount: string;
   amountUsd: string;
@@ -27,6 +29,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
   isOpen,
   onClose,
   onComplete,
+  onLockInitiate,
+  isLocked = false,
   asset,
   amount,
   amountUsd,
@@ -105,6 +109,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
     setIsLoading(true);
     setError(null);
     
+    // Call onLockInitiate when approval starts
+    if (onLockInitiate) {
+      onLockInitiate();
+    }
+    
     try {
       const didApprove = await hasEnoughAllowance(amount);
       if (didApprove) {
@@ -135,6 +144,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
     
     setIsLoading(true);
     setError(null);
+    
+    // Call onLockInitiate when supply starts
+    if (onLockInitiate) {
+      onLockInitiate();
+    }
+    
     try {
       let success = false;
       
@@ -180,12 +195,26 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   if (!isOpen) return null;
   
+  // Create a handler that checks if modal can be closed
+  const handleCloseAttempt = (e: React.MouseEvent) => {
+    if (!isLocked) {
+      onClose();
+    } else {
+      // Prevent closing if locked
+      e.stopPropagation();
+    }
+  };
+  
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={handleCloseAttempt}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>Deposit {asset.token}</h3>
-          <button className={styles.closeButton} onClick={onClose}>×</button>
+          <button 
+            className={`${styles.closeButton} ${isLocked ? styles.disabled : ''}`} 
+            onClick={handleCloseAttempt}
+            disabled={isLocked}
+          >×</button>
         </div>
         
         <div className={styles.modalContent}>
@@ -271,6 +300,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
                 <button className={styles.retryButton} onClick={handleRetry}>
                   Retry
                 </button>
+              </div>
+            )}
+            
+            {isLocked && isLoading && (
+              <div className={styles.lockWarning}>
+                Please wait for the transaction to complete. This modal cannot be closed.
               </div>
             )}
           </div>

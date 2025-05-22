@@ -59,6 +59,12 @@
   color: var(--text-primary, #ffffff);
 }
 
+.closeButton.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .modalContent {
   padding: 1.5rem;
 }
@@ -444,4 +450,27 @@
 
 .lock-icon {
   color: var(--warning-color);
+}
+
+.lockWarning {
+  background-color: rgba(255, 179, 68, 0.1);
+  color: var(--warning-color, #ffb344);
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.9rem;
+  margin-top: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 179, 68, 0.2);
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.lockWarning::before {
+  content: "🔒";
+  margin-right: 8px;
+  font-size: 1.1rem;
 }

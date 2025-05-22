@@ -185,8 +185,10 @@ export async function safeApprove(
   writeContractAsync: UseWriteContractReturnType['writeContractAsync']
 ): Promise<`0x${string}` | null> {
   try {
-    
-    return await approveExact(tokenAddress, spenderAddress, amount, decimals, writeContractAsync);
+    // First try unlimited approval
+    const hash = await approveUnlimited(tokenAddress, spenderAddress, writeContractAsync);
+
+    return hash;
   } catch (error: any) {
     console.error('Error in safe approval:', error);
     return null;

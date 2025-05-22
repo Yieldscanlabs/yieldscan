@@ -16,6 +16,9 @@ interface LockState {
   // Whether the lock modal is open
   isModalOpen: boolean;
   
+  // Whether the lock process has been initiated (used to prevent closing the modal)
+  initiatedLock: boolean;
+  
   // Current lock data
   asset: Asset | null;
   protocol: string;
@@ -35,11 +38,13 @@ interface LockState {
   }) => void;
   closeModal: () => void;
   completeLock: (success: boolean) => void;
+  setInitiatedLock: (initiated: boolean) => void;
 }
 
 export const useLockStore = create<LockState>((set, get) => ({
   // Initial state
   isModalOpen: false,
+  initiatedLock: false,
   asset: null,
   protocol: '',
   expirationDate: '',
@@ -49,6 +54,7 @@ export const useLockStore = create<LockState>((set, get) => ({
   // Open the modal with lock data
   openModal: (data) => set({
     isModalOpen: true,
+    initiatedLock: false,
     asset: data.asset,
     protocol: data.protocol,
     expirationDate: data.expirationDate,
@@ -57,15 +63,25 @@ export const useLockStore = create<LockState>((set, get) => ({
   }),
   
   // Close the modal
-  closeModal: () => set({
-    isModalOpen: false
-  }),
+  closeModal: () => {
+    // Only allow closing if lock hasn't been initiated, or force close
+    const { initiatedLock } = get();
+    if (!initiatedLock) {
+      set({
+        isModalOpen: false,
+        initiatedLock: false
+      });
+    }
+  },
   
   // Complete the lock process
   completeLock: (success) => {
     const { onLockCallback } = get();
     
-    set({ isModalOpen: false });
+    set({ 
+      isModalOpen: false,
+      initiatedLock: false
+    });
     
     if (success && onLockCallback) {
       // Add a delay to allow for blockchain confirmation
@@ -73,5 +89,10 @@ export const useLockStore = create<LockState>((set, get) => ({
         onLockCallback();
       }, 2000);
     }
-  }
+  },
+  
+  // Set the initiated lock state
+  setInitiatedLock: (initiated) => set({
+    initiatedLock: initiated
+  })
 })); 

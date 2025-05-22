@@ -93,7 +93,7 @@ export const usePriceStore = create<PriceState>()(
 let priceUpdateInterval: NodeJS.Timeout | null = null;
 
 // Function to start polling
-const startPricePolling = (intervalMs = 60000) => {
+const startPricePolling = (intervalMs = 600000) => {
   // Fetch immediately
   usePriceStore.getState().fetchPrices();
   
