@@ -5,6 +5,7 @@ import { useAccount, useChainId, useWriteContract, useWaitForTransactionReceipt,
 import { safeApprove, getTokenAllowance } from '../utils/erc20Utils';
 import type { Asset } from '../types';
 import { useAssetStore } from '../store/assetStore';
+import { useLockStore } from '../store/lockStore';
 
 const HOSTED_SDK_URL = 'https://api-v2.pendle.finance/core';
 
@@ -93,13 +94,15 @@ export default function useUnifiedLock({
   const { sendTransactionAsync } = useSendTransaction();
   const isPendle = protocol.toLowerCase() === 'pendle';
 
+  // Get ytAmountOut from the store
+  const { ytAmountOut, setYtAmountOut, resetYtAmountOut } = useLockStore();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLocking, setIsLocking] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
-  const [ytAmountOut, setYtAmountOut] = useState<string>('0');
-  const [ptAmountOut, setPtAmountOut] = useState<string>('0');
+  const [ptAmountOut, setPtAmountOut] = useState<string | undefined>();
   const [swappedTokenAmount, setSwappedTokenAmount] = useState<string>('0');
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
   const [isApproving, setIsApproving] = useState(false);
@@ -135,6 +138,8 @@ export default function useUnifiedLock({
       });
       
       console.log('Mint response:', res);
+      
+      // Store ytAmountOut in the global store instead of local state
       setYtAmountOut(res.data.amountOut);
       setPtAmountOut(res.data.amountOut); 
       
@@ -245,7 +250,7 @@ export default function useUnifiedLock({
       
       // Simulate a protocol-specific flow
       if (isPendle) {
-        // Pendle flow: approve > swap > approve YT > sell YT
+        // Pendle flow: approve > mint yt from sy > approve yt > sell yt
         
         // Step 1: Check if approval is needed, then approve the underlying token for swap
         setCurrentStep(1);
@@ -303,12 +308,14 @@ export default function useUnifiedLock({
         // Use Pendle SDK to mint PT/YT tokens
         try {
           // Use actual mint function instead of hardcoded value
-          const ytAmount = await mintPyFromSy(amount);
+          console.log(ytAmountOut,'ytAmountOut from store')
+          // Use the ytAmountOut from the store if available, otherwise mint new tokens
+          const ytAmount = ytAmountOut ? ytAmountOut : await mintPyFromSy(amount);
+          if(ytAmount) setYtAmountOut(ytAmount)
           if (!ytAmount) {
             setIsSwapping(false);
             return false;
           }
-          
           
           setIsSwapping(false);
           
@@ -322,12 +329,12 @@ export default function useUnifiedLock({
             address as Address,
             lockDetails.ytMarketAddress as Address
           );
-          if(parseUnits(ytAllowance.toString(), lockDetails.ytDecimals) < parseUnits(ytAmountOut, lockDetails.ytDecimals)) {
+          if(parseUnits(ytAllowance.toString(), lockDetails.ytDecimals) < parseUnits(ytAmount, lockDetails.ytDecimals)) {
           
             const hash = await safeApprove(
               lockDetails.ytAddress as Address,
               lockDetails.ytMarketAddress as Address,
-              ytAmountOut,
+              ytAmount,
               lockDetails.ytDecimals,
               writeContractAsync
             );
@@ -345,9 +352,8 @@ export default function useUnifiedLock({
           // Step 4: Sell YT to lock in yield
           setIsSwapping(true);
           setCurrentStep(4);
-          
           // Use the swapYtToToken function to sell YT tokens
-          const swapResult = await swapYtToToken(ytAmount || ytAmountOut);
+          const swapResult = await swapYtToToken(ytAmount);
           if (!swapResult) {
             setIsSwapping(false);
             return false;
@@ -362,6 +368,9 @@ export default function useUnifiedLock({
           await simulateDelay(1000);
           setIsConfirming(false);
           setIsConfirmed(true);
+          
+          // Clear the ytAmountOut from the store after successful completion
+          resetYtAmountOut();
           
         } catch (error) {
           console.error('Error in Pendle flow:', error);
@@ -440,6 +449,9 @@ export default function useUnifiedLock({
           setIsConfirming(false);
           setIsConfirmed(true);
           if(address) await useAssetStore().fetchAssets(address, false)
+          
+          // Clear the ytAmountOut from the store after successful completion
+          resetYtAmountOut();
         } catch (error) {
           console.error('Error in generic flow:', error);
           setIsLocking(false);
@@ -468,6 +480,12 @@ export default function useUnifiedLock({
   
   // Helper to simulate delays
   const simulateDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+  useEffect(() => {
+    return () => {
+      resetYtAmountOut();
+    };
+  }, [resetYtAmountOut]);
   
   return {
     // State

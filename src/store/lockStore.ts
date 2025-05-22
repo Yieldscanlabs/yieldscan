@@ -25,6 +25,9 @@ interface LockState {
   expirationDate: string;
   lockDetails: LockDetails | null;
   
+  // Store the YT amount out value for Pendle protocol
+  ytAmountOut: string | undefined;
+  
   // Callback function to run after successful lock
   onLockCallback: (() => void) | null;
   
@@ -39,6 +42,8 @@ interface LockState {
   closeModal: () => void;
   completeLock: (success: boolean) => void;
   setInitiatedLock: (initiated: boolean) => void;
+  setYtAmountOut: (amount: string) => void;
+  resetYtAmountOut: () => void;
 }
 
 export const useLockStore = create<LockState>((set, get) => ({
@@ -49,6 +54,7 @@ export const useLockStore = create<LockState>((set, get) => ({
   protocol: '',
   expirationDate: '',
   lockDetails: null,
+  ytAmountOut: undefined,
   onLockCallback: null,
   
   // Open the modal with lock data
@@ -59,6 +65,7 @@ export const useLockStore = create<LockState>((set, get) => ({
     protocol: data.protocol,
     expirationDate: data.expirationDate,
     lockDetails: data.lockDetails,
+    ytAmountOut: undefined, // Reset YT amount when opening a new lock
     onLockCallback: data.onLock || null
   }),
   
@@ -80,7 +87,8 @@ export const useLockStore = create<LockState>((set, get) => ({
     
     set({ 
       isModalOpen: false,
-      initiatedLock: false
+      initiatedLock: false,
+      ytAmountOut: undefined // Reset YT amount on completion
     });
     
     if (success && onLockCallback) {
@@ -94,5 +102,15 @@ export const useLockStore = create<LockState>((set, get) => ({
   // Set the initiated lock state
   setInitiatedLock: (initiated) => set({
     initiatedLock: initiated
+  }),
+  
+  // Set the YT amount out value
+  setYtAmountOut: (amount) => set({
+    ytAmountOut: amount
+  }),
+  
+  // Reset the YT amount out value
+  resetYtAmountOut: () => set({
+    ytAmountOut: undefined
   })
 })); 

@@ -5,6 +5,7 @@ import Protocol from './Protocol';
 import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
 import type { Asset } from '../types';
 import useUnifiedLock from '../hooks/useUnifiedLock';
+import { useLockStore } from '../store/lockStore';
 
 interface LockModalProps {
   isOpen: boolean;
@@ -110,7 +111,7 @@ const LockModal: React.FC<LockModalProps> = ({
   const handleRetry = useCallback(() => {
     setError(null);
     handleLock();
-  }, []);
+  }, [handleLock]);
   
   // Get the steps based on protocol - memoize to prevent recreation on each render
   const steps = useMemo(() => {
