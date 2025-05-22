@@ -1,85 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
+import { Tooltip } from 'react-tooltip';
 import type { MaturityBadgeProps } from './types';
-import {
-  useFloating,
-  useInteractions,
-  useHover,
-  FloatingPortal,
-  offset,
-  flip,
-  shift,
-  arrow,
-  autoUpdate,
-  useTransitionStyles
-} from '@floating-ui/react';
 
 const MaturityBadge: React.FC<MaturityBadgeProps> = ({
   maturityDate,
   formattedMaturityDate,
   daysUntilMaturity
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const arrowRef = useRef(null);
+  const tooltipId = `maturity-tooltip-${daysUntilMaturity}`;
   const maturityLabel = daysUntilMaturity === 0 ? 'Matured' : `${daysUntilMaturity}d`;
-
-  // Set up floating-ui
-  const { refs, floatingStyles, context, placement, middlewareData } = useFloating({
-    open: isOpen,
-    onOpenChange: setIsOpen,
-    placement: 'top',
-    middleware: [
-      offset(8),
-      flip(),
-      shift(),
-      arrow({ element: arrowRef })
-    ],
-    whileElementsMounted: autoUpdate
-  });
-
-  // Set up hover interactions
-  const hover = useHover(context);
-  const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
-
-  // Animation styles for the tooltip
-  const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
-    initial: {
-      opacity: 0,
-      transform: 'scale(0.8)'
-    },
-    open: {
-      opacity: 1,
-      transform: 'scale(1)'
-    },
-    close: {
-      opacity: 0,
-      transform: 'scale(0.8)'
-    }
-  });
-
-  // Calculate arrow position
-  const staticSide = {
-    top: 'bottom',
-    right: 'left',
-    bottom: 'top',
-    left: 'right',
-  }[placement.split('-')[0]];
-
-  const arrowStyles = middlewareData.arrow
-    ? {
-        left: middlewareData.arrow.x != null ? `${middlewareData.arrow.x}px` : '',
-        top: middlewareData.arrow.y != null ? `${middlewareData.arrow.y}px` : '',
-        right: '',
-        bottom: '',
-        [staticSide as string]: '-4px',
-      }
-    : {};
 
   return (
     <>
       <div 
-        ref={refs.setReference}
-        {...getReferenceProps()}
         className="maturityBadge"
+        data-tooltip-id={tooltipId}
         style={{
           position: 'relative',
           marginLeft: '8px',
@@ -103,50 +38,28 @@ const MaturityBadge: React.FC<MaturityBadgeProps> = ({
         {maturityLabel}
       </div>
 
-      {isMounted && (
-        <FloatingPortal>
-          <div
-            ref={refs.setFloating}
-            style={{
-              ...floatingStyles,
-              ...transitionStyles,
-              maxWidth: '350px',
-              zIndex: 1000,
-            }}
-            {...getFloatingProps()}
-          >
-            <div
-              style={{
-                backgroundColor: '#2D3748',
-                color: '#fff',
-                padding: '10px 14px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                textAlign: 'left',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                lineHeight: '1.5',
-                position: 'relative'
-              }}
-            >
-              <div
-                ref={arrowRef}
-                style={{
-                  position: 'absolute',
-                  background: '#2D3748',
-                  width: '8px',
-                  height: '8px',
-                  transform: 'rotate(45deg)',
-                  ...arrowStyles,
-                }}
-              />
-              <div style={{ fontWeight: 600, marginBottom: '4px' }}>Maturity: {formattedMaturityDate}</div>
-              <p style={{ margin: 0 }}>
-                The PT can be redeemed only with the YT before the maturity date, and after the maturity the PT can be redeemed alone.
-              </p>
-            </div>
-          </div>
-        </FloatingPortal>
-      )}
+      <Tooltip 
+        id={tooltipId}
+        place="top"
+        style={{
+          backgroundColor: '#2D3748',
+          color: '#fff',
+          borderRadius: '6px',
+          fontSize: '12px',
+          lineHeight: '1.5',
+          maxWidth: '350px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          padding: '10px 14px',
+          zIndex: 9999
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 600, marginBottom: '4px' }}>Maturity: {formattedMaturityDate}</div>
+          <p style={{ margin: 0, textAlign: 'left' }}>
+            The PT can be redeemed only with the YT before the maturity date, and after the maturity the PT can be redeemed alone.
+          </p>
+        </div>
+      </Tooltip>
     </>
   );
 };
