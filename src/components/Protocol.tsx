@@ -7,6 +7,7 @@ import morphoblue from '../assets/protocols/morphoblue.svg'
 import compound from '../assets/protocols/compound.svg'
 import lido from '../assets/protocols/lido.svg'
 import spark from '../assets/protocols/spark.png'
+import pendle from '../assets/protocols/pendle.svg'
 
 interface ProtocolProps {
   name: string | null;
@@ -27,6 +28,7 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Yearn': 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png',
   'Lido': lido,
   'Spark': spark,
+  'Pendle': pendle,
   // Add more protocols as needed
 };
 
