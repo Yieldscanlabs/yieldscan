@@ -40,7 +40,7 @@ const YieldActions: React.FC<YieldActionsProps> = ({
 
       {hasLockYield && (
         <button className={styles.actionButtonAccent} onClick={onLockAPYClick}>
-          <span className={styles.buttonIcon}>🔒</span> Lock APY
+         Lock APY
         </button>
       )}
     </div>

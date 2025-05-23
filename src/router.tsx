@@ -8,7 +8,7 @@ import MyYieldsPage from './pages/MyYieldsPage';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
 import FaqPage from './pages/FaqPage';
-import LiveApyPage from './pages/LiveApyPage';
+import LiveApyPage from './pages/live-apy';
 import AboutPage from './pages/AboutPage';
 
 // Define the router configuration

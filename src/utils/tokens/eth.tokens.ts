@@ -204,7 +204,7 @@ export default [
     chainId: 1, // mainnet
     protocol: 'Lido',
     lockYield: {
-      expirationDate: '2025-06-22',
+      expirationDate: '2025-12-25',
       protocol: {
         name: 'Pendle',
         swap: true,
@@ -220,6 +220,34 @@ export default [
     decimals: 18,
     maxDecimalsShow: 6,
     usdPrice: 2500 // Approximate value (will need to be updated dynamically in production)
+  },
+  {
+    token: 'PT stETH' as const,
+    chain: 'ETH' as const,
+    address: '0xf99985822fb361117FCf3768D34a6353E6022F5F', // Lido stETH on Ethereum
+    withdrawUri: 'https://app.pendle.finance/trade/markets/0xc374f7ec85f8c7de3207a10bb1978ba104bda3b2/mint/redeem?view=pt&chain=ethereum&chart=apy&py=input',
+    icon: 'https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/ac9b8802-61d9-4c3f-a2de-2da35c87e24b.svg',
+    chainId: 1, // mainnet
+    protocol: 'Pendle',
+    maturity: '2025-12-25',
+    yieldBearingToken: true,
+    decimals: 18,
+    maxDecimalsShow: 6,
+    usdPrice: 2605 // Approximate value (will need to be updated dynamically in production)
+  },
+  {
+    token: 'YT stETH' as const,
+    chain: 'ETH' as const,
+    address: '0xf3aBC972A0f537c1119C990d422463b93227Cd83', // Lido stETH on Ethereum
+    withdrawUri: 'https://app.pendle.finance/trade/markets/0xc374f7ec85f8c7de3207a10bb1978ba104bda3b2/mint/redeem?view=pt&chain=ethereum&chart=apy&py=input',
+    icon: 'https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/ac9b8802-61d9-4c3f-a2de-2da35c87e24b.svg',
+    chainId: 1, // mainnet
+    protocol: 'Pendle',
+    maturity: '2025-12-25',
+    yieldBearingToken: true,
+    decimals: 18,
+    maxDecimalsShow: 6,
+    usdPrice: 44.15 // Approximate value (will need to be updated dynamically in production)
   },
     {
     token: 'Spark USDC' as const,

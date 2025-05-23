@@ -1,43 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useApyStore } from '../store/apyStore';
-import tokens from '../utils/tokens';
-import styles from './LiveApyPage.module.css';
-import { PROTOCOL_NAMES } from '../utils/constants';
-import { formatNumber } from '../utils/helpers';
-import NetworkSelector from '../components/NetworkSelector';
-import useWalletConnection from '../hooks/useWalletConnection';
-import WalletCtaCard from '../components/WalletCtaCard';
-import ProtocolScoreCard from '../components/ProtocolScoreCard';
-import Protocol from '../components/Protocol';
+import React, { useState, useRef, useEffect } from 'react';
+import styles from '../styles/LiveApy.module.css';
+import tokens from '../../../utils/tokens';
+import { PROTOCOL_NAMES } from '../../../utils/constants';
+import { formatNumber } from '../../../utils/helpers';
+import NetworkSelector from '../../../components/NetworkSelector';
+import Protocol from '../../../components/Protocol';
 
-const LiveApyPage: React.FC = () => {
-  const { apyData, isLoading, error, fetchApys } = useApyStore();
+interface ApyTableProps {
+  apyData: any;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
   const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
-  const { wallet } = useWalletConnection();
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-
-  // Format timestamp for last updated
-  const formattedLastUpdate = new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: true
-  }).format(lastUpdated);
-
-  // Refresh data on mount
-  useEffect(() => {
-    fetchApys(true);
-    setLastUpdated(new Date());
-    // Set up interval to refresh data every 5 minutes
-    const intervalId = setInterval(() => {
-      fetchApys(true);
-      setLastUpdated(new Date());
-    }, 5 * 60 * 1000);
-    
-    return () => clearInterval(intervalId);
-  }, [fetchApys]);
 
   // Group tokens by chain for filter dropdown
   const chainOptions = React.useMemo(() => {
@@ -103,7 +81,8 @@ const LiveApyPage: React.FC = () => {
     let bestProtocol = '';
     
     Object.entries(tokenData).forEach(([protocol, apy]) => {
-      if (apy !== undefined && apy > bestApy) {
+      // Ensure apy is a number and greater than current best
+      if (typeof apy === 'number' && apy > bestApy) {
         bestApy = apy;
         bestProtocol = protocol;
       }
@@ -115,19 +94,49 @@ const LiveApyPage: React.FC = () => {
     };
   };
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.pageHeader}>
-        <div className={styles.titleSection}>
-          <h1>Live APY Rates</h1>
-          <p className={styles.subtitle}>Real-time yield opportunities across major DeFi protocols</p>
-        </div>
-        <div className={styles.lastUpdatedBadge}>
-          <div className={isLoading ? styles.pulsingDot : styles.statusDot}></div>
-          <span>Last updated: {formattedLastUpdate}</span>
-        </div>
-      </div>
+  // Refs for the table sections
+  const leftTableRef = useRef<HTMLDivElement>(null);
+  const middleTableRef = useRef<HTMLDivElement>(null);
+  const rightTableRef = useRef<HTMLDivElement>(null);
+  
+  // Synchronize vertical scrolling
+  useEffect(() => {
+    const leftTable = leftTableRef.current;
+    const middleTable = middleTableRef.current;
+    const rightTable = rightTableRef.current;
+    
+    if (!leftTable || !middleTable || !rightTable) return;
+    
+    const syncScroll = (e: Event) => {
+      const scrollTop = (e.target as HTMLElement).scrollTop;
       
+      if (e.target === middleTable) {
+        if (leftTable.scrollTop !== scrollTop) leftTable.scrollTop = scrollTop;
+        if (rightTable.scrollTop !== scrollTop) rightTable.scrollTop = scrollTop;
+      } else if (e.target === leftTable) {
+        if (middleTable.scrollTop !== scrollTop) middleTable.scrollTop = scrollTop;
+        if (rightTable.scrollTop !== scrollTop) rightTable.scrollTop = scrollTop;
+      } else if (e.target === rightTable) {
+        if (leftTable.scrollTop !== scrollTop) leftTable.scrollTop = scrollTop;
+        if (middleTable.scrollTop !== scrollTop) middleTable.scrollTop = scrollTop;
+      }
+    };
+    
+    // Add scroll event listeners
+    leftTable.addEventListener('scroll', syncScroll);
+    middleTable.addEventListener('scroll', syncScroll);
+    rightTable.addEventListener('scroll', syncScroll);
+    
+    return () => {
+      // Clean up event listeners
+      leftTable.removeEventListener('scroll', syncScroll);
+      middleTable.removeEventListener('scroll', syncScroll);
+      rightTable.removeEventListener('scroll', syncScroll);
+    };
+  }, []);
+
+  return (
+    <>
       {error && (
         <div className={styles.errorCard}>
           <div className={styles.errorIcon}>!</div>
@@ -138,21 +147,6 @@ const LiveApyPage: React.FC = () => {
         </div>
       )}
 
-      <div className={styles.trustBanner}>
-        <div className={styles.trustItem}>
-          <div className={styles.trustIcon}>🔒</div>
-          <div className={styles.trustText}>Verified Protocols</div>
-        </div>
-        <div className={styles.trustItem}>
-          <div className={styles.trustIcon}>⚡</div>
-          <div className={styles.trustText}>Real-time Data</div>
-        </div>
-        <div className={styles.trustItem}>
-          <div className={styles.trustIcon}>📊</div>
-          <div className={styles.trustText}>Transparent Metrics</div>
-        </div>
-      </div>
-      
       <div className={styles.filterToolbar}>
         <div className={styles.filterControls}>
           <NetworkSelector 
@@ -176,7 +170,7 @@ const LiveApyPage: React.FC = () => {
       <div className={styles.tableCard}>
         <div className={styles.tableLayout}>
           {/* Fixed left columns */}
-          <div className={styles.fixedLeft}>
+          <div className={styles.fixedLeft} ref={leftTableRef}>
             <table className={styles.apyTable}>
               <thead>
                 <tr>
@@ -208,7 +202,7 @@ const LiveApyPage: React.FC = () => {
                   </tr>
                 ) : (
                   sortedTokens.map(token => (
-                    <tr key={`left-${token.chain}-${token.token}`}>
+                    <tr key={`token-${token.chainId}-${token.address}`}>
                       <td className={styles.tokenCell}>
                         <img 
                           src={token.icon} 
@@ -230,7 +224,7 @@ const LiveApyPage: React.FC = () => {
           </div>
           
           {/* Scrollable middle (protocols) */}
-          <div className={styles.scrollableMiddle}>
+          <div className={styles.scrollableMiddle} ref={middleTableRef}>
             <table className={styles.apyTable}>
               <thead>
                 <tr>
@@ -262,7 +256,7 @@ const LiveApyPage: React.FC = () => {
                     const { protocol: bestProtocol } = getBestApyForToken(token);
                     
                     return (
-                      <tr key={`middle-${token.chain}-${token.token}`}>
+                      <tr key={`token-${token.chainId}-${token.address}`}>
                         {protocols.map(protocol => {
                           const protocolKey = Object.entries(PROTOCOL_NAMES)
                             .find(([_, value]) => value === protocol)?.[0]?.toLowerCase();
@@ -292,7 +286,7 @@ const LiveApyPage: React.FC = () => {
           </div>
           
           {/* Fixed right column (best yield) */}
-          <div className={styles.fixedRight}>
+          <div className={styles.fixedRight} ref={rightTableRef}>
             <table className={styles.apyTable}>
               <thead>
                 <tr>
@@ -326,7 +320,7 @@ const LiveApyPage: React.FC = () => {
                     const { apy: bestApy, protocol: bestProtocol } = getBestApyForToken(token);
                     
                     return (
-                      <tr key={`right-${token.chain}-${token.token}`}>
+                      <tr key={`token-${token.chainId}-${token.address}`}>
                         <td className={styles.bestApyColumn}>
                           {bestApy !== null ? (
                             <div className={styles.bestApyWrapper}>
@@ -350,42 +344,25 @@ const LiveApyPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
-      <div className={styles.twoColumnLayout}>
-        <div className={styles.column}>
-          <ProtocolScoreCard />
+
+      <div className={styles.infoCard}>
+        <div className={styles.infoHeader}>
+          <div className={styles.infoIcon}>ℹ️</div>
+          <h3>Understanding APY Comparisons</h3>
         </div>
-        <div className={styles.column}>
-          {!wallet.isConnected && (
-            <WalletCtaCard />
-          )}
-          <div className={styles.infoCard}>
-            <div className={styles.infoHeader}>
-              <div className={styles.infoIcon}>ℹ️</div>
-              <h3>Understanding APY Comparisons</h3>
-            </div>
-            <div className={styles.infoContent}>
-              <p>
-                This table displays real-time Annual Percentage Yield (APY) rates across major DeFi protocols for all supported assets. 
-                Rates are sourced directly from protocol APIs and smart contracts to provide the most up-to-date information.
-              </p>
-              <p>
-                <strong>Best Yield</strong> highlights the optimal opportunity for each asset, allowing you to identify the most 
-                rewarding strategies at a glance. Rates are subject to market conditions and protocol parameters.
-              </p>
-            </div>
-          </div>
+        <div className={styles.infoContent}>
+          <p>
+            This table displays real-time Annual Percentage Yield (APY) rates across major DeFi protocols for all supported assets. 
+            Rates are sourced directly from protocol APIs and smart contracts to provide the most up-to-date information.
+          </p>
+          <p>
+            <strong>Best Yield</strong> highlights the optimal opportunity for each asset, allowing you to identify the most 
+            rewarding strategies at a glance. Rates are subject to market conditions and protocol parameters.
+          </p>
         </div>
       </div>
-      
-      <div className={styles.dataSourcesFooter}>
-        <p>
-          <strong>Data Sources:</strong> On-chain data, protocol APIs, and verified market feeds. 
-          <span className={styles.refreshNotice}>Data refreshes every 5 minutes</span>
-        </p>
-      </div>
-    </div>
+    </>
   );
 };
 
-export default LiveApyPage;
+export default ApyTable; 

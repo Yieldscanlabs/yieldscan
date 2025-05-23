@@ -143,7 +143,6 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     setError(null);
     
     try {
-        console.log('hello')
       const success = await withdraw(asset.balance);
       
       if (!success) {

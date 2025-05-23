@@ -14,7 +14,6 @@ const GlobalLockModal: React.FC = () => {
     closeModal,
     completeLock
   } = useLockStore();
-console.log(asset, lockDetails,'hello')
   // Guard clause if there's no asset data
   if ((!asset || !lockDetails)) return null;
   return (

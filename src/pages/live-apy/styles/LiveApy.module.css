@@ -1,0 +1,646 @@
+/* Copy styles from LiveApyPage.module.css and add new styles for tabs */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  margin-top: 10px;
+}
+
+/* Header styles */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.titleSection h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.lastUpdatedBadge {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--success-color);
+  margin-right: 0.5rem;
+}
+
+.pulsingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  margin-right: 0.5rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(108, 92, 231, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(108, 92, 231, 0);
+  }
+}
+
+/* New Tab Navigation styles */
+.tabNavigation {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabNavigation::-webkit-scrollbar {
+  display: none;
+}
+
+.tabButton {
+  padding: 0.75rem 1.25rem;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.tabButton:hover {
+  color: white;
+}
+
+.activeTab {
+  color: white;
+}
+
+.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+.tabContent {
+  min-height: 500px;
+}
+
+/* Trust Scores specific styles */
+.trustScoresContainer {
+  margin-bottom: 1.5rem;
+}
+
+.trustScoreHeader {
+  margin-bottom: 1.5rem;
+}
+
+.trustScoreHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: white;
+}
+
+/* Error message card */
+.errorCard {
+  background-color: rgba(255, 94, 91, 0.1);
+  border: 1px solid rgba(255, 94, 91, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.errorIcon {
+  min-width: 30px;
+  height: 30px;
+  background-color: var(--error-color);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.errorText h4 {
+  margin: 0 0 0.2rem;
+  color: var(--error-color);
+  font-size: 0.9rem;
+}
+
+.errorText p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Filter section */
+.filterToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.filterControls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filterStats {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.statBadge {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.statBadge span {
+  color: white;
+  font-weight: 600;
+  margin-right: 0.25rem;
+}
+
+/* Table styling */
+.tableCard {
+  background-color: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Table layout system */
+.tableLayout {
+  display: flex;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  max-height: 600px;
+}
+
+.fixedLeft {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background-color: var(--surface-dark);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.fixedLeft .apyTable {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.scrollableMiddle {
+  overflow-x: auto;
+  flex-grow: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.scrollableMiddle .apyTable {
+  width: auto;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.fixedRight {
+  position: sticky;
+  right: 0;
+  z-index: 20;
+  background-color: var(--surface-dark);
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.fixedRight .apyTable {
+  width: 180px;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.fixedLeft .apyTable tr,
+.scrollableMiddle .apyTable tr,
+.fixedRight .apyTable tr {
+  height: 56px;
+}
+
+.fixedLeft .apyTable thead tr,
+.scrollableMiddle .apyTable thead tr,
+.fixedRight .apyTable thead tr {
+  height: 48px;
+}
+
+/* Table header styles */
+.apyTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.apyTable thead th {
+  background-color: rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  font-size: 0.8rem;
+  height: 52px;
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.apyTable th {
+  text-align: left;
+  white-space: nowrap;
+  padding: 0.5rem 1rem;
+  min-width: 100px;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.sortableHeader:hover {
+  color: white;
+}
+
+.sortIndicator {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.bestApyHeader {
+  text-align: left;
+  min-width: 140px;
+}
+
+.protocolHeader {
+  text-align: center;
+  padding: 0.5rem;
+  min-width: 100px;
+}
+
+.apyTable td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.apyTable tr:last-child td {
+  border-bottom: none;
+}
+
+.fixedLeft table tbody tr:hover,
+.scrollableMiddle table tbody tr:hover,
+.fixedRight table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.tokenCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-left: 1rem !important;
+  min-width: 160px;
+  width: 160px;
+}
+
+.tokenIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: white;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tokenName {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.networkCell {
+  min-width: 100px;
+}
+
+.networkBadge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.network-1 {
+  background-color: rgba(78, 115, 223, 0.15);
+  color: rgb(132, 161, 245);
+  border-color: rgba(78, 115, 223, 0.3);
+}
+
+.network-42161 {
+  background-color: rgba(40, 160, 240, 0.15);
+  color: rgb(120, 195, 240);
+  border-color: rgba(40, 160, 240, 0.3);
+}
+
+.network-56 {
+  background-color: rgba(243, 186, 47, 0.15);
+  color: rgb(243, 186, 47);
+  border-color: rgba(243, 186, 47, 0.3);
+}
+
+.apyCell {
+  font-weight: 500;
+  color: var(--text-primary);
+  width: 120px;
+  text-align: center;
+}
+
+.apyValue {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.bestApyCell {
+  font-weight: 600;
+  color: var(--success-color) !important;
+  position: relative;
+  width: 120px;
+  text-align: center;
+}
+
+.bestApyCell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background-color: var(--success-color);
+  opacity: 0.7;
+}
+
+.bestApyColumn {
+  padding: 0.5rem 1rem !important;
+  min-width: 150px;
+  width: 150px;
+}
+
+.bestApyWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bestApyValue {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--success-color);
+  font-size: 1.05rem;
+}
+
+.bestProtocol {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.notAvailable {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+/* Loading state */
+.loadingRow {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--text-tertiary);
+}
+
+.loadingSpinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top: 2px solid var(--primary-color);
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.emptyRow {
+  text-align: center;
+  padding: 2rem !important;
+}
+
+.emptyStateIcon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.emptyStateText {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.scrollableMiddle::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollableMiddle::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.scrollableMiddle::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Info card styles */
+.infoCard {
+  background: linear-gradient(180deg, rgba(21, 23, 34, 0.6) 0%, rgba(31, 33, 44, 0.6) 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.infoIcon {
+  font-size: 1.25rem;
+}
+
+.infoHeader h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.infoContent {
+  color: var(--text-secondary);
+}
+
+.infoContent p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.infoContent p:last-child {
+  margin-bottom: 0;
+}
+
+.infoContent strong {
+  color: white;
+  font-weight: 600;
+}
+
+.twoColumnLayout {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.column {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lastUpdatedBadge {
+    margin-left: 0;
+  }
+
+  .titleSection h1 {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .filterToolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .filterControls {
+    width: 100%;
+  }
+
+  .filterStats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .twoColumnLayout {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .tableLayout {
+    max-height: 500px;
+  }
+  
+  .tokenCell {
+    min-width: 120px;
+  }
+
+  .networkCell {
+    display: none;
+  }
+
+  .bestApyColumn {
+    min-width: 120px;
+  }
+} 
+
+/* Ensure all table cells have consistent height */
+.apyTable td, .apyTable th {
+  line-height: 1.5;
+}
