@@ -12,14 +12,16 @@ import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
 import ViewToggle from '../components/ViewToggle';
-import type { ViewType } from '../components/ViewToggle';
+import { useUserPreferencesStore, type ViewType } from '../store/userPreferencesStore';
 import YieldsTable from '../components/YieldsTable';
 
 const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
-  const [viewType, setViewType] = useState<ViewType>('cards');
+  
+  // Use userPreferencesStore for view toggle state
+  const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
   
   // Get the getBestApy method from the store
   const { getBestApy, lastUpdated, apyData } = useApyStore();

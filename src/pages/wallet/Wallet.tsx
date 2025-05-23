@@ -4,7 +4,7 @@ import WalletModal from '../../components/WalletModal';
 import AssetList from '../../components/AssetList';
 import AssetTable from '../../components/AssetTable';
 import ViewToggle from '../../components/ViewToggle';
-import type { ViewType } from '../../components/ViewToggle';
+import { useUserPreferencesStore, type ViewType } from '../../store/userPreferencesStore';
 import NetworkSelector from '../../components/NetworkSelector';
 import DepositForm from '../../components/DepositForm';
 import DepositSuccess from '../../components/DepositSuccess';
@@ -22,7 +22,6 @@ interface WalletState {
   bestApyData: BestApyResult | null;
   showDepositForm: boolean;
   showDepositSuccess: boolean;
-  viewType: ViewType;
   selectedNetwork: number | 'all';
   depositData: {
     amount: string;
@@ -35,12 +34,14 @@ function Wallet() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
   
+  // Use userPreferencesStore for view toggle state
+  const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
+  
   const [state, setState] = useState<WalletState>({
     selectedAsset: null,
     bestApyData: null,
     showDepositForm: false,
     showDepositSuccess: false,
-    viewType: 'cards',
     selectedNetwork: 'all',
     depositData: { amount: '0', dailyYield: '0', yearlyYield: '0' }
   });
@@ -76,11 +77,8 @@ function Wallet() {
     }));
   };
 
-  const handleViewChange = (viewType: ViewType) => {
-    setState(prev => ({
-      ...prev,
-      viewType
-    }));
+  const handleViewChange = (newViewType: ViewType) => {
+    setViewType(newViewType);
   };
 
   const handleNetworkChange = (selectedNetwork: number | 'all') => {
@@ -149,11 +147,11 @@ function Wallet() {
             onChange={handleNetworkChange}
           />
           <ViewToggle 
-            currentView={state.viewType}
+            currentView={viewType}
             onViewChange={handleViewChange}
           />
         </div>
-        {state.viewType === 'cards' ? (
+        {viewType === 'cards' ? (
           <AssetList {...commonProps} />
         ) : (
           <AssetTable {...commonProps} />
