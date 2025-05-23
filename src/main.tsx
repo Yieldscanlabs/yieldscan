@@ -6,6 +6,7 @@ import { mainnet, arbitrum, bsc, base } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import router from './router';
 import './index.css';
+import './App.css';
 
 // Create wagmi config
 export const config = createConfig({

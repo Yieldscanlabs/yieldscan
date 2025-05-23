@@ -1,5 +1,5 @@
 import { createBrowserRouter, ScrollRestoration } from 'react-router-dom';
-import App from './App';
+import Wallet from './pages/wallet';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CalculatorPage from './pages/CalculatorPage';
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <App />,
+        element: <Wallet />,
       },
       {
         path: 'terms',

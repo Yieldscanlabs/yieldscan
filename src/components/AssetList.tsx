@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
 import AssetComponent from './AssetComponent';
-import NetworkSelector from './NetworkSelector';
 import styles from './AssetList.module.css';
-import { AVAILABLE_NETWORKS } from '../utils/markets';
 import { usePriceStore } from '../store/priceStore';
 
 interface AssetListProps {
@@ -26,9 +24,6 @@ const AssetList: React.FC<AssetListProps> = ({
     yearlyYieldUsd: string;
   }>>({});
   const { getPrice } = usePriceStore();
-
-  // Add state for network filtering
-  const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
 
   // Handler for asset selection that passes along the bestApy data
   const handleSelectAsset = (asset: Asset, bestApyData?: any) => {
@@ -69,34 +64,18 @@ const AssetList: React.FC<AssetListProps> = ({
     );
   }
   
-  // Get unique chain IDs from assets for the network selector
-  
-  // Filter assets by selected network
-  const regularAssets = assets.filter(asset => 
-    !asset.yieldBearingToken && 
-    (selectedNetwork === 'all' || asset.chainId === selectedNetwork)
-  );
-  
+  if (assets.length === 0) {
+    return (
+      <div className={styles['no-assets']}>
+        <p>No valid assets found in your wallet</p>
+      </div>
+    );
+  }
   
   return (
     <div className={styles['asset-list']}>
-      {/* Network selector for filtering assets */}
-      <div className={styles['network-filter']}>
-        <NetworkSelector
-          selectedNetwork={selectedNetwork}
-          networks={AVAILABLE_NETWORKS} // Example chain IDs
-          //@ts-ignore
-          onChange={setSelectedNetwork}
-          className={styles.networkSelector}
-        />
-      </div>
-      {
-        regularAssets.length === 0 && (
-          <div className={styles['no-assets']}>
-            <p>No valid assets found in your wallet</p>
-          </div>
-        ) || <div className={styles['asset-grid']}>
-        {regularAssets.map((asset) => {
+      <div className={styles['asset-grid']}>
+        {assets.map((asset) => {
           const assetKey = `${asset.token}-${asset.chain}`;
           const yieldInfo = assetYields[assetKey];
           const price = getPrice(asset.token.toLowerCase());
@@ -112,8 +91,6 @@ const AssetList: React.FC<AssetListProps> = ({
           );
         })}
       </div>
-      }
-      
     </div>
   );
 };

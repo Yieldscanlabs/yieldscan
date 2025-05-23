@@ -1,0 +1,439 @@
+.assetTable {
+  width: 100%;
+}
+
+.tableContainer {
+  background: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+.headerRow {
+  background: var(--surface-medium);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.headerRow th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.assetHeader {
+  width: 20%;
+}
+
+.chainHeader {
+  width: 15%;
+}
+
+.balanceHeader {
+  width: 20%;
+}
+
+.yieldHeader {
+  width: 45%;
+}
+
+.assetRowButton {
+  border-bottom: 1px solid var(--border-color);
+  transition: all var(--transition-speed);
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--surface-dark), var(--surface-medium));
+  position: relative;
+  overflow: hidden;
+}
+
+.assetRowButton:hover {
+  background: rgba(255, 255, 255, 0.03);
+  /* transform: translateY(-1px); */
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
+  border-color: var(--border-color);
+}
+
+.assetRowButton:hover::before {
+  left: 100%;
+}
+
+.assetRowButton:hover td {
+  color: var(--text-primary);
+}
+
+.assetRowButton:hover .chainBadge {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.assetRowButton:hover .assetName,
+.assetRowButton:hover .balanceAmount,
+.assetRowButton:hover .usdValue {
+  color: var(--text-primary);
+}
+
+.assetRowButton.selected {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(108, 92, 231, 0.3);
+  box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.2), 0 4px 12px rgba(108, 92, 231, 0.15);
+  /* transform: translateY(-1px); */
+}
+
+.assetRowButton.selected td {
+  color: var(--text-primary);
+}
+
+.assetRowButton.selected .chainBadge {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.assetRowButton.selected .assetName,
+.assetRowButton.selected .balanceAmount,
+.assetRowButton.selected .usdValue {
+  color: var(--text-primary);
+}
+
+.assetRowButton:active {
+  /* transform: translateY(-1px); */
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.assetRowButton:last-child {
+  border-bottom: none;
+}
+
+.assetRowButton td {
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+  border: none;
+  transition: all var(--transition-speed);
+}
+
+.assetCell {
+  padding: 0.5rem 0.75rem;
+}
+
+.assetInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assetIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.assetName {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.chainCell {
+  padding: 0.5rem 0.75rem;
+}
+
+.chainBadge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+}
+
+.balanceCell {
+  padding: 0.5rem 0.75rem;
+}
+
+.balanceGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.balanceAmount {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.usdValue {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.yieldCell {
+  padding: 0.5rem 0.75rem;
+}
+
+.yieldButton {
+  background: var(--surface-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  transition: all var(--transition-speed);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.yieldButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(108, 92, 231, 0.1),
+    transparent
+  );
+  transition: 0.6s;
+}
+
+.yieldButton:hover::before {
+  left: 100%;
+}
+
+.yieldButton:hover {
+  background: var(--surface-light);
+  border-color: rgba(108, 92, 231, 0.3);
+    /* transform: translateY(-1px); */
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.15);
+}
+
+.yieldApyMain {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.yieldDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+}
+
+.yieldProtocol {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* Override Protocol component styles for table integration */
+.yieldProtocol .protocol {
+  padding: 0;
+  gap: 0.25rem;
+}
+
+.yieldProtocol img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.yieldProtocol .protocolName {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.yieldEarnings {
+  color: #22c55e;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.yieldLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.yieldSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-top-color: #22c55e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.noYieldAvailable {
+  color: var(--text-tertiary);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Enhanced hover effects for the entire row when yield button is hovered */
+.assetRowButton:hover .yieldButton {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08), 
+    rgba(255, 255, 255, 0.12)
+  );
+  border-color: rgba(108, 92, 231, 0.3);
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15);
+  /* transform: translateY(-1px); */
+}
+
+.assetRowButton:hover .yieldProtocol {
+  background: rgba(108, 92, 231, 0.15);
+  color: #a78bfa;
+  border-color: rgba(108, 92, 231, 0.3);
+}
+
+.assetRowButton:hover .yieldApyMain,
+.assetRowButton:hover .yieldEarnings {
+  color: #4ade80;
+}
+
+.assetRowButton.selected .yieldButton {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08), 
+    rgba(255, 255, 255, 0.12)
+  );
+  border-color: rgba(108, 92, 231, 0.4);
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
+  /* transform: translateY(-1px); */
+}
+
+.assetRowButton.selected .yieldProtocol {
+  background: rgba(108, 92, 231, 0.2);
+  color: #a78bfa;
+  border-color: rgba(108, 92, 231, 0.4);
+}
+
+.assetRowButton.selected .yieldApyMain,
+.assetRowButton.selected .yieldEarnings {
+  color: #4ade80;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loadingText {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.noAssets {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tableContainer {
+    overflow-x: auto;
+  }
+  
+  .table {
+    min-width: 600px;
+  }
+  
+  .headerRow th,
+  .assetRowButton td {
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .assetIcon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .assetName {
+    font-size: 0.8rem;
+  }
+  
+  .yieldButton {
+    min-height: 36px;
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .yieldApyMain {
+    font-size: 0.8rem;
+  }
+  
+  .yieldProtocol,
+  .yieldEarnings {
+    font-size: 0.6rem;
+  }
+} 
