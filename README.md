@@ -5,10 +5,9 @@
 ## 🌟 Key Features
 
 - **Unified Dashboard** to track all yield-bearing assets
+- **Direct Integrations with Protocols** such as Aave, Compound, Morpho Blue, Pendle and more.
 - **One-Click Optimization** of yields via protocol switching
-- **Protocol Support** for Aave, Compound, Venus, Morpho, Radiant, and Pendle
-- **Isolated Vaults** per asset to protect against cross-asset risks
-- **Transparent Fees** (users keep 75% of yield, 25% platform fee)
+- **One-Click Locking APY** of yields via YT mint and selling 
 
 ---
 
