@@ -1,54 +1,25 @@
-# React + TypeScript + Vite
+# YieldScan
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**YieldScan** is a DeFi yield aggregator designed to help users maximize and optimize returns on their stablecoins and crypto assets across multiple protocols. With a clean, intuitive interface, YieldScan makes it easy to deposit, withdraw, and rebalance across Aave, Compound, Pendle, Morpho, Venus, and more — all in one place.
 
-Currently, two official plugins are available:
+## 🌟 Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Unified Dashboard** to track all yield-bearing assets
+- **One-Click Optimization** of yields via protocol switching
+- **Protocol Support** for Aave, Compound, Venus, Morpho, Radiant, and Pendle
+- **Isolated Vaults** per asset to protect against cross-asset risks
+- **Transparent Fees** (users keep 75% of yield, 25% platform fee)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🧠 Frontend Technology Stack
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+The frontend of YieldScan is built for performance, developer experience, and scalability:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+| Tool         | Description                                                  |
+|--------------|--------------------------------------------------------------|
+| **Vite**     | Lightning-fast dev server and bundler                        |
+| **React**    | Declarative UI framework for building components             |
+| **TypeScript** | Strongly typed language for improved safety and tooling     |
+| **Zustand**  | Lightweight global state management                          |
+| **wagmi + viem** | Wallet and contract integration tailored for Web3 UX       |
