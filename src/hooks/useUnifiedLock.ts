@@ -140,8 +140,6 @@ export default function useUnifiedLock({
       console.log('Mint response:', res);
       
       // Store ytAmountOut in the global store instead of local state
-      setYtAmountOut(res.data.amountOut);
-      setPtAmountOut(res.data.amountOut); 
       
       // Send transaction using sendTransaction hook which supports raw transactions
       try {

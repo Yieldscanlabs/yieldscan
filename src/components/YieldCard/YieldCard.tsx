@@ -3,9 +3,9 @@ import Protocol from '../Protocol';
 import WithdrawModal from '../WithdrawModal';
 import LockAPYInformationModal from '../LockAPYInformationModal';
 import OptimizeInformationModal from '../OptimizeInformationModal';
-import OptimizationModal from '../OptimizationModal';
 import styles from '../../pages/MyYieldsPage.module.css';
 import { getNetworkIcon } from '../../utils/networkIcons';
+import { useOptimizationStore } from '../../store/optimizationStore';
 import type { YieldCardProps } from './types';
 import { useYieldCard } from './useYieldCard';
 import MaturityBadge from './MaturityBadge';
@@ -19,6 +19,8 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     onOptimize, 
     onLockAPY 
   } = props;
+  
+  const { openModal } = useOptimizationStore();
   
   const {
     // State
@@ -54,9 +56,8 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     handleWithdraw
   } = useYieldCard(props);
 
-  // Add optimization modal states
+  // Add optimization information modal state (only for the explanation modal)
   const [isOptimizeModalOpen, setIsOptimizeModalOpen] = React.useState(false);
-  const [isOptimizationModalOpen, setIsOptimizationModalOpen] = React.useState(false);
 
   // Handle optimization - open the explanation modal first
   const handleOptimize = () => {
@@ -69,33 +70,30 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     }
   };
 
-  // Handle optimization confirm - close explanation modal and open transaction modal
+  // Handle optimization confirm - close explanation modal and open transaction modal via store
   const handleOptimizeConfirm = () => {
-    console.log('handleOptimizeConfirm called', { optimizationData, onOptimize });
+    console.log('handleOptimizeConfirm called', { optimizationData });
     if (optimizationData) {
-      console.log('Closing explanation modal and opening transaction modal');
+      console.log('Closing explanation modal and opening transaction modal via store');
+      // Close the information modal
       setIsOptimizeModalOpen(false);
-      setIsOptimizationModalOpen(true);
+      
+      // Open the transaction modal using the global store (like Lock flow)
+      openModal({
+        asset,
+        currentProtocol: optimizationData.currentProtocol,
+        currentApy: optimizationData.currentApy,
+        betterProtocol: optimizationData.betterProtocol,
+        betterApy: optimizationData.betterApy,
+        additionalYearlyUsd: optimizationData.additionalYearlyUsd,
+        onOptimize: onOptimize || (() => {})
+      });
     }
   };
 
   // Handle optimization modal close
   const closeOptimizeModal = () => {
     setIsOptimizeModalOpen(false);
-  };
-
-  // Handle optimization transaction complete
-  const handleOptimizationComplete = (success: boolean) => {
-    console.log('Optimization transaction completed:', success);
-    setIsOptimizationModalOpen(false);
-    if (success && onOptimize) {
-      onOptimize();
-    }
-  };
-
-  // Handle optimization transaction modal close
-  const closeOptimizationModal = () => {
-    setIsOptimizationModalOpen(false);
   };
 
   // Get chain icon for overlay
@@ -184,21 +182,6 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
           onConfirm={handleOptimizeConfirm}
           asset={asset}
           optimizationData={optimizationData}
-        />
-      )}
-
-      {/* Transaction Modal - actually executes the optimization */}
-      {optimizationData && (
-        <OptimizationModal
-          isOpen={isOptimizationModalOpen}
-          onClose={closeOptimizationModal}
-          onComplete={handleOptimizationComplete}
-          asset={asset}
-          currentProtocol={optimizationData.currentProtocol}
-          currentApy={optimizationData.currentApy}
-          betterProtocol={optimizationData.betterProtocol}
-          betterApy={optimizationData.betterApy}
-          additionalYearlyUsd={optimizationData.additionalYearlyUsd}
         />
       )}
     </div>

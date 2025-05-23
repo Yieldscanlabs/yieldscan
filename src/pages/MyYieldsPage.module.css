@@ -768,6 +768,7 @@
 .actionButton, .actionButtonAccent {
   flex: 1;
   border-radius: 6px;
+  padding: 8px 0px;
   font-size: 13px;
   font-weight: 500;
   display: flex;
