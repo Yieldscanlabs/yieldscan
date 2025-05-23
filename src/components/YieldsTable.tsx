@@ -247,6 +247,8 @@ const YieldsTableRow: React.FC<{
           asset={asset}
           protocol={lockYieldDetails.protocol}
           expirationDate={lockYieldDetails.expirationDate}
+          currentAPY={currentApy}
+          amountToLock={balanceNum}
         />
       )}
 

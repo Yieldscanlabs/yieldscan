@@ -171,6 +171,8 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
           asset={asset}
           protocol={lockYieldDetails.protocol}
           expirationDate={lockYieldDetails.expirationDate}
+          currentAPY={apy}
+          amountToLock={balanceNum}
         />
       )}
 

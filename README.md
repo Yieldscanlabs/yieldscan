@@ -7,7 +7,7 @@
 - **Unified Dashboard** to track all yield-bearing assets
 - **Direct Integrations with Protocols** such as Aave, Compound, Morpho Blue, Pendle and more.
 - **One-Click Optimization** of yields via protocol switching
-- **One-Click Locking APY** of yields via YT mint and selling 
+- **One-Click APY Lock** of yields via YT mint and selling 
 
 ---
 

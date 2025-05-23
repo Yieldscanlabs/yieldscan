@@ -20,6 +20,8 @@ interface LockAPYInformationModalProps {
     ptDecimals: number;
   };
   expirationDate: string;
+  currentAPY?: number;
+  amountToLock?: number;
 }
 
 const LockAPYInformationModal: React.FC<LockAPYInformationModalProps> = ({
@@ -28,7 +30,9 @@ const LockAPYInformationModal: React.FC<LockAPYInformationModalProps> = ({
   onConfirm,
   asset,
   protocol,
-  expirationDate
+  expirationDate,
+  currentAPY,
+  amountToLock
 }) => {
   if (!isOpen) return null;
 
@@ -42,6 +46,38 @@ const LockAPYInformationModal: React.FC<LockAPYInformationModalProps> = ({
     month: 'long',
     day: 'numeric'
   });
+
+  // Calculate days until expiration
+  const daysUntilExpiration = Math.ceil(
+    (new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Calculate estimated yield
+  const calculateEstimatedYield = () => {
+    if (!currentAPY || !amountToLock || currentAPY === 0 || amountToLock === 0 || daysUntilExpiration <= 0) {
+      return 0;
+    }
+    // Calculate yield for the lock period: amount * (apy / 100) * (days / 365)
+    return amountToLock * (currentAPY / 100) * (daysUntilExpiration / 365);
+  };
+
+  const estimatedYield = calculateEstimatedYield();
+
+  // Calculate USD value of estimated yield
+  const calculateEstimatedYieldUsd = () => {
+    if (!estimatedYield || !asset.balanceUsd || !asset.balance) {
+      return 0;
+    }
+    // Calculate USD price per token
+    const balanceNum = parseFloat(asset.balance);
+    const balanceUsdNum = parseFloat(asset.balanceUsd);
+    if (balanceNum === 0) return 0;
+    
+    const usdPricePerToken = balanceUsdNum / balanceNum;
+    return estimatedYield * usdPricePerToken;
+  };
+
+  const estimatedYieldUsd = calculateEstimatedYieldUsd();
 
   // Get protocol-specific explanation
   const getProtocolExplanation = () => {
@@ -98,15 +134,19 @@ const LockAPYInformationModal: React.FC<LockAPYInformationModalProps> = ({
           </div>
           
           <div className={styles.modalSection}>
-            <div className={styles.sectionTitle}>What will happen</div>
+            {/* <div className={styles.sectionTitle}>What will happen</div> */}
             <div className={styles.explanationBox}>
               {getProtocolExplanation()}
             </div>
 
+
+            <div className={styles.sectionTitle} style={{ marginTop: '24px' }}>Lock Details</div>
             <div className={styles.lockDetailsBox}>
               <div className={styles.lockDetailRow}>
                 <span className={styles.lockDetailLabel}>Protocol:</span>
-                <span className={styles.lockDetailValue}>{protocol.name}</span>
+                <span className={styles.lockDetailValue}>
+                  <Protocol name={protocol.name} showLogo={true} />
+                </span>
               </div>
               <div className={styles.lockDetailRow}>
                 <span className={styles.lockDetailLabel}>Network:</span>
@@ -118,6 +158,15 @@ const LockAPYInformationModal: React.FC<LockAPYInformationModalProps> = ({
               <div className={styles.lockDetailRow}>
                 <span className={styles.lockDetailLabel}>Locks until:</span>
                 <span className={styles.lockDetailValue}>{formattedExpirationDate}</span>
+              </div>
+              <div className={styles.lockDetailRow}>
+                <span className={styles.lockDetailLabel}>Estimated yield:</span>
+                <span className={styles.lockDetailValue}>
+                  {formatNumber(estimatedYield, asset.maxDecimalsShow || 6)} {asset.token} 
+                  <span style={{ color: '#6b7280', marginLeft: '8px' }}>
+                    (${formatNumber(estimatedYieldUsd, 2)})
+                  </span>
+                </span>
               </div>
             </div>
           </div>

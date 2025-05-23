@@ -199,6 +199,7 @@ export default [
     token: 'stETH' as const,
     chain: 'ETH' as const,
     address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84', // Lido stETH on Ethereum
+    underlyingAsset: '0x', // WETH address
     withdrawUri: 'https://stake.lido.fi/withdrawals/request',
     icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png',
     chainId: 1, // mainnet
