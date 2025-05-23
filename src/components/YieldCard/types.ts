@@ -1,8 +1,19 @@
 import type { Asset } from '../../types';
 
+// Optimization data for a yield-bearing asset
+export interface OptimizationData {
+  currentProtocol: string;
+  currentApy: number;
+  betterProtocol: string;
+  betterApy: number;
+  additionalYearlyUsd: string;
+  apyImprovement: number;
+}
+
 // Common interface for YieldCard props
 export interface YieldCardProps {
   asset: Asset;
+  optimizationData?: OptimizationData;
   onOptimize?: () => void;
   onLockAPY?: () => void;
 }
@@ -46,6 +57,7 @@ export interface YieldActionsProps {
   asset: Asset;
   hasLockYield: boolean;
   chainId: number;
+  optimizationData?: OptimizationData;
   onWithdrawClick: () => void;
   onOptimize?: () => void;
   onLockAPYClick: () => void;

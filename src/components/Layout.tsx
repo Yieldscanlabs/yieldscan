@@ -48,7 +48,7 @@ const Layout = () => {
       <main className={styles.main}>
         <Outlet />
       </main>
-      {/* <GlobalOptimizationModal /> */}
+      <GlobalOptimizationModal />
       <GlobalLockModal />
       <Footer />
     </div>

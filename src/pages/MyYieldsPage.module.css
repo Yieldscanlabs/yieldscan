@@ -278,19 +278,101 @@
 }
 
 .optimizeButton {
-  width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  position: relative;
+  cursor: help;
 }
 
-.optimizeButton:hover {
-  filter: brightness(1.1);
+.optimizeTooltip {
+  visibility: hidden;
+  position: absolute;
+  z-index: 999999;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  max-width: 90vw;
+  background-color: #2D3748;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  word-wrap: break-word;
+}
+
+.optimizeTooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #2D3748 transparent transparent transparent;
+}
+
+.optimizeButton:hover .optimizeTooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.tooltipTitle {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: #E2E8F0;
+}
+
+.tooltipContent {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #CBD5E0;
+  font-weight: 400;
+}
+
+.tooltipRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.tooltipRow:last-child {
+  margin-bottom: 0;
+}
+
+.tooltipLabel {
+  color: #A0AEC0;
+  font-weight: 500;
+}
+
+.tooltipValue {
+  color: #E2E8F0;
+  font-weight: 600;
+  text-align: right;
+  flex: 1;
+  margin-left: 8px;
+}
+
+.tooltipProtocolValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: 1;
+  margin-left: 8px;
+}
+
+.tooltipProtocolValue span {
+  color: #E2E8F0;
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .loading {
@@ -499,10 +581,7 @@
 }
 
 .yieldCardSlim:hover {
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  /* border-color: var(--primary-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; */
 }
 
 /* Top section with asset info and APY */
@@ -625,12 +704,69 @@
 /* Button row */
 .cardActionRow {
   display: flex;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
+.cardActionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.optimizationBanner {
+  display: none; /* Remove the old bulky banner */
+}
+
+/* Special optimize button with inline info */
+.actionButtonOptimize {
+  display: none;
+}
+
+.actionButtonOptimize:hover {
+  display: none;
+}
+
+.actionButtonOptimize::before {
+  display: none;
+}
+
+.actionButtonOptimize:hover::before {
+  display: none;
+}
+
+.optimizeButtonContent {
+  display: none;
+}
+
+.optimizeMainText {
+  display: none;
+}
+
+.optimizeSubText {
+  display: none;
+}
+
+/* Compact optimization hint below buttons */
+.optimizationHint {
+  display: none; /* Remove this since details are now in tooltip */
+}
+
+.protocolTransition {
+  font-weight: 600;
+  color: var(--success-color);
+  font-size: 11px;
+}
+
+.additionalEarningsHint {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+/* Regular action buttons */
 .actionButton, .actionButtonAccent {
   flex: 1;
-  padding: 8px 0;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
@@ -740,23 +876,6 @@
 }
 
 /* Compact optimization card */
-.optimizationCardCompact {
-  background-color: var(--surface-dark);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.optimizationCardCompact:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
 .cardHeader {
   display: flex;
   justify-content: space-between;

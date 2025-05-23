@@ -7,7 +7,7 @@ import { useEarnStore } from '../store/earnStore';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard/YieldCard';
-import OptimizationCard from '../components/OptimizationCard';
+import type { OptimizationData } from '../components/YieldCard/types';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
@@ -16,14 +16,6 @@ const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
-  const [optimizations, setOptimizations] = useState<{
-    asset: Asset;
-    currentProtocol: string;
-    currentApy: number;
-    betterProtocol: string;
-    betterApy: number;
-    additionalYearlyUsd: string;
-  }[]>([]);
   
   // Get the getBestApy method from the store
   const { getBestApy, lastUpdated, apyData } = useApyStore();
@@ -77,6 +69,66 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
+  // Function to calculate optimization data for a single asset
+  const getOptimizationDataForAsset = (asset: Asset): OptimizationData | undefined => {
+    // Get APY info for the asset
+    const token = tokens.find(
+      t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+    );
+    
+    if (!token) return undefined;
+    
+    // Determine which protocol this yield-bearing token belongs to
+    const currentProtocol = token.protocol;
+    if (!currentProtocol) return undefined;
+    
+    // Find the underlying asset for this yield token
+    const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
+    const underlyingToken = tokens.find(
+      t => t.token === underlyingTokenSymbol && t.chainId === token.chainId && !t.yieldBearingToken
+    );
+    
+    if (!underlyingToken) return undefined;
+    
+    // Get best APY from the store
+    const { bestApy, bestProtocol } = getBestApy(
+      underlyingToken.chainId,
+      underlyingToken.address.toLowerCase()
+    );
+    
+    // If no best APY found, skip this asset
+    if (bestApy === null || !bestProtocol) return undefined;
+    
+    //@ts-ignore
+    const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
+    
+    // Check if there's a better APY available
+    if (bestProtocol !== currentProtocol && bestApy > currentApyEstimate) {
+      // Calculate additional yield if user switches to better protocol
+      const balanceNum = parseFloat(asset.balance);
+      const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
+      const currentYearlyUsd = (balanceNum * (currentApyEstimate / 100)) * usdPrice;
+      const betterYearlyUsd = (balanceNum * (bestApy / 100)) * usdPrice;
+      const additionalYearlyUsd = betterYearlyUsd - currentYearlyUsd;
+      const apyImprovement = ((bestApy - currentApyEstimate) / currentApyEstimate * 100);
+      
+      const betterProtocolName = bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES 
+        ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] 
+        : bestProtocol;
+      
+      return {
+        currentProtocol,
+        currentApy: currentApyEstimate,
+        betterProtocol: betterProtocolName,
+        betterApy: bestApy,
+        additionalYearlyUsd: formatNumber(additionalYearlyUsd, 2),
+        apyImprovement: parseFloat(apyImprovement.toFixed(0))
+      };
+    }
+    
+    return undefined;
+  };
+
   // Calculate total yields and check for optimizations
   // This effect uses allYieldAssets instead of filteredYieldAssets
   useEffect(() => {
@@ -84,7 +136,6 @@ const MyYieldsPage: React.FC = () => {
 
     let dailyYieldTotal = 0;
     let yearlyYieldTotal = 0;
-    const potentialOptimizations: typeof optimizations = [];
 
     // Process each yield-bearing asset
     const processAssets = async () => {
@@ -107,13 +158,6 @@ const MyYieldsPage: React.FC = () => {
         
         if (!underlyingToken) continue;
         
-        // Get best APY from the store instead of using the hook directly
-        const { bestApy, bestProtocol } = getBestApy(
-          underlyingToken.chainId,
-          underlyingToken.address.toLowerCase()
-        );
-        // If no best APY found, skip this asset
-        if (bestApy === null) continue;
         //@ts-ignore
         const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
 
@@ -127,30 +171,7 @@ const MyYieldsPage: React.FC = () => {
         
         dailyYieldTotal += dailyYieldUsd;
         yearlyYieldTotal += yearlyYieldUsd;
-        
-        // Check if there's a better APY available
-        if (
-          currentProtocol &&
-          bestProtocol !== currentProtocol
-        ) {
-          // Calculate additional yield if user switches to better protocol
-          const betterYearlyYield = (balanceNum * (bestApy / 100));
-          const betterYearlyYieldUsd = betterYearlyYield * usdPrice;
-          const additionalYearlyUsd = betterYearlyYieldUsd - yearlyYieldUsd;
-          
-          potentialOptimizations.push({
-            asset,
-            currentProtocol,
-            currentApy: currentApyEstimate,
-            betterProtocol: bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES 
-              ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] 
-              : '',
-            betterApy: bestApy,
-            additionalYearlyUsd: formatNumber(additionalYearlyUsd, 2)
-          });
-        }
       }
-      setOptimizations(potentialOptimizations);
     };
     
     processAssets();
@@ -190,12 +211,6 @@ const MyYieldsPage: React.FC = () => {
       </div>
     );
   }
-
-  // Add a handler for optimization button clicks
-  const handleOptimize = () => {
-    // Implement the optimization logic here
-    // In a real app, this would initiate the token migration process
-  };
 
   // Render the content
   return (
@@ -246,12 +261,32 @@ const MyYieldsPage: React.FC = () => {
       <div className={styles.section}>
         {filteredYieldAssets.length > 0 ? (
           <div className={styles.yieldGrid}>
-            {filteredYieldAssets.map((asset) => (
-              <YieldCard
-                key={`${asset.token}-${asset.chainId}`}
-                asset={asset}
-              />
-            ))}
+            {filteredYieldAssets.map((asset) => {
+              const optimizationData = getOptimizationDataForAsset(asset);
+              
+              // Handle optimization for this specific asset
+              const handleOptimize = () => {
+                console.log('Starting optimization for:', asset.token);
+                // TODO: Implement actual optimization logic here
+                // This could involve:
+                // 1. Withdrawing from current protocol
+                // 2. Approving new protocol
+                // 3. Depositing to new protocol
+                // For now, we'll just log the action
+                if (optimizationData) {
+                  console.log(`Optimizing ${asset.token} from ${optimizationData.currentProtocol} to ${optimizationData.betterProtocol}`);
+                }
+              };
+              
+              return (
+                <YieldCard
+                  key={`${asset.token}-${asset.chainId}`}
+                  asset={asset}
+                  optimizationData={optimizationData}
+                  onOptimize={handleOptimize}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className={styles.filteredEmptyState}>
@@ -273,43 +308,6 @@ const MyYieldsPage: React.FC = () => {
               >
                 Reset Filters
               </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Optimizations Section - Always uses all optimizations regardless of filters */}
-      <div className={styles.section}>
-        <h2>Optimize</h2>
-        
-        {optimizations.length > 0 ? (
-          <>
-            <div className={styles.optimizationsGrid}>
-              {optimizations.map((opt, index) => (
-                <OptimizationCard
-                  key={index}
-                  asset={opt.asset}
-                  currentProtocol={opt.currentProtocol}
-                  currentApy={opt.currentApy}
-                  betterProtocol={opt.betterProtocol}
-                  betterApy={opt.betterApy}
-                  additionalYearlyUsd={opt.additionalYearlyUsd}
-                  onOptimize={() => handleOptimize()}
-                />
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className={styles.optimizationEmptyState}>
-            <div className={styles.optimizationEmptyContent}>
-              <div className={styles.optimizationEmptyIcon}>✓</div>
-              <div className={styles.optimizationEmptyText}>
-                <h3>Your yields are optimized</h3>
-                <p>
-                  You're already earning the best possible yields on all your assets.
-                  We'll notify you when better opportunities become available.
-                </p>
-              </div>
             </div>
           </div>
         )}

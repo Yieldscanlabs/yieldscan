@@ -5,7 +5,7 @@ import type { Asset } from '../types';
 import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
 import Protocol from './Protocol';
 
-interface LockAPYModalProps {
+interface LockAPYInformationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -22,7 +22,7 @@ interface LockAPYModalProps {
   expirationDate: string;
 }
 
-const LockAPYModal: React.FC<LockAPYModalProps> = ({
+const LockAPYInformationModal: React.FC<LockAPYInformationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -136,4 +136,4 @@ const LockAPYModal: React.FC<LockAPYModalProps> = ({
   );
 };
 
-export default LockAPYModal; 
+export default LockAPYInformationModal; 
