@@ -45,6 +45,10 @@
   border-color: var(--primary-color);
   box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2);
 }
+.toggleButton:focus {
+  outline: none;
+}
+
 
 .icon {
   width: 16px;

@@ -7,7 +7,8 @@
 .dropdownToggle {
   display: flex;
   align-items: center;
-  width: 100%;
+  width: 200px;
+
   padding: 12px 12px;
   background-color: var(--surface-medium);
   border: 1px solid var(--border-color);

@@ -11,11 +11,15 @@ import type { OptimizationData } from '../components/YieldCard/types';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
+import ViewToggle from '../components/ViewToggle';
+import type { ViewType } from '../components/ViewToggle';
+import YieldsTable from '../components/YieldsTable';
 
 const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
+  const [viewType, setViewType] = useState<ViewType>('cards');
   
   // Get the getBestApy method from the store
   const { getBestApy, lastUpdated, apyData } = useApyStore();
@@ -219,7 +223,6 @@ const MyYieldsPage: React.FC = () => {
       <div className={styles.filtersContainer}>
         {/* Network selector for filtering yields */}
         <div className={styles.filterItem}>
-          <label className={styles.filterLabel}>Network</label>
           <NetworkSelector
             selectedNetwork={selectedNetwork}
             networks={uniqueChainIds}
@@ -229,24 +232,17 @@ const MyYieldsPage: React.FC = () => {
           />
         </div>
         
-        {/* Protocol selector for filtering yields */}
+        {/* View Toggle */}
 
-        
-        {/* Daily and total earnings summary */}
-        {/* <div className={styles.filterItem}>
-          <div className={styles.earningsSnapshot}>
-            <div className={styles.earningsItem}>
-              <span className={styles.earningsLabel}>Daily</span>
-              <span className={styles.earningsValue}>${totalEarnings.daily.toFixed(2)}</span>
-            </div>
-            <div className={styles.earningsItem}>
-              <span className={styles.earningsLabel}>Total</span>
-              <span className={styles.earningsValue}>${totalEarnings.lifetime.toFixed(2)}</span>
-            </div>
-          </div>
-        </div> */}
-                <div className={styles.filterItem}>
-          <label className={styles.filterLabel}>Protocol</label>
+
+        {/* Protocol selector for filtering yields */}
+        <div className={`${styles.filterItem} ${styles.viewToggleContainer}`}>
+        <div className={styles.filterItem}>
+          <ViewToggle 
+            currentView={viewType}
+            onViewChange={setViewType}
+          />
+        </div>
           <ProtocolSelector
             selectedProtocol={selectedProtocol}
             //@ts-ignore
@@ -260,34 +256,36 @@ const MyYieldsPage: React.FC = () => {
       {/* Current Yields Section - Uses filteredYieldAssets for display */}
       <div className={styles.section}>
         {filteredYieldAssets.length > 0 ? (
-          <div className={styles.yieldGrid}>
-            {filteredYieldAssets.map((asset) => {
-              const optimizationData = getOptimizationDataForAsset(asset);
-              
-              // Handle optimization for this specific asset
-              const handleOptimize = () => {
-                console.log('Starting optimization for:', asset.token);
-                // TODO: Implement actual optimization logic here
-                // This could involve:
-                // 1. Withdrawing from current protocol
-                // 2. Approving new protocol
-                // 3. Depositing to new protocol
-                // For now, we'll just log the action
-                if (optimizationData) {
-                  console.log(`Optimizing ${asset.token} from ${optimizationData.currentProtocol} to ${optimizationData.betterProtocol}`);
-                }
-              };
-              
-              return (
-                <YieldCard
-                  key={`${asset.token}-${asset.chainId}`}
-                  asset={asset}
-                  optimizationData={optimizationData}
-                  onOptimize={handleOptimize}
-                />
-              );
-            })}
-          </div>
+          viewType === 'cards' ? (
+            <div className={styles.yieldGrid}>
+              {filteredYieldAssets.map((asset) => {
+                const optimizationData = getOptimizationDataForAsset(asset);
+                
+                // Handle optimization for this specific asset
+                const handleOptimize = () => {
+                  console.log('Starting optimization for:', asset.token);
+                  if (optimizationData) {
+                    console.log(`Optimizing ${asset.token} from ${optimizationData.currentProtocol} to ${optimizationData.betterProtocol}`);
+                  }
+                };
+                
+                return (
+                  <YieldCard
+                    key={`${asset.token}-${asset.chainId}`}
+                    asset={asset}
+                    optimizationData={optimizationData}
+                    onOptimize={handleOptimize}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <YieldsTable
+              assets={filteredYieldAssets}
+              loading={loading}
+              getOptimizationDataForAsset={getOptimizationDataForAsset}
+            />
+          )
         ) : (
           <div className={styles.filteredEmptyState}>
             <div className={styles.filteredEmptyContent}>
