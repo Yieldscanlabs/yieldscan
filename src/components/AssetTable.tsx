@@ -56,7 +56,10 @@ const AssetTable: React.FC<AssetTableProps> = ({
               <th className={styles.assetHeader}>Asset</th>
               <th className={styles.chainHeader}>Chain</th>
               <th className={styles.balanceHeader}>Balance & Value</th>
-              <th className={styles.yieldHeader}>Best Yield</th>
+              <th className={styles.earningsHeader}>Yearly Earnings</th>
+              <th className={styles.protocolHeader}>Protocol</th>
+              <th className={styles.apyHeader}>APY</th>
+              <th className={styles.yieldHeader}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -102,40 +105,49 @@ const AssetTable: React.FC<AssetTableProps> = ({
                       </span>
                     </div>
                   </td>
-                  <td className={styles.yieldCell}>
-                    <div className={styles.yieldButton}>
-                      {apyLoading ? (
-                        <div className={styles.yieldLoading}>
-                          <div className={styles.yieldSpinner}></div>
-                          <span>Loading...</span>
-                        </div>
-                      ) : bestApyData?.bestApy ? (
-                        <>
-                          <div className={styles.yieldApyMain}>
-                            <span>{bestApyData.bestApy.toFixed(2)}% APY</span>
-                            <span className={styles.yieldEarnings}>
-                              ${((parseFloat(asset.balance) * bestApyData.bestApy) / 100).toFixed(2)}/year
-                            </span>
-                          </div>
-                          <div className={styles.yieldDetails}>
-                            <Protocol 
-                              name={bestApyData.bestProtocol}
-                              showLogo={true}
-                              showName={true}
-                              size="small"
-                              className={styles.yieldProtocol}
-                            />
-                            <span style={{color: 'var(--text-tertiary)', fontSize: '0.65rem'}}>
-                              Click to deposit
-                            </span>
-                          </div>
-                        </>
+                  <td className={styles.earningsCell}>
+                    <div className={styles.earningsGroup}>
+                      {bestApyData?.bestApy ? (
+                        <span className={styles.earningsAmount}>
+                          ${((parseFloat(asset.balance) * bestApyData.bestApy) / 100).toFixed(2)}/year
+                        </span>
                       ) : (
-                        <div className={styles.noYieldAvailable}>
-                          No yield options
-                        </div>
+                        <span className={styles.noEarningsData}>
+                          No data
+                        </span>
                       )}
                     </div>
+                  </td>
+                  <td className={styles.protocolCell}>
+                    {bestApyData?.bestProtocol ? (
+                      <Protocol 
+                        name={bestApyData.bestProtocol}
+                        showLogo={true}
+                        showName={true}
+                        size="small"
+                        className={styles.protocolDisplay}
+                      />
+                    ) : (
+                      <span className={styles.noProtocolData}>
+                        No protocol
+                      </span>
+                    )}
+                  </td>
+                  <td className={styles.apyCell}>
+                    {bestApyData?.bestApy ? (
+                      <span className={styles.apyAmount}>
+                        {bestApyData.bestApy.toFixed(2)}% APY
+                      </span>
+                    ) : (
+                      <span className={styles.noApyData}>
+                        No data
+                      </span>
+                    )}
+                  </td>
+                  <td className={styles.yieldCell}>
+                    <button className={styles.actionButtonAccent} onClick={() => handleSelectAsset(asset)}>
+                      Earn
+                    </button>
                   </td>
                 </tr>
               );
