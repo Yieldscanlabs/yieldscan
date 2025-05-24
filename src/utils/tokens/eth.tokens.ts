@@ -276,5 +276,34 @@ export default [
     decimals: 6,
     maxDecimalsShow: 2,
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  },
+  {
+    token: 'fUSDT' as const,
+    chain: 'ETH' as const,
+    address: '0x5C20B550819128074FD538Edf79791733ccEdd18', 
+    icon: 'https://asset-metadata-service-production.s3.amazonaws.com/asset_icons/71acebfd33a6d70e8bcd8b994d8881a69a5baf53a31f267a524fd49fdaebcff3.png',
+    chainId: 1, // mainnet
+    protocol: 'Fluid',
+    yieldBearingToken: true,
+    withdrawContract: '0x5C20B550819128074FD538Edf79791733ccEdd18',
+    underlyingAsset: ETH_USDT,
+    decimals: 6,
+    maxDecimalsShow: 2,
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  },
+  {
+    token: 'fETH' as const,
+    chain: 'ETH' as const,
+    address: '0x90551c1795392094FE6D29B758EcCD233cFAa260', 
+    icon: 'https://etherscan.io/token/images/fweth_32.png',
+    chainId: 1, // mainnet
+    protocol: 'Fluid',
+    yieldBearingToken: true,
+    underlyingAsset: '0x',
+    withdrawContract: '0x90551c1795392094FE6D29B758EcCD233cFAa260',
+    decimals: 18,
+    maxDecimalsShow: 6,
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   }
+
 ]

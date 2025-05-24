@@ -64,6 +64,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
   const { 
     supply, 
     supplyETH,
+    supplyNative
   } = useUnifiedYield({
         protocol: protocol as SupportedProtocol,
         contractAddress: protocolAddress as `0x${string}` || '0x',
@@ -158,6 +159,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
         // For native ETH on Aave, we use the supplyETH function which calls depositETH on the gateway contract
         // onBehalfOf parameter is the user's address
         success = await supplyETH(amount, wallet.address as `0x${string}`);
+      } else if(isNativeToken && protocol === PROTOCOL_NAMES.FLUID) {
+        success = await supplyNative(amount, wallet.address as `0x${string}`);
       } else {
         // For all other tokens/protocols, use the regular supply function
         success = await supply(amount);

@@ -109,6 +109,8 @@ export const MORPHO_BLUE_MARKETS: Record<number, Record<string, string>> = {
 export const FLUID_MARKETS: Record<number, Record<string, string>> = {
   // Ethereum Mainnet
   1: {
-    'USDC': '0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33'
+    'USDC': '0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33',
+    'USDT': '0x5C20B550819128074FD538Edf79791733ccEdd18',
+    'ETH': '0x90551c1795392094FE6D29B758EcCD233cFAa260',
   }
 }

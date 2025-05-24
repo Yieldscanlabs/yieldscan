@@ -177,6 +177,26 @@ const protocolAbis = {
       outputs: [{ name: '', type: 'uint256' }],
       stateMutability: 'nonpayable',
       type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'receiver', type: 'address' }
+      ],
+      name: 'depositNative',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'payable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'assets', type: 'uint256' },
+        { name: 'receiver', type: 'address' },
+        { name: 'owner', type: 'address' }
+      ],
+      name: 'withdrawNative',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
     }
   ]
 } as const;
@@ -431,6 +451,59 @@ export default function useUnifiedYield({
         return true;
       } catch (error) {
         console.error('Error withdrawing ETH from Aave:', error);
+        return false;
+      } finally {
+        setIsWithdrawing(false);
+      }
+    }, [address, contractAddress, protocol, tokenDecimals, writeContractAsync, chainId]),
+
+    // Native ETH support for Fluid
+    supplyNative: useCallback(async (amount: string, receiver: Address): Promise<boolean> => {
+      if (!contractAddress || protocol !== PROTOCOL_NAMES.FLUID) return false;
+      
+      try {
+        setIsSupplying(true);
+        const amountInWei = parseUnits(amount, tokenDecimals);
+        
+        // Send ETH value with the transaction
+        const hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Fluid,
+          functionName: 'depositNative',
+          args: [receiver], // Fluid depositNative only needs receiver
+          value: amountInWei, // Send ETH value
+          chainId
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (error) {
+        console.error('Error supplying ETH to Fluid:', error);
+        return false;
+      } finally {
+        setIsSupplying(false);
+      }
+    }, [address, contractAddress, protocol, tokenDecimals, writeContractAsync, chainId]),
+    
+    withdrawNative: useCallback(async (amount: string, receiver: Address, owner: Address): Promise<boolean> => {
+      if (!contractAddress || protocol !== PROTOCOL_NAMES.FLUID) return false;
+      
+      try {
+        setIsWithdrawing(true);
+        const amountInWei = parseUnits(amount, tokenDecimals);
+        
+        const hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Fluid,
+          functionName: 'withdrawNative',
+          args: [amountInWei, receiver, owner], // Fluid withdrawNative - assets, receiver, owner
+          chainId
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (error) {
+        console.error('Error withdrawing ETH from Fluid:', error);
         return false;
       } finally {
         setIsWithdrawing(false);
