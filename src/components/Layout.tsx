@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
 import GlobalLockModal from './GlobalLockModal';
 import { usePriceStore } from '../store/priceStore';
+import { useTheme } from '../hooks/useTheme';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
@@ -18,6 +19,9 @@ const Layout = () => {
     fetchEarnings, 
     lastUpdated: earningsLastUpdated
   } = useEarnStore();
+  
+  // Initialize theme on app startup
+  useTheme();
   
   // Initialize auto-refresh for APY, Assets, and Earnings
   useApyAutoRefresh();
