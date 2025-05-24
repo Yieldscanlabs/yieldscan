@@ -1053,10 +1053,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--surface-dark);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
   min-height: 250px;
 }
 

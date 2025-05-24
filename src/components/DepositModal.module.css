@@ -474,3 +474,144 @@
   margin-right: 8px;
   font-size: 1.1rem;
 }
+
+/* Light theme overrides */
+[data-theme="light"] .modal {
+  background-color: #ffffff;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .modalHeader {
+  border-bottom: 1px solid rgba(108, 92, 231, 0.12);
+}
+
+[data-theme="light"] .modalHeader h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .closeButton {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .closeButton:hover {
+  background-color: rgba(108, 92, 231, 0.1);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .depositDetails {
+  background-color: rgba(108, 92, 231, 0.04);
+  border: 1px solid rgba(108, 92, 231, 0.12);
+}
+
+[data-theme="light"] .detailLabel {
+  color: var(--text-tertiary);
+}
+
+[data-theme="light"] .detailValue {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .subDetail {
+  color: var(--text-tertiary);
+}
+
+[data-theme="light"] .description {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .stepDot {
+  background-color: rgba(108, 92, 231, 0.04);
+  border: 2px solid rgba(108, 92, 231, 0.2);
+}
+
+[data-theme="light"] .progressStep.active .stepDot {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+[data-theme="light"] .progressLine {
+  background-color: rgba(108, 92, 231, 0.12);
+}
+
+[data-theme="light"] .stepLabel {
+  color: var(--text-tertiary);
+}
+
+[data-theme="light"] .progressStep.active .stepLabel {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .loadingText {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .spinner {
+  border: 3px solid rgba(108, 92, 231, 0.1);
+  border-top-color: var(--primary-color);
+}
+
+[data-theme="light"] .error {
+  background-color: rgba(255, 94, 91, 0.08);
+  border: 1px solid rgba(255, 94, 91, 0.2);
+  color: var(--error-color);
+}
+
+[data-theme="light"] .retryButton {
+  background-color: rgba(108, 92, 231, 0.1);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .retryButton:hover {
+  background-color: rgba(108, 92, 231, 0.2);
+}
+
+[data-theme="light"] .successIcon {
+  background-color: rgba(0, 230, 121, 0.08);
+  border: 1px solid rgba(0, 230, 121, 0.2);
+  color: var(--success-color);
+}
+
+[data-theme="light"] .successTitle {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .successMessage {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .info-tag {
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .lockWarning {
+  background-color: rgba(255, 179, 68, 0.08);
+  border: 1px solid rgba(255, 179, 68, 0.2);
+  color: var(--warning-color);
+}
+
+[data-theme="light"] .closeButton.disabled {
+  opacity: 0.4;
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+[data-theme="light"] .depositButton:disabled {
+  background: rgba(108, 92, 231, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+[data-theme="light"] .completeButton:disabled {
+  background: rgba(108, 92, 231, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

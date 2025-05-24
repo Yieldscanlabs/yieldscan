@@ -574,7 +574,6 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 12px;
-  margin-bottom: 16px;
   transition: all 0.2s ease;
   border: 1px solid var(--border-color);
   font-size: 14px;

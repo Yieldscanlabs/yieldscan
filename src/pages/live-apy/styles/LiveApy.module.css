@@ -76,7 +76,6 @@
   display: flex;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 1.5rem;
-  overflow-x: auto;
   scrollbar-width: none;
 }
 
