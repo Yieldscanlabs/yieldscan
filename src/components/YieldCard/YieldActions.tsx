@@ -1,6 +1,7 @@
 import React from 'react';
 import type { YieldActionsProps } from './types';
 import styles from '../../pages/MyYieldsPage.module.css';
+import tableStyles from '../YieldsTable.module.css';
 
 const YieldActions: React.FC<YieldActionsProps> = ({
   asset,
@@ -36,15 +37,14 @@ const YieldActions: React.FC<YieldActionsProps> = ({
         )}
         
         {optimizationData && onOptimize && (
-          <button className={styles.actionButtonAccent} onClick={onOptimize}>
-     
-            Optimize
+          <button className={`${tableStyles.actionButton} ${tableStyles.optimizeButton} ${styles.actionButtonAccent}`} onClick={onOptimize}>
+            <span>Optimize</span>
           </button>
         )}
 
         {hasLockYield && (
-          <button className={styles.actionButtonAccent} onClick={onLockAPYClick}>
-           Lock APY
+          <button className={`${tableStyles.actionButton} ${tableStyles.lockApyButton} ${styles.actionButtonAccent}`} onClick={onLockAPYClick}>
+            <span>Lock APY</span>
           </button>
         )}
       </div>
