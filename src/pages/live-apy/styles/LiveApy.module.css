@@ -221,13 +221,15 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Table layout system */
+/* Table layout system - Fixed to eliminate gaps */
 .tableLayout {
   display: flex;
   width: 100%;
   position: relative;
   overflow: hidden;
   max-height: 600px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
 }
 
 .fixedLeft {
@@ -240,10 +242,11 @@
 
 .fixedLeft .apyTable {
   width: auto;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   text-align: left;
   font-size: 0.9rem;
+  margin: 0;
 }
 
 .scrollableMiddle {
@@ -256,10 +259,11 @@
 .scrollableMiddle .apyTable {
   width: auto;
   min-width: 100%;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   text-align: center;
   font-size: 0.9rem;
+  margin: 0;
 }
 
 .fixedRight {
@@ -272,22 +276,26 @@
 
 .fixedRight .apyTable {
   width: 180px;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   text-align: left;
   font-size: 0.9rem;
+  margin: 0;
 }
 
+/* Consistent row heights across all table sections */
 .fixedLeft .apyTable tr,
 .scrollableMiddle .apyTable tr,
 .fixedRight .apyTable tr {
-  height: 56px;
+  height: 70px;
+  line-height: 1.4;
 }
 
 .fixedLeft .apyTable thead tr,
 .scrollableMiddle .apyTable thead tr,
 .fixedRight .apyTable thead tr {
-  height: 48px;
+  height: 52px;
+  line-height: 1.2;
 }
 
 /* Table header styles - Enhanced */
@@ -308,6 +316,8 @@
   border-bottom: 2px solid var(--border-color);
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  vertical-align: middle;
+  box-sizing: border-box;
 }
 
 .apyTable th {
@@ -315,45 +325,18 @@
   white-space: nowrap;
   padding: 0.5rem 1rem;
   min-width: 100px;
-}
-
-.sortableHeader {
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-  transition: color var(--transition-speed);
-}
-
-.sortableHeader:hover {
-  color: var(--primary-color);
-  background-color: var(--surface-hover);
-}
-
-.sortIndicator {
-  margin-left: 0.4rem;
-  font-size: 0.7rem;
-  opacity: 0.8;
-  transition: opacity var(--transition-speed);
-}
-
-.bestApyHeader {
-  text-align: left;
-  min-width: 140px;
-  background: linear-gradient(90deg, var(--success-color), rgba(0, 230, 121, 0.1));
-  color: var(--text-inverse);
-}
-
-.protocolHeader {
-  text-align: center;
-  padding: 0.5rem;
-  min-width: 100px;
+  vertical-align: middle;
+  box-sizing: border-box;
 }
 
 .apyTable td {
   border-bottom: 1px solid var(--border-color);
   padding: 0.5rem 1rem;
+  height: 70px;
   white-space: nowrap;
   color: var(--text-primary);
+  vertical-align: middle;
+  box-sizing: border-box;
 }
 
 .apyTable tr:last-child td {
@@ -670,7 +653,46 @@
   }
 } 
 
-/* Ensure all table cells have consistent height */
+/* Ensure all table cells have consistent height - Final rule */
 .apyTable td, .apyTable th {
-  line-height: 1.5;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: color var(--transition-speed);
+}
+
+.sortableHeader:hover {
+  color: var(--primary-color);
+  background-color: var(--surface-hover);
+}
+
+.sortIndicator {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  opacity: 0.8;
+  transition: opacity var(--transition-speed);
+}
+
+.bestApyHeader {
+  text-align: left;
+  min-width: 140px;
+  background: linear-gradient(90deg, var(--success-color), rgba(0, 230, 121, 0.1));
+  color: var(--text-inverse);
+}
+
+.protocolHeader {
+  text-align: center;
+  padding: 0.5rem;
+  min-width: 100px;
+}
+
+.fixedLeft table tbody tr:hover,
+.scrollableMiddle table tbody tr:hover,
+.fixedRight table tbody tr:hover {
+  background-color: var(--surface-hover);
 }
