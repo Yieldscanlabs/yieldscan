@@ -158,25 +158,20 @@ const YieldsTableRow: React.FC<{
               className={styles.protocolDisplay}
             />
           ) : (
-            <div className={styles.noProtocolData}>
+            <span className={styles.noProtocolData}>
               No protocol
-            </div>
+            </span>
           )}
         </td>
         <td className={styles.apyCell}>
           {currentApy > 0 ? (
-            <div className={styles.apyDisplay}>
-              <div className={styles.apyMain}>
-                {currentApy.toFixed(2)}% APY
-              </div>
-              <div className={styles.apyEarnings}>
-                ${((parseFloat(asset.balance) * currentApy) / 100).toFixed(2)}/year
-              </div>
-            </div>
+            <span className={styles.apyAmount}>
+              {currentApy.toFixed(2)}% APY
+            </span>
           ) : (
-            <div className={styles.noApyData}>
+            <span className={styles.noApyData}>
               No yield data
-            </div>
+            </span>
           )}
         </td>
         <td className={styles.actionsCell}>
@@ -301,7 +296,7 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
               <th className={styles.chainHeader}>Chain</th>
               <th className={styles.balanceHeader}>Balance & Value</th>
               <th className={styles.protocolHeader}>Protocol</th>
-              <th className={styles.apyHeader}>APY & Yield</th>
+              <th className={styles.apyHeader}>APY</th>
               <th className={styles.actionsHeader}>Actions</th>
             </tr>
           </thead>

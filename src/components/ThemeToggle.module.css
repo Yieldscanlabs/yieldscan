@@ -50,9 +50,7 @@
 
 /* Focus styles for accessibility */
 .segment:focus {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 1px;
-  z-index: 1;
+  outline: none;
 }
 
 /* Smooth transitions for theme changes */
