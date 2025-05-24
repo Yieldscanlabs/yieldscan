@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAccount } from 'wagmi';
 import { shortenAddress } from '../utils/helpers';
 import styles from './Header.module.css';
 import Logo from './Logo';
@@ -13,6 +14,44 @@ interface HeaderProps {
   disconnectWallet: () => void;
 }
 
+// Helper function to get the explorer URL for a given chain
+const getExplorerUrl = (chainId: number, address: string): string => {
+  const explorers: Record<number, string> = {
+    1: 'https://etherscan.io',
+    56: 'https://bscscan.com',
+    42161: 'https://arbiscan.io',
+    137: 'https://polygonscan.com',
+    8453: 'https://basescan.org',
+    10: 'https://optimistic.etherscan.io',
+  };
+  
+  const baseUrl = explorers[chainId] || 'https://etherscan.io';
+  return `${baseUrl}/address/${address}`;
+};
+
+// Helper function to copy text to clipboard
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    // Fallback for older browsers
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (fallbackErr) {
+      console.error('Failed to copy text: ', fallbackErr);
+      return false;
+    }
+  }
+};
+
 const Header: React.FC<HeaderProps> = ({ 
   isConnected, 
   address, 
@@ -20,9 +59,11 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { assets } = useAssetStore();
   const { apyData } = useApyStore();
+  const { chainId } = useAccount();
   
   // Scroll state for header visibility
   const [isVisible, setIsVisible] = useState(true);
@@ -162,8 +203,32 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
+  // Reset copy success message after 2 seconds
+  useEffect(() => {
+    if (copySuccess) {
+      const timer = setTimeout(() => setCopySuccess(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copySuccess]);
+
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleCopyAddress = async () => {
+    if (address) {
+      const success = await copyToClipboard(address);
+      if (success) {
+        setCopySuccess(true);
+      }
+    }
+  };
+
+  const handleOpenExplorer = () => {
+    if (address && chainId) {
+      const explorerUrl = getExplorerUrl(chainId, address);
+      window.open(explorerUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -226,7 +291,26 @@ const Header: React.FC<HeaderProps> = ({
             </div>
             {isDropdownOpen && (
               <div className={styles.walletDropdown}>
-                <button onClick={disconnectWallet} className={styles.disconnectButton}>
+                <button 
+                  onClick={handleCopyAddress} 
+                  className={styles.dropdownButton}
+                >
+                  {copySuccess ? 'Copied!' : 'Copy Address'}
+                </button>
+                
+                <button 
+                  onClick={handleOpenExplorer} 
+                  className={styles.dropdownButton}
+                >
+                  View on Explorer
+                </button>
+                
+                <div className={styles.dropdownDivider}></div>
+                
+                <button 
+                  onClick={disconnectWallet} 
+                  className={`${styles.dropdownButton} ${styles.disconnectButton}`}
+                >
                   Disconnect
                 </button>
               </div>

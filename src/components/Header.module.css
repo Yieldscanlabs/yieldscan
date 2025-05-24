@@ -162,8 +162,33 @@
   box-shadow: var(--shadow-md);
   overflow: hidden;
   z-index: 10;
-  min-width: 150px;
+  min-width: 180px;
   animation: fadeIn 0.2s ease;
+}
+
+.dropdownButton {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.dropdownButton:hover {
+  color: var(--text-primary);
+  background-color: var(--surface-medium);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.25rem 0;
 }
 
 .disconnectButton {
@@ -176,6 +201,8 @@
   text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 .disconnectButton:hover {
