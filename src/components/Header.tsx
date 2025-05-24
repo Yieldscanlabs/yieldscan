@@ -280,9 +280,6 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         )}
         
-        {/* Theme Toggle */}
-        <ThemeToggle className={styles.themeToggle} />
-        
         {/* Wallet address and dropdown */}
         {isConnected && address && (
           <div className={styles.walletContainer} ref={dropdownRef}>
@@ -308,6 +305,12 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   View on Explorer
                 </button>
+                
+                <div className={styles.dropdownDivider}></div>
+                
+                <div className={styles.dropdownThemeToggle}>
+                  <ThemeToggle />
+                </div>
                 
                 <div className={styles.dropdownDivider}></div>
                 

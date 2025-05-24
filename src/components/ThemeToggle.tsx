@@ -5,55 +5,101 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+type ThemeOption = 'light' | 'dark' | 'system';
 
-  // Check for saved theme preference or default to dark mode
+const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
+  const [activeTheme, setActiveTheme] = useState<ThemeOption>('dark');
+
+  // Check for saved theme preference or default to system
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      const isDark = savedTheme === 'dark';
-      setIsDarkMode(isDark);
-      updateTheme(isDark);
+    const savedThemeMode = localStorage.getItem('themeMode');
+    
+    if (savedThemeMode && ['light', 'dark', 'system'].includes(savedThemeMode)) {
+      setActiveTheme(savedThemeMode as ThemeOption);
+      applyTheme(savedThemeMode as ThemeOption);
+    } else if (savedTheme) {
+      // Legacy support - convert old theme setting
+      const themeMode = savedTheme === 'dark' ? 'dark' : 'light';
+      setActiveTheme(themeMode);
+      applyTheme(themeMode);
     } else {
-      // Check system preference
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(systemPrefersDark);
-      updateTheme(systemPrefersDark);
+      // Default to system
+      setActiveTheme('system');
+      applyTheme('system');
     }
   }, []);
 
-  const updateTheme = (isDark: boolean) => {
+  const applyTheme = (themeMode: ThemeOption) => {
     const root = document.documentElement;
-    if (isDark) {
+    
+    if (themeMode === 'system') {
+      // Follow system preference
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (systemPrefersDark) {
+        root.removeAttribute('data-theme');
+      } else {
+        root.setAttribute('data-theme', 'light');
+      }
+    } else if (themeMode === 'dark') {
       root.removeAttribute('data-theme');
     } else {
       root.setAttribute('data-theme', 'light');
     }
   };
 
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    updateTheme(newMode);
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
+  const handleThemeChange = (themeMode: ThemeOption) => {
+    setActiveTheme(themeMode);
+    applyTheme(themeMode);
+    localStorage.setItem('themeMode', themeMode);
+    // Keep legacy localStorage for backwards compatibility
+    if (themeMode === 'system') {
+      localStorage.setItem('theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    } else {
+      localStorage.setItem('theme', themeMode);
+    }
   };
 
+  // Listen for system theme changes when in system mode
+  useEffect(() => {
+    if (activeTheme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleSystemThemeChange = () => {
+        applyTheme('system');
+      };
+      
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+      return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    }
+  }, [activeTheme]);
+
   return (
-    <button
-      onClick={toggleTheme}
-      className={`${styles.themeToggle} ${className}`}
-      aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
-      title={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
-    >
-      <div className={`${styles.toggleTrack} ${isDarkMode ? styles.dark : styles.light}`}>
-        <div className={styles.toggleThumb}>
-          <span className={styles.toggleIcon}>
-            {isDarkMode ? '🌙' : '☀️'}
-          </span>
-        </div>
+    <div className={`${styles.themeSelector} ${className}`}>
+      <div className={styles.themeSelectorLabel}>Theme</div>
+      <div className={styles.segmentedControl}>
+        <button
+          onClick={() => handleThemeChange('light')}
+          className={`${styles.segment} ${activeTheme === 'light' ? styles.active : ''}`}
+          aria-label="Light theme"
+        >
+          Light
+        </button>
+        <button
+          onClick={() => handleThemeChange('dark')}
+          className={`${styles.segment} ${activeTheme === 'dark' ? styles.active : ''}`}
+          aria-label="Dark theme"
+        >
+          Dark
+        </button>
+        <button
+          onClick={() => handleThemeChange('system')}
+          className={`${styles.segment} ${activeTheme === 'system' ? styles.active : ''}`}
+          aria-label="System theme"
+        >
+          System
+        </button>
       </div>
-    </button>
+    </div>
   );
 };
 

@@ -1,89 +1,61 @@
-.themeToggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  outline: none;
+.themeSelector {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 
-.toggleTrack {
-  width: 50px;
-  height: 26px;
+.themeSelectorLabel {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.segmentedControl {
+  display: flex;
   background-color: var(--surface-medium);
-  border-radius: 13px;
+  border-radius: var(--radius-md);
+  padding: 2px;
   border: 1px solid var(--border-color);
-  position: relative;
+  overflow: hidden;
+}
+
+.segment {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
   transition: all var(--transition-speed) ease;
+  border-radius: calc(var(--radius-md) - 2px);
+  position: relative;
+  white-space: nowrap;
+}
+
+.segment:hover {
+  color: var(--text-primary);
+  background-color: var(--surface-hover);
+}
+
+.segment.active {
+  background-color: var(--text-primary);
+  color: var(--surface-dark);
+  font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 
-.toggleTrack:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
-}
-
-.toggleTrack.dark {
-  background-color: var(--surface-light);
-}
-
-.toggleTrack.light {
-  background-color: var(--warning-color);
-}
-
-.toggleThumb {
-  width: 20px;
-  height: 20px;
-  background-color: var(--surface-dark);
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: all var(--transition-speed) ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.toggleTrack.light .toggleThumb {
-  transform: translateX(24px);
-  background-color: #FFFFFF;
-}
-
-.toggleTrack.dark .toggleThumb {
-  transform: translateX(0);
-  background-color: var(--text-primary);
-}
-
-.toggleIcon {
-  font-size: 10px;
-  line-height: 1;
-  transition: opacity var(--transition-speed) ease;
-}
-
-.toggleTrack.dark .toggleIcon {
-  filter: contrast(0) brightness(0);
-}
-
-.toggleTrack.light .toggleIcon {
-  filter: none;
-}
-
-/* Add hover effect */
-.themeToggle:hover .toggleTrack {
-  transform: scale(1.05);
-}
-
-.themeToggle:active .toggleTrack {
-  transform: scale(0.98);
-}
-
 /* Focus styles for accessibility */
-.themeToggle:focus .toggleTrack {
+.segment:focus {
   outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+/* Smooth transitions for theme changes */
+.segment:active {
+  transform: scale(0.98);
 } 
