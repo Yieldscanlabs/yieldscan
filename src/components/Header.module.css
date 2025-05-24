@@ -249,8 +249,13 @@
 }
 
 .earningsBadge {
-  background: rgba(0, 230, 121, 0.1);
-  border-color: rgba(0, 230, 121, 0.2);
+  display: flex;
+  align-items: center;
+  background: rgba(var(--success-rgb), 0.1);
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-right: 12px;
+  border: 1px solid rgba(var(--success-rgb), 0.2);
 }
 
 .earningsBadgeDaily {
@@ -261,72 +266,54 @@
 .earningsBadgeTotal {
   display: flex;
   align-items: center;
-  border-radius: 12px;
-  padding: 8px 16px;
-  border: 1px solid rgba(0, 230, 121, 0.3);
-  background: rgba(0, 230, 121, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-  min-width: 330px;
-}
-
-.earningsBadge:hover {
-  background: rgba(0, 230, 121, 0.15);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 230, 121, 0.15);
-}
-
-.earningsBadgeDaily:hover {
-  background: rgba(31, 199, 212, 0.15);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(31, 199, 212, 0.15);
+  background: linear-gradient(135deg, 
+    rgba(var(--success-rgb), 0.08) 0%, 
+    rgba(var(--success-rgb), 0.12) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--success-rgb), 0.25);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.875rem;
+  box-shadow: 0 2px 8px rgba(var(--success-rgb), 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 220px;
+  height: 40px;
+  position: relative;
+  overflow: hidden;
 }
 
 .earningsBadgeTotal:hover {
-  background: rgba(0, 230, 121, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 230, 121, 0.25);
+  background: linear-gradient(135deg, 
+    rgba(var(--success-rgb), 0.12) 0%, 
+    rgba(var(--success-rgb), 0.18) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(var(--success-rgb), 0.2);
+  border-color: rgba(var(--success-rgb), 0.35);
 }
 
 .earningsLabel {
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
-  margin-right: 8px;
+  margin-right: 0.5rem;
+  white-space: nowrap;
 }
 
-.earningsBadge .earningsAmount, 
-.earningsBadgeDaily .earningsAmount,
 .earningsBadgeTotal .earningsAmount {
-  font-size: 14px;
+  font-size: 0.9rem;
   font-weight: 700;
-  font-family: monospace;
+  font-family: var(--font-mono);
+  color: var(--success-color);
   white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
-  width: auto;
-  min-width: 80px;
+  letter-spacing: -0.01em;
 }
 
 /* Use solid colors instead of gradients for better visibility */
 .earningsBadge .earningsAmount {
-  color: #00e679;
+  color: var(--success-color);
 }
 
 .earningsBadgeDaily .earningsAmount {
   color: #1FC7D4;
-}
-
-.earningsBadgeTotal .earningsAmount {
-  font-size: 16px;
-  font-weight: 700;
-  font-family: monospace;
-  color: #00e679;
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
-  width: auto;
-  letter-spacing: -0.2px;
 }
 
 /* Make the badges responsive */
@@ -358,23 +345,6 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-.earningsBadge {
-  display: flex;
-  align-items: center;
-  background: rgba(0, 230, 121, 0.1);
-  border-radius: 8px;
-  padding: 4px 10px;
-  margin-right: 12px;
-  border: 1px solid rgba(0, 230, 121, 0.2);
-}
-
-.earningsLabel {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-right: 4px;
 }
 
 .earningsAmount {
@@ -470,29 +440,40 @@
 
 @media (max-width: 1200px) {
   .earningsBadgeTotal {
-    min-width: 300px;
+    min-width: 200px;
+    padding: 0.45rem 0.75rem;
+    height: 38px;
+  }
+  
+  .earningsLabel {
+    font-size: 0.7rem;
+    margin-right: 0.4rem;
   }
   
   .earningsBadgeTotal .earningsAmount {
-    font-size: 14px;
-    letter-spacing: -0.3px;
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 768px) {
   .earningsBadgeTotal {
-    padding: 6px 12px;
-    min-width: 240px;
-    max-width: 280px;
-    overflow-x: auto;
+    min-width: 180px;
+    padding: 0.4rem 0.625rem;
+    height: 36px;
   }
   
   .earningsLabel {
-    font-size: 12px;
+    font-size: 0.65rem;
+    margin-right: 0.35rem;
   }
   
   .earningsBadgeTotal .earningsAmount {
-    font-size: 13px;
-    letter-spacing: -0.5px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .earningsContainer {
+    display: none;
   }
 }

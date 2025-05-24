@@ -8,6 +8,11 @@
   --warning-color: #FFB344;
   --error-color: #FF5E5B;
   
+  /* RGB Values for alpha transparency */
+  --success-rgb: 0, 230, 121;
+  --primary-rgb: 108, 92, 231;
+  --secondary-rgb: 0, 206, 206;
+  
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -127,9 +132,8 @@ body {
 }
 
 #root {
-  max-width: 1538px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0rem;
   width: 100%;
 }
 

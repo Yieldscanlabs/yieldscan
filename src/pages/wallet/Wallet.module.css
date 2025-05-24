@@ -8,16 +8,15 @@
   width: 100%;
   max-width: 1538px;
   margin: 0 auto;
-  padding: 2rem;
+  padding-top: 2rem;
 }
 
 .stepContainer {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1538px;
   margin: 0 auto;
-  padding: 1rem;
+  padding-top: 1rem;
 }
 
 .backButtonContainer {

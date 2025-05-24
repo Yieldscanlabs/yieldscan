@@ -70,8 +70,6 @@
 
 .assetRowButton:hover {
   background: rgba(255, 255, 255, 0.03);
-  /* transform: translateY(-1px); */
-  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
   border-color: var(--border-color);
 }
 
@@ -83,12 +81,6 @@
   color: var(--text-primary);
 }
 
-.assetRowButton:hover .chainBadge {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
 .assetRowButton:hover .assetName,
 .assetRowButton:hover .balanceAmount,
 .assetRowButton:hover .usdValue {
@@ -96,9 +88,6 @@
 }
 
 .assetRowButton:hover .protocolDisplay {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .assetRowButton.selected {
