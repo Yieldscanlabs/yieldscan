@@ -8,6 +8,7 @@ import compound from '../assets/protocols/compound.svg'
 import lido from '../assets/protocols/lido.svg'
 import spark from '../assets/protocols/spark.png'
 import pendle from '../assets/protocols/pendle.svg'
+import fluid from '../assets/protocols/fluid.png'
 
 interface ProtocolProps {
   name: string | null;
@@ -29,6 +30,7 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Lido': lido,
   'Spark': spark,
   'Pendle': pendle,
+  'Fluid': fluid,
   // Add more protocols as needed
 };
 

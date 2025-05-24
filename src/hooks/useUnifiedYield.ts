@@ -155,6 +155,29 @@ const protocolAbis = {
       stateMutability: 'nonpayable',
       type: 'function',
     }
+  ],
+  Fluid: [
+    {
+      inputs: [
+        { name: 'assets', type: 'uint256' },
+        { name: 'receiver', type: 'address' }
+      ],
+      name: 'deposit',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: 'assets', type: 'uint256' },
+        { name: 'receiver', type: 'address' },
+        { name: 'owner', type: 'address' }
+      ],
+      name: 'withdraw',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    }
   ]
 } as const;
 
@@ -249,6 +272,14 @@ export default function useUnifiedYield({
           args: [amountInUnderlyingDecimals, address as `0x${string}`], // Morpho Blue deposit - assets, receiver (ERC4626 standard)
           chainId
         });
+      } else if (protocol === PROTOCOL_NAMES.FLUID) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Fluid,
+          functionName: 'deposit',
+          args: [amountInWei, address as `0x${string}`], // Fluid deposit - assets, receiver (ERC4626 standard)
+          chainId
+        });
       } else {
         throw new Error(`Protocol ${protocol} not supported`);
       }
@@ -289,7 +320,16 @@ export default function useUnifiedYield({
           args: [tokenAddress, amountInWei], // Compound withdraw
           chainId
         });
-      } else if (protocol === PROTOCOL_NAMES.VENUS) {
+      } else if (protocol === PROTOCOL_NAMES.FLUID) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.Fluid,
+          functionName: 'withdraw',
+          args: [amountInWei, address as `0x${string}`, address as `0x${string}`], // Fluid withdraw - assets, receiver, owner (ERC4626 standard)
+          chainId
+        });
+      }
+      else if (protocol === PROTOCOL_NAMES.VENUS) {
         hash = await writeContractAsync({
           address: contractAddress,
           abi: protocolAbis.Venus,

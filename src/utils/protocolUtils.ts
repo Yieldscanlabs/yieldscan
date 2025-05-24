@@ -1,6 +1,6 @@
 import type { SupportedToken } from '../types';
 import { PROTOCOL_NAMES } from './constants';
-import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS, SPARK_MARKETS, MORPHO_BLUE_MARKETS } from './markets';
+import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS, SPARK_MARKETS, MORPHO_BLUE_MARKETS, FLUID_MARKETS } from './markets';
 
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
@@ -17,6 +17,9 @@ export const setupProtocol = (protocol: string, token: SupportedToken, chainId: 
       return SPARK_MARKETS[chainId][token] as `0x${string}`;
     } else if(protocol === PROTOCOL_NAMES.MORPHO_BLUE) {
       return MORPHO_BLUE_MARKETS[chainId][token] as `0x${string}`;
+    } else if(protocol === PROTOCOL_NAMES.FLUID) {
+      console.log('FLUID_MARKETS', FLUID_MARKETS[chainId][token], chainId, token)
+      return FLUID_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'
 } 

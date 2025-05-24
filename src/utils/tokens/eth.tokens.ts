@@ -258,9 +258,23 @@ export default [
     chainId: 1, // mainnet
     protocol: 'Spark',
     yieldBearingToken: true,
-    underlyingAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    underlyingAsset: ETH_USDC,
     decimals: 18,
     maxDecimalsShow: 2,
     usdPrice: 0.95 // Approximate value (will need to be updated dynamically in production)
   },
+  {
+    token: 'fUSDC' as const,
+    chain: 'ETH' as const,
+    address: '0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33', 
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/26744.png',
+    chainId: 1, // mainnet
+    protocol: 'Fluid',
+    yieldBearingToken: true,
+    underlyingAsset: ETH_USDC,
+    withdrawContract: '0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33',
+    decimals: 6,
+    maxDecimalsShow: 2,
+    usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
+  }
 ]

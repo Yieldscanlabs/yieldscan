@@ -40,6 +40,11 @@ export const protocolScores: ProtocolScore[] = [
     liquidity: 2313 // $850M
   },
   { 
+    name: 'Fluid', 
+    trustScore: 85, 
+    liquidity: 1500 // $1.5B
+  },
+  { 
     name: 'Radiant', 
     trustScore: 60, 
     liquidity: 245 // $245M

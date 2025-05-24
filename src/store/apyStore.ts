@@ -12,6 +12,7 @@ export interface ProtocolApys {
   gmx?: number;
   lido?: number;
   morpho_blue?: number;
+  fluid?: number
   // Add other protocols as needed
 }
 
@@ -90,7 +91,8 @@ export const useApyStore = create<ApyStore>()(
             ...data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
             venus: 3.67,
             radiant: 4,
-            morpho_blue: 5
+            morpho_blue: 5,
+            fluid: 6
           }
           data['1']['0x'] = {
             aave: 1.23,

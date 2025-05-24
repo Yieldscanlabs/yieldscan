@@ -80,6 +80,9 @@ export const RADIANT_V3_MARKETS: Record<number, Record<string, string>> = {
         // 'USDC': '0x17c07e0c232f2f80dfdbd7a95b942d893a4c5acb',
         'USDT': '0xA950974f64aA33f27F6C5e017eEE93BF7588ED07',
         "USDC": "0xA950974f64aA33f27F6C5e017eEE93BF7588ED07"
+    },
+    56: {
+      "wBNB": ""
     }
 }
 
@@ -100,5 +103,12 @@ export const MORPHO_BLUE_MARKETS: Record<number, Record<string, string>> = {
   // Ethereum Mainnet
   1: {
     'USDC': '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
+  }
+}
+
+export const FLUID_MARKETS: Record<number, Record<string, string>> = {
+  // Ethereum Mainnet
+  1: {
+    'USDC': '0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33'
   }
 }
