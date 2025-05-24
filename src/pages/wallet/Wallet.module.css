@@ -137,7 +137,7 @@
 
 .connectButtonLarge {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-  color: white;
+  color: var(--text-inverse);
   padding: 0.9rem 2.5rem;
   font-size: 1.25rem;
   border-radius: var(--radius-md);

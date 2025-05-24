@@ -41,7 +41,7 @@
 
 .toggleButton.active {
   background: var(--primary-color);
-  color: white;
+  color: var(--text-inverse);
   border-color: var(--primary-color);
   box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2);
 }

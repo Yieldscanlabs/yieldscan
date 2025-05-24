@@ -20,7 +20,7 @@
   font-size: 1.85rem;
   font-weight: 800;
   margin: 0 0 0.25rem;
-  color: white;
+  color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
@@ -33,7 +33,7 @@
 .lastUpdatedBadge {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-light);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 0.5rem 0.75rem;
@@ -98,11 +98,11 @@
 }
 
 .tabButton:hover {
-  color: white;
+  color: var(--text-primary);
 }
 
 .activeTab {
-  color: white;
+  color: var(--text-primary);
 }
 
 .activeTab::after {
@@ -132,7 +132,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
-  color: white;
+  color: var(--text-primary);
 }
 
 /* Error message card */
@@ -179,7 +179,7 @@
   align-items: center;
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--surface-light);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
 }
@@ -197,14 +197,12 @@
 }
 
 .statBadge {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  border-radius: 20px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .statBadge span {
