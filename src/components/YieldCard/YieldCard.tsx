@@ -1,11 +1,11 @@
 import React from 'react';
 import Protocol from '../Protocol';
 import WithdrawModal from '../WithdrawModal';
-import LockAPYInformationModal from '../LockAPYInformationModal';
-import OptimizeInformationModal from '../OptimizeInformationModal';
 import styles from '../../pages/MyYieldsPage.module.css';
 import { getNetworkIcon } from '../../utils/networkIcons';
 import { useOptimizationStore } from '../../store/optimizationStore';
+import { useOptimizeInformationStore } from '../../store/optimizeInformationStore';
+import { useLockAPYInformationStore } from '../../store/lockApyInformationStore';
 import type { YieldCardProps } from './types';
 import { useYieldCard } from './useYieldCard';
 import MaturityBadge from './MaturityBadge';
@@ -21,11 +21,12 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
   } = props;
   
   const { openModal } = useOptimizationStore();
+  const { openInformationModal } = useOptimizeInformationStore();
+  const { openLockAPYInformationModal } = useLockAPYInformationStore();
   
   const {
     // State
     isWithdrawModalOpen,
-    isLockAPYModalOpen,
     isProcessingWithdrawal,
     isConfirming,
     isConfirmed,
@@ -49,34 +50,31 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     // Event handlers
     openWithdrawModal,
     closeWithdrawModal,
-    openLockAPYModal,
-    closeLockAPYModal,
     handleLockAPYConfirm,
     handleWithdrawComplete,
     handleWithdraw
   } = useYieldCard(props);
 
-  // Add optimization information modal state (only for the explanation modal)
-  const [isOptimizeModalOpen, setIsOptimizeModalOpen] = React.useState(false);
-
-  // Handle optimization - open the explanation modal first
+  // Handle optimization - open the global information modal
   const handleOptimize = () => {
     console.log('handleOptimize called in YieldCard', { optimizationData });
     if (optimizationData) {
-      console.log('Opening optimization explanation modal');
-      setIsOptimizeModalOpen(true);
+      console.log('Opening global optimization information modal');
+      openInformationModal({
+        asset,
+        optimizationData,
+        onConfirm: handleOptimizeConfirm
+      });
     } else {
       console.log('No optimization data available');
     }
   };
 
-  // Handle optimization confirm - close explanation modal and open transaction modal via store
+  // Handle optimization confirm - close information modal and open transaction modal via store
   const handleOptimizeConfirm = () => {
     console.log('handleOptimizeConfirm called', { optimizationData });
     if (optimizationData) {
-      console.log('Closing explanation modal and opening transaction modal via store');
-      // Close the information modal
-      setIsOptimizeModalOpen(false);
+      console.log('Opening transaction modal via store');
       
       // Open the transaction modal using the global store (like Lock flow)
       openModal({
@@ -91,9 +89,22 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     }
   };
 
-  // Handle optimization modal close
-  const closeOptimizeModal = () => {
-    setIsOptimizeModalOpen(false);
+  // Handle Lock APY - open the global information modal
+  const handleLockAPY = () => {
+    console.log('handleLockAPY called in YieldCard', { lockYieldDetails });
+    if (lockYieldDetails) {
+      console.log('Opening global Lock APY information modal');
+      openLockAPYInformationModal({
+        asset,
+        protocol: lockYieldDetails.protocol,
+        expirationDate: lockYieldDetails.expirationDate,
+        currentAPY: apy,
+        amountToLock: balanceNum,
+        onConfirm: handleLockAPYConfirm
+      });
+    } else {
+      console.log('No lock yield details available');
+    }
   };
 
   // Get chain icon for overlay
@@ -145,7 +156,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         optimizationData={optimizationData}
         onWithdrawClick={openWithdrawModal}
         onOptimize={handleOptimize}
-        onLockAPYClick={openLockAPYModal}
+        onLockAPYClick={handleLockAPY}
       />
       
       <WithdrawModal
@@ -162,30 +173,6 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         isConfirmed={isConfirmed}
         isNativeToken={isNativeToken}
       />
-      
-      {lockYieldDetails && (
-        <LockAPYInformationModal
-          isOpen={isLockAPYModalOpen}
-          onClose={closeLockAPYModal}
-          onConfirm={handleLockAPYConfirm}
-          asset={asset}
-          protocol={lockYieldDetails.protocol}
-          expirationDate={lockYieldDetails.expirationDate}
-          currentAPY={apy}
-          amountToLock={balanceNum}
-        />
-      )}
-
-      {/* Explanation Modal - shows what will happen */}
-      {optimizationData && (
-        <OptimizeInformationModal
-          isOpen={isOptimizeModalOpen}
-          onClose={closeOptimizeModal}
-          onConfirm={handleOptimizeConfirm}
-          asset={asset}
-          optimizationData={optimizationData}
-        />
-      )}
     </div>
   );
 };

@@ -1621,3 +1621,98 @@
   display: flex;
   align-items: center;
 }
+
+/* Light theme specific overrides for better YieldCard colors */
+[data-theme="light"] .yieldCard {
+  background: #FFFFFF;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .yieldCard:hover {
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .yieldCardSlim {
+  background: #FFFFFF;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.08);
+  background-image: 
+    radial-gradient(circle at 95% 5%, rgba(108, 92, 231, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 5% 95%, rgba(0, 206, 206, 0.02) 0%, transparent 50%);
+}
+
+[data-theme="light"] .yieldCardSlim:hover {
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.15), 0 3px 10px rgba(0, 0, 0, 0.1);
+  border-color: rgba(108, 92, 231, 0.25);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .assetBalances {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.04) 0%, rgba(0, 206, 206, 0.03) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+}
+
+[data-theme="light"] .yieldDetail {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.04) 0%, rgba(0, 206, 206, 0.03) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+}
+
+[data-theme="light"] .optimizationCard {
+  background: #FFFFFF;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .optimizationCard:hover {
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .protocolBadge {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.08) 0%, rgba(0, 206, 206, 0.06) 100%);
+  color: rgba(108, 92, 231, 0.9);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+}
+
+[data-theme="light"] .chainBadge {
+  background: linear-gradient(135deg, rgba(0, 206, 206, 0.08) 0%, rgba(108, 92, 231, 0.06) 100%);
+  color: rgba(0, 206, 206, 0.9);
+  border: 1px solid rgba(0, 206, 206, 0.15);
+}
+
+[data-theme="light"] .apyBadge {
+  background: linear-gradient(135deg, rgba(0, 230, 121, 0.08) 0%, rgba(108, 92, 231, 0.05) 100%);
+  border: 1px solid rgba(0, 230, 121, 0.15);
+}
+
+[data-theme="light"] .summaryCard {
+  background: #FFFFFF;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.08);
+  background-image: 
+    radial-gradient(circle at 90% 10%, rgba(108, 92, 231, 0.02) 0%, transparent 40%);
+}
+
+[data-theme="light"] .summaryCard:hover {
+  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .lifetimeHero {
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.06) 0%, 
+    rgba(0, 206, 206, 0.04) 50%, 
+    rgba(0, 230, 121, 0.03) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.12);
+}
+
+[data-theme="light"] .optimizationBanner {
+  background: linear-gradient(135deg, rgba(0, 230, 121, 0.06) 0%, rgba(108, 92, 231, 0.04) 100%);
+  border: 1px solid rgba(0, 230, 121, 0.15);
+}
+
+[data-theme="light"] .cardMiddleSection {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.02) 0%, rgba(0, 206, 206, 0.02) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.06);
+}

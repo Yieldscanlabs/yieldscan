@@ -390,3 +390,69 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Light theme specific overrides for better colors */
+[data-theme="light"] .asset-card {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .asset-card:hover {
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.15), 0 3px 10px rgba(0, 0, 0, 0.1);
+  border-color: rgba(108, 92, 231, 0.25);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .asset-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color), 0 4px 12px rgba(108, 92, 231, 0.2);
+  background: linear-gradient(135deg, #FFFFFF 0%, rgba(108, 92, 231, 0.02) 100%);
+}
+
+[data-theme="light"] .yield-info {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.04) 0%, rgba(0, 206, 206, 0.03) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+}
+
+[data-theme="light"] .asset-chain {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.08) 0%, rgba(0, 206, 206, 0.06) 100%);
+  color: rgba(108, 92, 231, 0.8);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+}
+
+[data-theme="light"] .asset-icon {
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.1);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+}
+
+[data-theme="light"] .asset-with-yield-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(108, 92, 231, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  background-image: 
+    radial-gradient(circle at 95% 5%, rgba(108, 92, 231, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 5% 95%, rgba(0, 206, 206, 0.03) 0%, transparent 40%);
+}
+
+[data-theme="light"] .asset-with-yield-card:hover {
+  box-shadow: 0 12px 28px rgba(108, 92, 231, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: rgba(108, 92, 231, 0.2);
+  transform: translateY(-4px);
+}
+
+[data-theme="light"] .asset-with-yield-card::after {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+[data-theme="light"] .asset-chain-badge {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, rgba(0, 206, 206, 0.08) 100%);
+  color: rgba(108, 92, 231, 0.9);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+[data-theme="light"] .loading {
+  background: linear-gradient(135deg, #FFFFFF 0%, rgba(108, 92, 231, 0.02) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}

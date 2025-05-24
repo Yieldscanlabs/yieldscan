@@ -9,6 +9,8 @@ import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
 import { useEffect } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
 import GlobalLockModal from './GlobalLockModal';
+import GlobalOptimizeInformationModal from './GlobalOptimizeInformationModal';
+import GlobalLockAPYInformationModal from './GlobalLockAPYInformationModal';
 import { usePriceStore } from '../store/priceStore';
 import { useTheme } from '../hooks/useTheme';
 
@@ -54,6 +56,8 @@ const Layout = () => {
       </main>
       <GlobalOptimizationModal />
       <GlobalLockModal />
+      <GlobalOptimizeInformationModal />
+      <GlobalLockAPYInformationModal />
       <Footer />
     </div>
   );
