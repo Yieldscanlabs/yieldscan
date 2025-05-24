@@ -697,7 +697,6 @@
 
 
 .yearlyYield {
-  color: var(--success-color);
   font-weight: 500;
   font-family: var(--font-mono);
 }
@@ -1333,6 +1332,7 @@
   border-radius: var(--radius-md);
   margin-bottom: 1.5rem;
   border: 1px solid var(--border-color);
+  font-size: 12px;
 }
 
 .explanationBox p {
@@ -1451,6 +1451,7 @@
   margin: 0;
   padding: 0;
   color: var(--text-primary);
+  margin-bottom: 0px !important;
 }
 
 .modalBody {
@@ -1683,8 +1684,6 @@
 }
 
 [data-theme="light"] .apyBadge {
-  background: linear-gradient(135deg, rgba(0, 230, 121, 0.08) 0%, rgba(108, 92, 231, 0.05) 100%);
-  border: 1px solid rgba(0, 230, 121, 0.15);
 }
 
 [data-theme="light"] .summaryCard {
@@ -1713,6 +1712,4 @@
 }
 
 [data-theme="light"] .cardMiddleSection {
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.02) 0%, rgba(0, 206, 206, 0.02) 100%);
-  border: 1px solid rgba(108, 92, 231, 0.06);
 }

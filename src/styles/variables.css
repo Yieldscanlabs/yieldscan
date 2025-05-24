@@ -4,10 +4,10 @@
   --primary-color: #6C5CE7;
   --primary-hover: #5649D1;
   --secondary-color: #00CECE;
-  --success-color: #00E679;
+  --success-color: #2EBD85;
   --warning-color: #FFB344;
   --error-color: #FF5E5B;
-  
+  /* #2EBD85 */
   /* RGB Values for alpha transparency */
   --success-rgb: 0, 230, 121;
   --primary-rgb: 108, 92, 231;
@@ -41,7 +41,7 @@
   --surface-medium: #1E293B;
   --surface-light: #334155;
   --surface-hover: #475569;
-  --surface-overlay: rgba(17, 24, 39, 0.95);
+  --surface-overlay: rgba(17, 24, 39, 0.7);
   
   /* Text Colors */
   --text-primary: rgba(255, 255, 255, 0.95);
@@ -81,7 +81,7 @@
   --surface-medium: #F8FAFC;
   --surface-light: #F1F5F9;
   --surface-hover: #E2E8F0;
-  --surface-overlay: rgba(255, 255, 255, 0.95);
+  --surface-overlay: rgba(255, 255, 255, 0.5);
   
   /* Text Colors */
   --text-primary: rgba(0, 0, 0, 0.87);

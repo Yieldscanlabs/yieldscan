@@ -85,7 +85,7 @@ export default [
     withdrawContract: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // Aave v3 withdraw contract
     underlyingAsset: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH address
     yieldBearingToken: true,
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5761.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/36458.png',
     chainId: 1, // mainnet
     protocol: 'Aave',
     decimals: 18,

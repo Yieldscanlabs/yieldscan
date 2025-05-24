@@ -61,7 +61,7 @@ export function getNetworkName(chainId: number | SupportedChain): string {
     case 1:
       return 'Ethereum';
     case 42161:
-      return 'Arbitrum';
+      return 'Arbitrum One';
     case 137:
       return 'Polygon';
     case 56:

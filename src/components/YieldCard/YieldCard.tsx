@@ -1,11 +1,11 @@
 import React from 'react';
 import Protocol from '../Protocol';
-import WithdrawModal from '../WithdrawModal';
+import AssetIcon from '../AssetIcon';
 import styles from '../../pages/MyYieldsPage.module.css';
-import { getNetworkIcon } from '../../utils/networkIcons';
 import { useOptimizationStore } from '../../store/optimizationStore';
 import { useOptimizeInformationStore } from '../../store/optimizeInformationStore';
 import { useLockAPYInformationStore } from '../../store/lockApyInformationStore';
+import { useWithdrawModalStore } from '../../store/withdrawModalStore';
 import type { YieldCardProps } from './types';
 import { useYieldCard } from './useYieldCard';
 import MaturityBadge from './MaturityBadge';
@@ -23,14 +23,9 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
   const { openModal } = useOptimizationStore();
   const { openInformationModal } = useOptimizeInformationStore();
   const { openLockAPYInformationModal } = useLockAPYInformationStore();
+  const { openModal: openWithdrawModalGlobal } = useWithdrawModalStore();
   
   const {
-    // State
-    isWithdrawModalOpen,
-    isProcessingWithdrawal,
-    isConfirming,
-    isConfirmed,
-    
     // Token and protocol info
     protocol,
     apy,
@@ -48,8 +43,6 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     yearlyYieldUsd,
     
     // Event handlers
-    openWithdrawModal,
-    closeWithdrawModal,
     handleLockAPYConfirm,
     handleWithdrawComplete,
     handleWithdraw
@@ -107,17 +100,29 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     }
   };
 
-  // Get chain icon for overlay
-  const chainIcon = getNetworkIcon(asset.chainId);
-  
+  // Handle Withdraw - open the global withdraw modal
+  const handleWithdrawClick = () => {
+    openWithdrawModalGlobal({
+      asset,
+      protocol,
+      balance: balanceNum,
+      maxDecimals: asset.maxDecimalsShow || 6,
+      isNativeToken,
+      onWithdraw: handleWithdraw,
+      onComplete: () => handleWithdrawComplete(true)
+    });
+  };
+
   return (
     <div className={styles.yieldCardSlim} style={{ position: 'relative' }}>
       <div className={styles.cardTopSection}>
         <div className={styles.assetInfoSlim}>
-          <div className={styles.assetIconWrapper}>
-            <img src={asset.icon} alt={asset.token} className={styles.assetIconSmall} />
-            <img src={chainIcon} alt="Chain" className={styles.chainIconOverlay} />
-          </div>
+          <AssetIcon
+            assetIcon={asset.icon || ''}
+            assetName={asset.token}
+            chainId={asset.chainId}
+            size="medium"
+          />
           <div>
             <div className={styles.assetNameBold} style={{ display: 'flex', alignItems: 'center' }}>
               {asset.token}
@@ -154,24 +159,9 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         hasLockYield={hasLockYield}
         chainId={chainId}
         optimizationData={optimizationData}
-        onWithdrawClick={openWithdrawModal}
+        onWithdrawClick={handleWithdrawClick}
         onOptimize={handleOptimize}
         onLockAPYClick={handleLockAPY}
-      />
-      
-      <WithdrawModal
-        isOpen={isWithdrawModalOpen}
-        onClose={closeWithdrawModal}
-        onComplete={handleWithdrawComplete}
-        asset={asset}
-        protocol={protocol}
-        balance={balanceNum}
-        maxDecimals={asset.maxDecimalsShow || 6}
-        onWithdraw={handleWithdraw}
-        isProcessing={isProcessingWithdrawal}
-        isConfirming={isConfirming}
-        isConfirmed={isConfirmed}
-        isNativeToken={isNativeToken}
       />
     </div>
   );

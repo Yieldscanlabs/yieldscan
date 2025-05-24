@@ -66,10 +66,6 @@ const ProtocolScoreCard: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h2>Protocol Trust Ratings</h2>
-        <p>Comprehensive evaluation of reliability and liquidity</p>
-      </div>
       
       <div className={styles.scoreTable}>
         <div className={styles.tableHeader}>

@@ -1,0 +1,70 @@
+.assetIconWrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 12px;
+}
+
+.assetIcon {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.chainIconOverlay {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-dark);
+  box-shadow: var(--shadow-sm);
+  object-fit: cover;
+}
+
+/* Size variants */
+.size-small {
+  min-width: 32px;
+}
+
+.size-small .assetIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.size-small .chainIconOverlay {
+  width: 18px;
+  height: 18px;
+  bottom: -4px;
+  right: -4px;
+}
+
+.size-medium {
+  min-width: 40px;
+}
+
+.size-medium .assetIcon {
+  width: 40px;
+  height: 40px;
+}
+
+.size-medium .chainIconOverlay {
+  width: 20px;
+  height: 20px;
+  bottom: -3px;
+  right: -3px;
+}
+
+.size-large {
+  min-width: 48px;
+}
+
+.size-large .assetIcon {
+  width: 48px;
+  height: 48px;
+}
+
+.size-large .chainIconOverlay {
+  width: 24px;
+  height: 24px;
+  bottom: -2px;
+  right: -2px;
+} 

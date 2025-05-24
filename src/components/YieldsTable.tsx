@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Asset } from '../types';
+import AssetIcon from './AssetIcon';
 import styles from './YieldsTable.module.css';
-import { CHAIN_NAMES } from '../utils/constants';
 import { formatNumber } from '../utils/helpers';
 import Protocol from './Protocol';
 import type { OptimizationData } from './YieldCard/types';
@@ -121,22 +121,14 @@ const YieldsTableRow: React.FC<{
       <tr className={styles.assetRow}>
         <td className={styles.assetCell}>
           <div className={styles.assetInfo}>
-            <img 
-              src={asset.icon} 
-              alt={asset.token} 
-              className={styles.assetIcon}
-              onError={(e) => {
-                const fallbackSvg = `data:image/svg+xml;base64,${btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#6366f1"/><text x="12" y="16" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="bold">${asset.token.charAt(0)}</text></svg>`)}`;
-                e.currentTarget.src = fallbackSvg;
-              }}
+            <AssetIcon 
+              assetIcon={asset.icon || ''}
+              assetName={asset.token}
+              chainId={asset.chainId}
+              size="small"
             />
             <span className={styles.assetName}>{asset.token}</span>
           </div>
-        </td>
-        <td className={styles.chainCell}>
-          <span className={styles.chainBadge}>
-            {CHAIN_NAMES[asset.chain]}
-          </span>
         </td>
         <td className={styles.balanceCell}>
           <div className={styles.balanceGroup}>
@@ -293,7 +285,6 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
           <thead>
             <tr className={styles.headerRow}>
               <th className={styles.assetHeader}>Asset</th>
-              <th className={styles.chainHeader}>Chain</th>
               <th className={styles.balanceHeader}>Balance & Value</th>
               <th className={styles.protocolHeader}>Protocol</th>
               <th className={styles.apyHeader}>APY</th>

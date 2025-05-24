@@ -11,6 +11,7 @@ import GlobalOptimizationModal from './GlobalOptimizationModal';
 import GlobalLockModal from './GlobalLockModal';
 import GlobalOptimizeInformationModal from './GlobalOptimizeInformationModal';
 import GlobalLockAPYInformationModal from './GlobalLockAPYInformationModal';
+import GlobalWithdrawModal from './GlobalWithdrawModal';
 import { usePriceStore } from '../store/priceStore';
 import { useTheme } from '../hooks/useTheme';
 
@@ -58,6 +59,7 @@ const Layout = () => {
       <GlobalLockModal />
       <GlobalOptimizeInformationModal />
       <GlobalLockAPYInformationModal />
+      <GlobalWithdrawModal />
       <Footer />
     </div>
   );

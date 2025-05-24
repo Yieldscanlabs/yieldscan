@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import type { Asset, YieldOption } from '../types';
-import { CHAIN_NAMES } from '../utils/constants';
 import { formatNumber } from '../utils/helpers';
+import AssetIcon from './AssetIcon';
 import YieldOptionComponent from './YieldOption';
 import styles from './AssetList.module.css';
 import { type BestApyResult } from '../hooks/useBestApy';
@@ -44,11 +44,15 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
     >
       <div className={styles['asset-main']}>
         <div className={styles['asset-info']}>
-          <img src={asset.icon} alt={asset.token} className={styles['asset-icon']} />
+          <AssetIcon 
+            assetIcon={asset.icon || ''}
+            assetName={asset.token}
+            chainId={asset.chainId}
+            size="medium"
+          />
           <div>
             <div className={styles['asset-name-row']}>
               <span className={styles['asset-name']}>{asset.token}</span>
-              <span className={styles['asset-chain']}>{CHAIN_NAMES[asset.chain]}</span>
             </div>
             <div className={styles['asset-balance']}>
               {formatNumber(asset.balance, asset.maxDecimalsShow)} <span className={styles['asset-balance-usd']}>(${formatNumber(price ? price * Number(asset.balance) : asset.balanceUsd)})</span>

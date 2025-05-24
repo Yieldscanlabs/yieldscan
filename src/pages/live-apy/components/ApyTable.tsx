@@ -345,22 +345,6 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         </div>
       </div>
 
-      <div className={styles.infoCard}>
-        <div className={styles.infoHeader}>
-          <div className={styles.infoIcon}>ℹ️</div>
-          <h3>Understanding APY Comparisons</h3>
-        </div>
-        <div className={styles.infoContent}>
-          <p>
-            This table displays real-time Annual Percentage Yield (APY) rates across major DeFi protocols for all supported assets. 
-            Rates are sourced directly from protocol APIs and smart contracts to provide the most up-to-date information.
-          </p>
-          <p>
-            <strong>Best Yield</strong> highlights the optimal opportunity for each asset, allowing you to identify the most 
-            rewarding strategies at a glance. Rates are subject to market conditions and protocol parameters.
-          </p>
-        </div>
-      </div>
     </>
   );
 };
