@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--surface-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,12 +14,12 @@
 }
 
 .modal {
-  background-color: var(--surface-dark, #121212);
+  background-color: var(--surface-dark);
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 420px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   animation: slideUp 0.3s ease-out forwards;
   overflow: hidden;
 }
@@ -29,19 +29,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modalHeader h3 {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
+  color: var(--text-primary);
 }
 
 .closeButton {
   background: transparent;
   border: none;
-  color: var(--text-secondary, #a0a0a0);
+  color: var(--text-secondary);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.25rem;
@@ -52,11 +53,12 @@
   border-radius: 50%;
   width: 32px;
   height: 32px;
+  transition: all var(--transition-speed);
 }
 
 .closeButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary, #ffffff);
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .modalContent {
@@ -65,7 +67,7 @@
 
 .modalDescription {
   margin-bottom: 1.5rem;
-  color: var(--text-secondary, #a0a0a0);
+  color: var(--text-secondary);
   text-align: center;
 }
 
@@ -79,8 +81,8 @@
 .walletButton {
   display: flex;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1rem;
   width: 100%;
@@ -92,12 +94,12 @@
 }
 
 .walletButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--surface-hover);
   transform: translateY(-2px);
 }
 
 .walletButton.connecting {
-  border-color: var(--primary-color, #6c5ce7);
+  border-color: var(--primary-color);
   background-color: rgba(108, 92, 231, 0.1);
 }
 
@@ -108,7 +110,7 @@
 
 .walletButton.disabled:hover {
   transform: none;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--surface-light);
 }
 
 .walletIcon {
@@ -126,21 +128,21 @@
 }
 .walletName {
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   flex: 1;
 }
 
 .unsupported {
   font-weight: normal;
-  color: var(--text-tertiary, #666666);
+  color: var(--text-tertiary);
   font-size: 0.9em;
 }
 
 .loadingIndicator {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-left-color: var(--primary-color, #6c5ce7);
+  border: 2px solid var(--border-color);
+  border-left-color: var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-left: auto;
@@ -158,15 +160,15 @@
 }
 
 .modalFooter {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
   padding-top: 1.25rem;
   text-align: center;
   font-size: 0.9rem;
-  color: var(--text-tertiary, #666666);
+  color: var(--text-tertiary);
 }
 
 .modalFooter a {
-  color: var(--primary-color, #6c5ce7);
+  color: var(--primary-color);
   text-decoration: none;
 }
 

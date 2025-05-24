@@ -1,0 +1,89 @@
+.themeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggleTrack {
+  width: 50px;
+  height: 26px;
+  background-color: var(--surface-medium);
+  border-radius: 13px;
+  border: 1px solid var(--border-color);
+  position: relative;
+  transition: all var(--transition-speed) ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.toggleTrack:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.toggleTrack.dark {
+  background-color: var(--surface-light);
+}
+
+.toggleTrack.light {
+  background-color: var(--warning-color);
+}
+
+.toggleThumb {
+  width: 20px;
+  height: 20px;
+  background-color: var(--surface-dark);
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggleTrack.light .toggleThumb {
+  transform: translateX(24px);
+  background-color: #FFFFFF;
+}
+
+.toggleTrack.dark .toggleThumb {
+  transform: translateX(0);
+  background-color: var(--text-primary);
+}
+
+.toggleIcon {
+  font-size: 10px;
+  line-height: 1;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.toggleTrack.dark .toggleIcon {
+  filter: contrast(0) brightness(0);
+}
+
+.toggleTrack.light .toggleIcon {
+  filter: none;
+}
+
+/* Add hover effect */
+.themeToggle:hover .toggleTrack {
+  transform: scale(1.05);
+}
+
+.themeToggle:active .toggleTrack {
+  transform: scale(0.98);
+}
+
+/* Focus styles for accessibility */
+.themeToggle:focus .toggleTrack {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+} 

@@ -7,6 +7,7 @@ import Logo from './Logo';
 import { useAssetStore } from '../store/assetStore';
 import { useApyStore } from '../store/apyStore';
 import type { ProtocolApys } from '../store/apyStore';
+import ThemeToggle from './ThemeToggle';
 
 interface HeaderProps {
   isConnected: boolean;
@@ -278,6 +279,9 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
         )}
+        
+        {/* Theme Toggle */}
+        <ThemeToggle className={styles.themeToggle} />
         
         {/* Wallet address and dropdown */}
         {isConnected && address && (

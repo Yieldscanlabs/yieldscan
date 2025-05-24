@@ -1,36 +1,115 @@
+/* Theme Variables - Support for Dark and Light Mode */
 :root {
+  /* Brand Colors - These stay consistent across themes */
   --primary-color: #6C5CE7;
   --primary-hover: #5649D1;
   --secondary-color: #00CECE;
   --success-color: #00E679;
   --warning-color: #FFB344;
   --error-color: #FF5E5B;
-  --background-dark: #0A0E17;
-  --surface-dark: #111827;
-  --surface-medium: #1E293B;
-  --surface-light: #334155;
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.45);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --glow-primary: rgba(108, 92, 231, 0.5);
-  --glow-secondary: rgba(0, 206, 206, 0.5);
-
+  
+  /* Radius */
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-
-  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
   
+  /* Transitions */
   --transition-speed: 200ms;
   --blur-bg: blur(20px);
-
+  
+  /* Typography */
   --font-mono: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
+/* Dark Theme (Default) */
+:root {
+  --theme-mode: 'dark';
+  
+  /* Backgrounds */
+  --background-primary: #0A0E17;
+  --background-secondary: #111827;
+  --background-tertiary: #1E293B;
+  
+  /* Surfaces */
+  --surface-dark: #111827;
+  --surface-medium: #1E293B;
+  --surface-light: #334155;
+  --surface-hover: #475569;
+  --surface-overlay: rgba(17, 24, 39, 0.95);
+  
+  /* Text Colors */
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.45);
+  --text-muted: rgba(255, 255, 255, 0.3);
+  --text-inverse: rgba(0, 0, 0, 0.87);
+  
+  /* Border Colors */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: rgba(108, 92, 231, 0.5);
+  
+  /* Shadows */
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow-primary: 0 0 15px rgba(108, 92, 231, 0.5);
+  --shadow-glow-secondary: 0 0 15px rgba(0, 206, 206, 0.5);
+  
+  /* Background Gradients */
+  --gradient-bg: radial-gradient(circle at 20% 35%, rgba(108, 92, 231, 0.15) 0%, transparent 40%),
+                 radial-gradient(circle at 80% 10%, rgba(0, 206, 206, 0.15) 0%, transparent 40%);
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --theme-mode: 'light';
+  
+  /* Backgrounds */
+  --background-primary: #FFFFFF;
+  --background-secondary: #F8FAFC;
+  --background-tertiary: #F1F5F9;
+  
+  /* Surfaces */
+  --surface-dark: #FFFFFF;
+  --surface-medium: #F8FAFC;
+  --surface-light: #F1F5F9;
+  --surface-hover: #E2E8F0;
+  --surface-overlay: rgba(255, 255, 255, 0.95);
+  
+  /* Text Colors */
+  --text-primary: rgba(0, 0, 0, 0.87);
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --text-tertiary: rgba(0, 0, 0, 0.4);
+  --text-muted: rgba(0, 0, 0, 0.26);
+  --text-inverse: rgba(255, 255, 255, 0.95);
+  
+  /* Border Colors */
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --border-focus: rgba(108, 92, 231, 0.5);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-glow-primary: 0 0 15px rgba(108, 92, 231, 0.2);
+  --shadow-glow-secondary: 0 0 15px rgba(0, 206, 206, 0.2);
+  
+  /* Background Gradients */
+  --gradient-bg: radial-gradient(circle at 20% 35%, rgba(108, 92, 231, 0.05) 0%, transparent 40%),
+                 radial-gradient(circle at 80% 10%, rgba(0, 206, 206, 0.05) 0%, transparent 40%);
+}
+
+/* Legacy variable mappings for backwards compatibility */
+:root {
+  --background-dark: var(--background-primary);
+  --glow-primary: var(--shadow-glow-primary);
+  --glow-secondary: var(--shadow-glow-secondary);
+}
+
+/* Base Styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -38,14 +117,13 @@
 }
 
 body {
-  background: var(--background-dark);
+  background: var(--background-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   color: var(--text-primary);
   line-height: 1.6;
-  background-image: 
-    radial-gradient(circle at 20% 35%, rgba(108, 92, 231, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 80% 10%, rgba(0, 206, 206, 0.15) 0%, transparent 40%);
+  background-image: var(--gradient-bg);
   background-attachment: fixed;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 #root {
@@ -55,6 +133,7 @@ body {
   width: 100%;
 }
 
+/* Animations */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -65,4 +144,11 @@ body {
   to {
     transform: translate(-50%, -50%) rotate(360deg);
   }
+}
+
+/* Theme transition for all elements */
+* {
+  transition: background-color var(--transition-speed), 
+              border-color var(--transition-speed), 
+              color var(--transition-speed);
 }
