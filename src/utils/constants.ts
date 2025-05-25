@@ -16,7 +16,6 @@ export const PROTOCOL_NAMES = {
   AAVE: 'Aave',
   COMPOUND: 'Compound',
   VENUS: 'Venus',
-  GMX: 'GMX',
   RADIANT: 'Radiant',
   LIDO: 'Lido',
   SPARK: 'Spark',
