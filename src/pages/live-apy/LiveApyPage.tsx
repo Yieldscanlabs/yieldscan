@@ -57,11 +57,7 @@ const LiveApyPage: React.FC = () => {
         <div className={styles.column}>
           {/* Left column intentionally empty for now */}
         </div>
-        <div className={styles.column}>
-          {!wallet.isConnected && (
-            <WalletCtaCard />
-          )}
-        </div>
+  
       </div>
     </div>
   );

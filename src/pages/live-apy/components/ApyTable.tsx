@@ -5,6 +5,8 @@ import { PROTOCOL_NAMES } from '../../../utils/constants';
 import { formatNumber } from '../../../utils/helpers';
 import NetworkSelector from '../../../components/NetworkSelector';
 import Protocol from '../../../components/Protocol';
+import useWalletConnection from '../../../hooks/useWalletConnection';
+import WalletModal from '../../../components/WalletModal';
 
 interface ApyTableProps {
   apyData: any;
@@ -16,6 +18,37 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
   const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
+
+  // Custom CTA component for APY table
+  const ApyTableCTA = () => (
+    <div className={styles.apyTableCta}>
+      <div className={styles.ctaContent}>
+        <div className={styles.ctaHeader}>
+          <div className={styles.ctaIcon}>
+            <div className={styles.yieldCircle}>
+              <span className={styles.percentSign}>%</span>
+            </div>
+          </div>
+          <div className={styles.ctaText}>
+            <h3>Connect to track your yields</h3>
+            <p>See which protocols offer the best rates for your assets</p>
+          </div>
+          <button 
+            className={styles.ctaButton}
+            onClick={openConnectModal}
+          >
+            <span className={styles.buttonText}>Connect Wallet</span>
+            <div className={styles.buttonIcon}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1L15 8L8 15M15 8H1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   // Group tokens by chain for filter dropdown
   const chainOptions = React.useMemo(() => {
@@ -345,6 +378,14 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         </div>
       </div>
 
+      {!wallet.isConnected && (
+        <ApyTableCTA />
+      )}
+
+      <WalletModal 
+        isOpen={isModalOpen}
+        onClose={closeConnectModal}
+      />
     </>
   );
 };

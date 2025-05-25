@@ -55,7 +55,7 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
               <span className={styles['asset-name']}>{asset.token}</span>
             </div>
             <div className={styles['asset-balance']}>
-              {formatNumber(asset.balance, asset.maxDecimalsShow)} <span className={styles['asset-balance-usd']}>(${formatNumber(price ? price * Number(asset.balance) : asset.balanceUsd)})</span>
+              <small>Balance: </small>{formatNumber(asset.balance, asset.maxDecimalsShow)} <span className={styles['asset-balance-usd']}>(${formatNumber(price ? price * Number(asset.balance) : asset.balanceUsd)})</span>
             </div>
           </div>
         </div>

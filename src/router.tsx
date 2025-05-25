@@ -5,6 +5,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import CalculatorPage from './pages/CalculatorPage';
 import LitepaperPage from './pages/LitepaperPage';
 import MyYieldsPage from './pages/MyYieldsPage';
+import AlertsPage from './pages/AlertsPage';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound';
 import FaqPage from './pages/FaqPage';
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: 'about',
         element: <AboutPage />,
+      },
+      {
+        path: 'alerts',
+        element: <AlertsPage />,
       },
     ],
     // Add ScrollRestoration to handle scroll position

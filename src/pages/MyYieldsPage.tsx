@@ -20,6 +20,10 @@ const MyYieldsPage: React.FC = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
   
+  // State for total deposited and total earning
+  const [totalDeposited, setTotalDeposited] = useState<number>(0);
+  const [totalEarned, setTotalEarned] = useState<number>(0);
+  
   // Use userPreferencesStore for view toggle state
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
   
@@ -138,46 +142,27 @@ const MyYieldsPage: React.FC = () => {
   // Calculate total yields and check for optimizations
   // This effect uses allYieldAssets instead of filteredYieldAssets
   useEffect(() => {
-    if (allYieldAssets.length === 0) return;
+    if (allYieldAssets.length === 0) {
+      setTotalDeposited(0);
+      setTotalEarned(0);
+      return;
+    }
 
-    let dailyYieldTotal = 0;
-    let yearlyYieldTotal = 0;
+    let totalDepositedAmount = 0;
 
     // Process each yield-bearing asset
     const processAssets = async () => {
       for (const asset of allYieldAssets) {
-        // Get APY info for the asset
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        
-        if (!token) continue;
-        
-        // Determine which protocol this yield-bearing token belongs to
-        let currentProtocol = token.protocol;
-        
-        // Find the underlying asset for this yield token
-        const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
-        const underlyingToken = tokens.find(
-          t => t.token === underlyingTokenSymbol && t.chainId === token.chainId && !t.yieldBearingToken
-        );
-        
-        if (!underlyingToken) continue;
-        
-        //@ts-ignore
-        const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
-
-        
-        // Calculate daily and yearly yield
-        const balanceNum = parseFloat(asset.balance);
-        const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
-        const dailyYield = (balanceNum * (currentApyEstimate / 100)) / 365;
-        const dailyYieldUsd = dailyYield * usdPrice;
-        const yearlyYieldUsd = dailyYieldUsd * 365;
-        
-        dailyYieldTotal += dailyYieldUsd;
-        yearlyYieldTotal += yearlyYieldUsd;
+        // Add to total deposited
+        totalDepositedAmount += parseFloat(asset.balanceUsd);
       }
+      
+      // Calculate total earned as 2% of total deposited (mock data)
+      const totalEarnedAmount = totalDepositedAmount * 0.02;
+      
+      // Update state with calculated totals
+      setTotalDeposited(totalDepositedAmount);
+      setTotalEarned(totalEarnedAmount);
     };
     
     processAssets();
@@ -221,7 +206,7 @@ const MyYieldsPage: React.FC = () => {
   // Render the content
   return (
     <div className={styles.container}>
-      {/* Filters container with earnings summary */}
+            {/* Filters container with earnings summary */}
       <div className={styles.filtersContainer}>
         {/* Network selector for filtering yields */}
         <div className={styles.filterItem}>
@@ -252,6 +237,28 @@ const MyYieldsPage: React.FC = () => {
             onChange={setSelectedProtocol}
             className={styles.protocolSelector}
           />
+        </div>
+      </div>
+
+      {/* Summary section - filtered data */}
+      <div className={styles.summaryCards}>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Total Deposited</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(filteredYieldAssets.reduce((sum, asset) => sum + parseFloat(asset.balanceUsd), 0), 2)}
+          </div>
+          <div className={styles.summarySubtext}>
+            {selectedNetwork !== 'all' || selectedProtocol !== 'all' ? 'Filtered assets' : 'Across all yield protocols'}
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Total Earned</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(filteredYieldAssets.reduce((sum, asset) => sum + parseFloat(asset.balanceUsd), 0) * 0.02, 2)}
+          </div>
+          <div className={styles.summarySubtext}>
+            {selectedNetwork !== 'all' || selectedProtocol !== 'all' ? 'Filtered earnings' : 'Total earnings to date'}
+          </div>
         </div>
       </div>
 

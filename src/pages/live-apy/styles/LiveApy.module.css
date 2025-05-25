@@ -695,3 +695,163 @@
 .fixedRight table tbody tr:hover {
   background-color: var(--surface-hover);
 }
+
+/* APY Table CTA Styles */
+.apyTableCta {
+  position: relative;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(59, 130, 246, 0.06) 50%, 
+    rgba(108, 92, 231, 0.08) 100%);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+}
+
+.apyTableCta .ctaContent {
+  position: relative;
+  z-index: 2;
+}
+
+.apyTableCta .ctaHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.apyTableCta .ctaIcon {
+  flex-shrink: 0;
+}
+
+.yieldCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+  animation: yieldPulse 3s infinite;
+}
+
+.percentSign {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.apyTableCta .ctaText h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.apyTableCta .ctaText p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  max-width: 400px;
+}
+
+.apyTableCta .ctaButton {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+  position: relative;
+  overflow: hidden;
+  margin-left: auto;
+}
+
+.apyTableCta .ctaButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.6s;
+}
+
+.apyTableCta .ctaButton:hover::before {
+  left: 100%;
+}
+
+.apyTableCta .ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+
+.apyTableCta .buttonText {
+  position: relative;
+  z-index: 1;
+}
+
+.apyTableCta .buttonIcon {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.apyTableCta .ctaButton:hover .buttonIcon {
+  transform: translateX(2px);
+}
+
+@keyframes yieldPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 3px 15px rgba(16, 185, 129, 0.35);
+  }
+}
+
+/* Mobile responsiveness for APY CTA */
+@media (max-width: 768px) {
+  .apyTableCta {
+    padding: 0.75rem 1rem;
+    margin: 0.5rem;
+  }
+  
+  .apyTableCta .ctaHeader {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .apyTableCta .ctaText h3 {
+    font-size: 0.9rem;
+  }
+  
+  .apyTableCta .ctaText p {
+    font-size: 0.8rem;
+  }
+  
+  .apyTableCta .ctaButton {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    margin-left: 0;
+  }
+}

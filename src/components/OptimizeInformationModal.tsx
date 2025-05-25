@@ -112,10 +112,10 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
         
         <div className={styles.modalFooterCentered}>
           <button 
-            className={styles.lockButton} 
+            className={styles.optimizeButton} 
             onClick={onConfirm}
           >
-            Optimize Yield
+            Optimize
           </button>
         </div>
       </div>

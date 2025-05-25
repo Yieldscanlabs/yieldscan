@@ -255,7 +255,7 @@ const Header: React.FC<HeaderProps> = ({
               to="/yields" 
               className={`${styles.navLink} ${location.pathname === '/yields' ? styles.activeLink : ''}`}
             >
-              Yields
+              My Yields
             </Link>
           )}
           <Link 
@@ -263,6 +263,12 @@ const Header: React.FC<HeaderProps> = ({
             className={`${styles.navLink} ${location.pathname === '/explore' ? styles.activeLink : ''}`}
           >
             Explore
+          </Link>
+          <Link 
+            to="/alerts" 
+            className={`${styles.navLink} ${location.pathname === '/alerts' ? styles.activeLink : ''}`}
+          >
+            Alerts
           </Link>
         </nav>
       </div>
