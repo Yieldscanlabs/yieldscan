@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Asset, YieldOption } from '../types';
 import { calculateDailyYield, formatNumber } from '../utils/helpers';
+import { validateMinimumDeposit, getMinimumDepositErrorMessage } from '../utils/minimumDeposits';
 import styles from './DepositForm.module.css';
 import DepositModal from './DepositModal';
 import { useChainId, useSwitchChain } from 'wagmi';
@@ -27,6 +28,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
   const [yearlyYieldUsd, setYearlyYieldUsd] = useState('0');
   const [activePercentage, setActivePercentage] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [minimumDepositError, setMinimumDepositError] = useState<string | null>(null);
   const { chains, switchChain,  } = useSwitchChain()
     const chainId = useChainId();
   // Calculate max amount based on asset balance
@@ -77,11 +79,32 @@ const DepositForm: React.FC<DepositFormProps> = ({
       const dailyUsd = daily * usdPrice;
       setDailyYieldUsd(formatNumber(dailyUsd, 2));
       setYearlyYieldUsd(formatNumber(dailyUsd * 365, 2));
+      
+      // Validate minimum deposit
+      const validation = validateMinimumDeposit(
+        amountNum,
+        asset.chainId,
+        asset.address,
+        yieldOption.protocol
+      );
+      
+      if (!validation.isValid && validation.minimumRequired > 0) {
+        setMinimumDepositError(
+          getMinimumDepositErrorMessage(
+            validation.minimumRequired,
+            asset.token,
+            yieldOption.protocol
+          )
+        );
+      } else {
+        setMinimumDepositError(null);
+      }
     } else {
       setDailyYieldUsd('0');
       setYearlyYieldUsd('0');
+      setMinimumDepositError(null);
     }
-  }, [amount, yieldOption.apy, usdPrice]);
+  }, [amount, yieldOption.apy, yieldOption.protocol, usdPrice, asset.chainId, asset.address, asset.token]);
   return (
     <div className={styles['deposit-container']}>
       <div className={styles['deposit-form']}>
@@ -148,7 +171,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
           
           <div className={styles['protocol-info']}>
             <div className={styles['info-tag']}>
-              <span className={styles['info-icon']}>ⓘ</span>
               <span>Direct interaction with {yieldOption.protocol}</span>
             </div>
             
@@ -158,8 +180,28 @@ const DepositForm: React.FC<DepositFormProps> = ({
                 <span>{yieldOption.lockupDays} day lockup</span>
               </div>
             )}
+            
+            {(() => {
+              const validation = validateMinimumDeposit(
+                0, // Check if there's a minimum requirement (0 will show the minimum)
+                asset.chainId,
+                asset.address,
+                yieldOption.protocol
+              );
+              return validation.minimumRequired > 0 ? (
+                <div className={styles['info-tag']}>
+                </div>
+              ) : null;
+            })()}
           </div>
         </div>
+
+        {minimumDepositError && (
+          <div className={styles['error-message']}>
+            <span className={styles['error-icon']}>⚠️</span>
+            <span>{minimumDepositError}</span>
+          </div>
+        )}
 
         <div className={styles['action-buttons']}>
           {asset.chainId !== chainId ? (
@@ -174,7 +216,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
             <button 
               className={styles['deposit-button']}
               onClick={handleDeposit}
-              disabled={parseFloat(amount) <= 0}
+              disabled={parseFloat(amount) <= 0 || !!minimumDepositError}
             >
               <span className={styles['button-icon']}>↗</span>
               Deposit Now

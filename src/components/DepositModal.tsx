@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './DepositModal.module.css';
 import { formatNumber } from '../utils/helpers';
+import { validateMinimumDeposit, getMinimumDepositErrorMessage } from '../utils/minimumDeposits';
 import type { Asset, SupportedToken } from '../types';
 import useERC20 from '../hooks/useERC20';
 import type {SupportedProtocol} from '../hooks/useUnifiedYield';
@@ -137,6 +138,24 @@ const DepositModal: React.FC<DepositModalProps> = ({
   };
 
   const handleSupply = async () => {
+    // Validate minimum deposit before proceeding
+    const validation = validateMinimumDeposit(
+      amount,
+      asset.chainId,
+      asset.address,
+      protocol
+    );
+    
+    if (!validation.isValid && validation.minimumRequired > 0) {
+      setError(getMinimumDepositErrorMessage(
+        validation.minimumRequired,
+        asset.token,
+        protocol
+      ));
+      setIsLoading(false);
+      return;
+    }
+    
     // For ERC20 tokens, move to step 2
     // For native tokens, stay at step 1 (only step)
     if (!isNativeToken) {

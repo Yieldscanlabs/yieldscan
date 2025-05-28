@@ -354,7 +354,26 @@
 }
 
 .yield-preview {
-  margin-bottom: 2rem;
+  margin: 2rem 0;
+}
+
+.error-message {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.error-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .usd-earnings-highlight {
@@ -795,5 +814,11 @@
 }
 
 [data-theme="light"] .deposit-detail-value {
-  color: var(--text-primary);
+  color: #374151;
+}
+
+[data-theme="light"] .error-message {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #dc2626;
 }

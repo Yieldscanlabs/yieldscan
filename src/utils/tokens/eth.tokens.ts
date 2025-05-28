@@ -240,9 +240,11 @@ export default [
     token: 'rETH' as const,
     chain: 'ETH' as const,
     address: '0xae78736Cd615f374D3085123A210448E74Fc6393', // Rocket Pool rETH on Ethereum
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae78736Cd615f374D3085123A210448E74Fc6393/logo.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/15060.png',
     chainId: 1, // mainnet
     protocol: 'Rocket Pool',
+    underlyingAsset: '0x',
+    withdrawContract: '0xae78736Cd615f374D3085123A210448E74Fc6393',
     yieldBearingToken: true,
     decimals: 18,
     maxDecimalsShow: 6,
