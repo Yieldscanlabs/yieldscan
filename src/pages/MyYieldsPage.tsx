@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
@@ -12,6 +12,7 @@ import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
 import ViewToggle from '../components/ViewToggle';
+import SearchBar from '../components/SearchBar';
 import { useUserPreferencesStore, type ViewType } from '../store/userPreferencesStore';
 import YieldsTable from '../components/YieldsTable';
 import PageHeader from '../components/PageHeader';
@@ -20,6 +21,8 @@ const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   // State for total deposited and total earning
   const [totalDeposited, setTotalDeposited] = useState<number>(0);
@@ -55,6 +58,27 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
+  // Add keyboard shortcut to focus search
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Focus search on Ctrl/Cmd + K or just "/" key
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        // Only focus if not typing in an input already
+        const activeElement = document.activeElement;
+        if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
+          event.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Memoize filtered yield-bearing tokens for display only
   const filteredYieldAssets = useMemo(() => 
     allYieldAssets.filter(asset => {
@@ -69,9 +93,19 @@ const MyYieldsPage: React.FC = () => {
         if (!token || token.protocol !== selectedProtocol) return false;
       }
       
+      // Filter by search query
+      if (searchQuery) {
+        const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
+        const token = tokens.find(
+          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+        );
+        const matchesProtocol = token?.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!matchesToken && !matchesProtocol) return false;
+      }
+      
       return true;
     }),
-    [allYieldAssets, selectedNetwork, selectedProtocol, tokens]
+    [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, tokens]
   );
 
   // Get unique chain IDs from assets for the network selector
@@ -225,17 +259,19 @@ const MyYieldsPage: React.FC = () => {
           />
         </div>
         
-        {/* View Toggle */}
-
-
-        {/* Protocol selector for filtering yields */}
-        <div className={`${styles.filterItem} ${styles.viewToggleContainer}`}>
-        <div className={styles.filterItem}>
+        {/* Protocol, Search and View Toggle Group */}
+        <div className={styles.protocolSearchViewGroup}>
           <ViewToggle 
             currentView={viewType}
             onViewChange={setViewType}
           />
-        </div>
+          <SearchBar
+            ref={searchInputRef}
+            placeholder="Search yields..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            showKeybind={true}
+          />
           <ProtocolSelector
             selectedProtocol={selectedProtocol}
             //@ts-ignore

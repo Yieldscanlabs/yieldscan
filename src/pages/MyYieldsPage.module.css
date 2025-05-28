@@ -1176,6 +1176,33 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.searchAndViewGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Ensure SearchBar (middle child) has proper spacing in the group */
+.searchAndViewGroup > *:nth-child(2) {
+  flex-grow: 1;
+  max-width: 400px;
+  min-width: 200px;
+}
+
+.protocolSearchViewGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Ensure SearchBar (middle child) has proper spacing in the group */
+.protocolSearchViewGroup > *:nth-child(2) {
+  flex-grow: 1;
+  max-width: 400px;
+  min-width: 200px;
+}
+
 .viewToggleContainer {
   display: flex;
   align-items: center;
@@ -1187,11 +1214,58 @@
   margin-left: auto;
 }
 
-.filterLabel {
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-secondary);
+/* Responsive design for filters */
+@media (max-width: 1024px) {
+  .searchAndViewGroup {
+    gap: 0.75rem;
+  }
+  
+  .searchAndViewGroup > *:last-child {
+    max-width: 300px;
+    min-width: 150px;
+  }
+  
+  .protocolSearchViewGroup {
+    gap: 0.75rem;
+  }
+  
+  .protocolSearchViewGroup > *:nth-child(2) {
+    max-width: 300px;
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filtersContainer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchAndViewGroup {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .protocolSearchViewGroup {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .filterItem {
+    margin-left: 0 !important;
+  }
+  
+  .searchAndViewGroup > *:last-child {
+    max-width: none;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .protocolSearchViewGroup > *:nth-child(2) {
+    max-width: none;
+    min-width: auto;
+    width: 100%;
+  }
 }
 
 .filteredEmptyState {
@@ -1819,5 +1893,12 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+.filterLabel {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 

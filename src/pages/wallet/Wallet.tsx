@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './Wallet.module.css';
 import WalletModal from '../../components/WalletModal';
 import AssetList from '../../components/AssetList';
@@ -8,6 +8,7 @@ import { useUserPreferencesStore, type ViewType } from '../../store/userPreferen
 import NetworkSelector from '../../components/NetworkSelector';
 import DepositForm from '../../components/DepositForm';
 import DepositSuccess from '../../components/DepositSuccess';
+import SearchBar from '../../components/SearchBar';
 import useWalletConnection from '../../hooks/useWalletConnection';
 import useYieldOptions from '../../hooks/useYieldOptions';
 import type { Asset, YieldOption } from '../../types';
@@ -24,6 +25,7 @@ interface WalletState {
   showDepositForm: boolean;
   showDepositSuccess: boolean;
   selectedNetwork: number | 'all';
+  searchQuery: string;
   depositData: {
     amount: string;
     dailyYield: string;
@@ -34,6 +36,7 @@ interface WalletState {
 function Wallet() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   // Use userPreferencesStore for view toggle state
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
@@ -44,6 +47,7 @@ function Wallet() {
     showDepositForm: false,
     showDepositSuccess: false,
     selectedNetwork: 'all',
+    searchQuery: '',
     depositData: { amount: '0', dailyYield: '0', yearlyYield: '0' }
   });
 
@@ -89,6 +93,13 @@ function Wallet() {
     }));
   };
 
+  const handleSearchChange = (query: string) => {
+    setState(prev => ({
+      ...prev,
+      searchQuery: query
+    }));
+  };
+
   const getSelectedYieldOption = (): YieldOption => {
     if (state.bestApyData?.bestApy && state.bestApyData.bestProtocol && state.selectedAsset) {
       return {
@@ -125,11 +136,20 @@ function Wallet() {
       );
     }
 
-    // Filter assets by selected network
-    const filteredAssets = assets.filter(asset => 
-      !asset.yieldBearingToken && 
-      (state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork)
-    );
+    // Filter assets by selected network and search query
+    const filteredAssets = assets.filter(asset => {
+      // Filter out yield bearing tokens
+      if (asset.yieldBearingToken) return false;
+      
+      // Filter by network
+      const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
+      
+      // Filter by search query
+      const matchesSearch = state.searchQuery === '' || 
+        asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
+      
+      return matchesNetwork && matchesSearch;
+    });
 
     const commonProps = {
       assets: filteredAssets,
@@ -145,23 +165,32 @@ function Wallet() {
             subtitle="Only showing assets that can earn yield with the best APY"
           />
           <div className={styles.controlsRow}>
-          <NetworkSelector
-            selectedNetwork={state.selectedNetwork}
-            networks={AVAILABLE_NETWORKS}
-            //@ts-ignore
-            onChange={handleNetworkChange}
-          />
-          <ViewToggle 
-            currentView={viewType}
-            onViewChange={handleViewChange}
-          />
+            <NetworkSelector
+              selectedNetwork={state.selectedNetwork}
+              networks={AVAILABLE_NETWORKS}
+              //@ts-ignore
+              onChange={handleNetworkChange}
+            />
+            <div className={styles.searchAndViewGroup}>
+              <ViewToggle 
+                currentView={viewType}
+                onViewChange={handleViewChange}
+              />
+              <SearchBar
+                ref={searchInputRef}
+                placeholder="Search coins..."
+                value={state.searchQuery}
+                onChange={handleSearchChange}
+                showKeybind={true}
+              />
+            </div>
+          </div>
+          {viewType === 'cards' ? (
+            <AssetList {...commonProps} />
+          ) : (
+            <AssetTable {...commonProps} />
+          )}
         </div>
-        {viewType === 'cards' ? (
-          <AssetList {...commonProps} />
-        ) : (
-          <AssetTable {...commonProps} />
-        )}
-      </div>
     );
   };
 
@@ -217,6 +246,27 @@ function Wallet() {
       </div>
     );
   };
+
+  // Add keyboard shortcut to focus search
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Focus search on Ctrl/Cmd + K or just "/" key
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        // Only focus if not typing in an input already
+        const activeElement = document.activeElement;
+        if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
+          event.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className={styles.appWrapper}>
