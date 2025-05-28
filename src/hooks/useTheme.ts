@@ -16,7 +16,7 @@ function getInitialTheme(): ThemeOption {
     return savedTheme === 'dark' ? 'dark' : 'light';
   } else {
     // Default to system
-    return 'system';
+    return 'dark';
   }
 }
 

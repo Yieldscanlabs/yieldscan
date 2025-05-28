@@ -2,8 +2,8 @@
 .container {
   max-width: 1538px;
   margin: 0 auto;
-  padding-top: 1.5rem;
-  margin-top: 10px;
+  padding-top: 2rem;
+  margin-top: 15px;
 }
 
 /* Header styles */
@@ -11,22 +11,22 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
-.titleSection h1 {
-  font-size: 1.85rem;
-  font-weight: 800;
-  margin: 0 0 0.25rem;
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
 }
 
-.subtitle {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+.pageSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  font-weight: 400;
   margin: 0;
 }
 
@@ -604,12 +604,12 @@
     margin-left: 0;
   }
 
-  .titleSection h1 {
-    font-size: 1.5rem;
+  .pageTitle {
+    font-size: 1.375rem;
   }
-
-  .subtitle {
-    font-size: 0.9rem;
+  
+  .pageSubtitle {
+    font-size: 0.8rem;
   }
 
   .filterToolbar {

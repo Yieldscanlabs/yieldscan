@@ -6,6 +6,7 @@ import WalletCtaCard from '../../components/WalletCtaCard';
 import TabNavigation from './components/TabNavigation';
 import ApyTable from './components/ApyTable';
 import TrustScores from './components/TrustScores';
+import PageHeader from '../../components/PageHeader';
 
 const LiveApyPage: React.FC = () => {
   const { apyData, isLoading, error, fetchApys } = useApyStore();
@@ -36,6 +37,10 @@ const LiveApyPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <PageHeader 
+        title="Explore"
+        subtitle="Discover the best yield opportunities across DeFi protocols"
+      />
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       

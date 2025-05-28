@@ -20,5 +20,6 @@ export const PROTOCOL_NAMES = {
   LIDO: 'Lido',
   SPARK: 'Spark',
   MORPHO_BLUE: 'Morpho Blue',
-  FLUID: 'Fluid'
-}
+  FLUID: 'Fluid',
+  EIGENLAYER: 'EigenLayer'
+};

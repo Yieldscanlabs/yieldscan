@@ -1,7 +1,9 @@
 import metamask from '../assets/metamask.svg'
 import phantom from '../assets/phantom.png'
+
 export const MetaMaskIcon = () => <img src={metamask} />
 export const PhantomWallet = () => <img src={phantom} />
+
 export const WalletConnectIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M7.42 11.1637C11.6933 6.9387 18.3066 6.9387 22.58 11.1637L22.9733 11.553C23.14 11.7177 23.14 11.9923 22.9733 12.157L21.4933 13.6207C21.41 13.703 21.2767 13.703 21.1933 13.6207L20.6533 13.0857C17.64 10.1037 12.36 10.1037 9.34666 13.0857L8.76333 13.6637C8.68 13.746 8.54666 13.746 8.46333 13.6637L6.98333 12.2C6.81666 12.0353 6.81666 11.7607 6.98333 11.596L7.42 11.1637ZM25.8067 14.3667L27.1167 15.6637C27.2833 15.8283 27.2833 16.103 27.1167 16.2677L19.8067 23.5053C19.64 23.67 19.3633 23.67 19.1967 23.5053C19.1967 23.5053 19.1967 23.5053 19.1967 23.5053L14.1167 18.4707C14.075 18.4295 14.0067 18.4295 13.965 18.4707C13.965 18.4707 13.965 18.4707 13.965 18.4707L8.88667 23.5053C8.72 23.67 8.44334 23.67 8.27667 23.5053C8.27667 23.5053 8.27667 23.5053 8.27667 23.5053L0.964997 16.2677C0.798331 16.103 0.798331 15.8283 0.964997 15.6637L2.27499 14.3667C2.44166 14.202 2.71833 14.202 2.88499 14.3667L7.96666 19.4013C8.00833 19.4425 8.07666 19.4425 8.11833 19.4013C8.11833 19.4013 8.11833 19.4013 8.11833 19.4013L13.195 14.3667C13.3617 14.2019 13.6383 14.2018 13.805 14.3663C13.805 14.3664 13.805 14.3664 13.805 14.3665L18.885 19.4013C18.9267 19.4425 18.995 19.4425 19.0367 19.4013L24.115 14.3667C24.2817 14.202 24.5583 14.202 24.725 14.3667L25.8067 14.3667Z" fill="#3B99FC"/>
@@ -36,6 +38,57 @@ export const PontemWalletIcon = () => (
 </svg>
 )
 
+export const RabbyWalletIcon = () => <></>
+
+export const TrustWalletIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 2.33334L23.3333 7.00001V14C23.3333 20.1167 19.25 25.8167 14 26.8333C8.75 25.8167 4.66667 20.1167 4.66667 14V7.00001L14 2.33334Z" fill="#3375BB"/>
+    <path d="M14 8.16667L19.8333 11.6667V16.3333C19.8333 20.4167 17.0333 24.0333 14 24.5C10.9667 24.0333 8.16667 20.4167 8.16667 16.3333V11.6667L14 8.16667Z" fill="white"/>
+  </svg>
+)
+
+export const RainbowWalletIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="28" height="28" rx="14" fill="url(#rainbow-gradient)"/>
+    <path d="M7 14C7 10.134 10.134 7 14 7C17.866 7 21 10.134 21 14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M9.5 14C9.5 11.515 11.515 9.5 14 9.5C16.485 9.5 18.5 11.515 18.5 14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="14" cy="14" r="2" fill="white"/>
+    <defs>
+      <linearGradient id="rainbow-gradient" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#FF6B6B"/>
+        <stop offset="16.66%" stopColor="#FFE66D"/>
+        <stop offset="33.33%" stopColor="#4ECDC4"/>
+        <stop offset="50%" stopColor="#45B7D1"/>
+        <stop offset="66.66%" stopColor="#96CEB4"/>
+        <stop offset="83.33%" stopColor="#FFEAA7"/>
+        <stop offset="100%" stopColor="#DDA0DD"/>
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
+export const OKXWalletIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="28" height="28" rx="6" fill="#000000"/>
+    <rect x="6" y="6" width="5" height="5" fill="white"/>
+    <rect x="11.5" y="6" width="5" height="5" fill="white"/>
+    <rect x="17" y="6" width="5" height="5" fill="white"/>
+    <rect x="6" y="11.5" width="5" height="5" fill="white"/>
+    <rect x="17" y="11.5" width="5" height="5" fill="white"/>
+    <rect x="6" y="17" width="5" height="5" fill="white"/>
+    <rect x="11.5" y="17" width="5" height="5" fill="white"/>
+    <rect x="17" y="17" width="5" height="5" fill="white"/>
+  </svg>
+)
+
+export const SafeWalletIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="28" height="28" rx="14" fill="#12FF80"/>
+    <path d="M14 6L20 10V18C20 21.314 17.314 24 14 24C10.686 24 8 21.314 8 18V10L14 6Z" fill="white"/>
+    <path d="M14 9L17.5 11.5V17C17.5 19.485 15.485 21.5 13 21.5C10.515 21.5 8.5 19.485 8.5 17V11.5L14 9Z" fill="#12FF80"/>
+  </svg>
+)
+
 export function getWalletIcon(id: string) {
   switch (id) {
     case 'io.metamask':
@@ -44,8 +97,23 @@ export function getWalletIcon(id: string) {
       return <CoinbaseIcon />
     case 'network.pontem':
       return <PontemWalletIcon />
-        case 'app.phantom':
+    case 'app.phantom':
       return <PhantomWallet />
+    case 'io.rabby':
+    case 'rabby':
+      return <RabbyWalletIcon />
+    case 'com.trustwallet.app':
+    case 'trustWallet':
+      return <TrustWalletIcon />
+    case 'me.rainbow':
+    case 'rainbow':
+      return <RainbowWalletIcon />
+    case 'com.okex.wallet':
+    case 'okx':
+      return <OKXWalletIcon />
+    case 'io.gnosis.safe':
+    case 'safe':
+      return <SafeWalletIcon />
     case 'injected':
     default:
       return <BrowserWalletIcon />

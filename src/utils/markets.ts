@@ -114,3 +114,10 @@ export const FLUID_MARKETS: Record<number, Record<string, string>> = {
     'ETH': '0x90551c1795392094FE6D29B758EcCD233cFAa260',
   }
 }
+
+export const EIGEN_LAYER_MARKETS: Record<number, Record<string, string>> = {
+  // Ethereum Mainnet
+  1: {
+    'ETH': '0x91E677b07F7AF907ec9a428aafA9fc14a0d3A338',
+  }
+}

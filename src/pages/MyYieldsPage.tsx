@@ -14,6 +14,7 @@ import ProtocolSelector from '../components/ProtocolSelector';
 import ViewToggle from '../components/ViewToggle';
 import { useUserPreferencesStore, type ViewType } from '../store/userPreferencesStore';
 import YieldsTable from '../components/YieldsTable';
+import PageHeader from '../components/PageHeader';
 
 const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
@@ -206,7 +207,12 @@ const MyYieldsPage: React.FC = () => {
   // Render the content
   return (
     <div className={styles.container}>
-            {/* Filters container with earnings summary */}
+      <PageHeader 
+        title="My Yields"
+        subtitle="Track and optimize your yield-bearing positions"
+      />
+      
+      {/* Filters container with earnings summary */}
       <div className={styles.filtersContainer}>
         {/* Network selector for filtering yields */}
         <div className={styles.filterItem}>

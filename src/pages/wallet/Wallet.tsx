@@ -16,6 +16,7 @@ import Loading from '../../components/Loading';
 import { useAssetStore } from '../../store/assetStore';
 import { AVAILABLE_NETWORKS } from '../../utils/markets';
 import WalletWelcome from './WalletWelcome';
+import PageHeader from '../../components/PageHeader';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -137,9 +138,13 @@ function Wallet() {
       selectedAsset: state.selectedAsset
     };
 
-    return (
-      <div className={styles.assetViewContainer}>
-        <div className={styles.controlsRow}>
+          return (
+        <div className={styles.assetViewContainer}>
+          <PageHeader 
+            title="Wallet"
+            subtitle="Only showing assets that can earn yield with the best APY"
+          />
+          <div className={styles.controlsRow}>
           <NetworkSelector
             selectedNetwork={state.selectedNetwork}
             networks={AVAILABLE_NETWORKS}

@@ -79,6 +79,20 @@ export default [
     usdPrice: 1 // Value tracks underlying asset
   },
   {
+    token: "AUSDC",
+    chain: "ETH" as const,
+    address: "0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c",
+    icon: "https://etherscan.io/token/images/aave_usdc.png",
+    underlyingAsset: ETH_USDC,
+    withdrawContract: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+    chainId: 1,
+    protocol: "Aave",
+    decimals: 6,
+    maxDecimalsShow: 2,
+    yieldBearingToken: true,
+    usdPrice: 1 // Value tracks underlying asset
+  },
+  {
     token: 'AWETH' as const,
     chain: 'ETH' as const,
     address: '0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8', 
