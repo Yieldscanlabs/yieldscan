@@ -13,6 +13,7 @@ export interface ProtocolApys {
   lido?: number;
   morpho_blue?: number;
   fluid?: number
+  rocket_pool?: number
   // Add other protocols as needed
 }
 
@@ -97,7 +98,8 @@ export const useApyStore = create<ApyStore>()(
           data['1']['0x'] = {
             aave: 1.23,
             lido: 2.34,
-            fluid: 6
+            fluid: 6,
+            rocket_pool: 7
           }
           data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'] = {
             ...data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'],

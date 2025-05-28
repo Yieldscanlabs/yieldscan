@@ -162,7 +162,7 @@ const YieldsTableRow: React.FC<{
             </span>
           ) : (
             <span className={styles.noApyData}>
-              No yield data
+              -
             </span>
           )}
         </td>

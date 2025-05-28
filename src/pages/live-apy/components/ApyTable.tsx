@@ -7,6 +7,7 @@ import NetworkSelector from '../../../components/NetworkSelector';
 import Protocol from '../../../components/Protocol';
 import useWalletConnection from '../../../hooks/useWalletConnection';
 import WalletModal from '../../../components/WalletModal';
+import { getNetworkName } from '../../../utils/networkIcons';
 
 interface ApyTableProps {
   apyData: any;
@@ -246,7 +247,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                       </td>
                       <td className={styles.networkCell}>
                         <div className={`${styles.networkBadge} ${styles[`network-${token.chainId}`]}`}>
-                          {token.chainId === 1 ? 'Ethereum' : token.chainId === 42161 ? 'Arbitrum' : token.chainId}
+                         {getNetworkName(token.chainId)}
                         </div>
                       </td>
                     </tr>

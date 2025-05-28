@@ -198,6 +198,49 @@ const protocolAbis = {
       stateMutability: 'nonpayable',
       type: 'function',
     }
+  ],
+  RocketPool: [
+    {
+      inputs: [],
+      name: 'deposit',
+      outputs: [],
+      stateMutability: 'payable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: '_rethAmount', type: 'uint256' }
+      ],
+      name: 'burn',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: '_rethAmount', type: 'uint256' }
+      ],
+      name: 'getEthValue',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { name: '_ethAmount', type: 'uint256' }
+      ],
+      name: 'getRethValue',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'getExchangeRate',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    }
   ]
 } as const;
 
@@ -300,6 +343,17 @@ export default function useUnifiedYield({
           args: [amountInWei, address as `0x${string}`], // Fluid deposit - assets, receiver (ERC4626 standard)
           chainId
         });
+      } else if (protocol === PROTOCOL_NAMES.ROCKET_POOL) {
+        // Rocket Pool rETH deposits are handled via the dedicated supplyETHRocketPool function
+        // since it requires sending ETH directly to the contract
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.RocketPool,
+          functionName: 'deposit',
+          args: [],
+          value: amountInWei, // Send ETH value
+          chainId
+        });
       } else {
         throw new Error(`Protocol ${protocol} not supported`);
       }
@@ -376,6 +430,14 @@ export default function useUnifiedYield({
           abi: protocolAbis.MorphoBlue,
           functionName: 'withdraw',
           args: [amountInUnderlyingDecimals, address as `0x${string}`, address as `0x${string}`], // Morpho Blue withdraw - assets, receiver, owner (ERC4626 standard)
+          chainId
+        });
+      } else if (protocol === PROTOCOL_NAMES.ROCKET_POOL) {
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.RocketPool,
+          functionName: 'burn',
+          args: [amountInWei],
           chainId
         });
       } else {
@@ -504,6 +566,67 @@ export default function useUnifiedYield({
         return true;
       } catch (error) {
         console.error('Error withdrawing ETH from Fluid:', error);
+        return false;
+      } finally {
+        setIsWithdrawing(false);
+      }
+    }, [address, contractAddress, protocol, tokenDecimals, writeContractAsync, chainId]),
+    
+    // Native ETH support for Rocket Pool
+    supplyETHRocketPool: useCallback(async (amount: string): Promise<boolean> => {
+      if (!contractAddress || protocol !== PROTOCOL_NAMES.ROCKET_POOL) return false;
+      
+      try {
+        setIsSupplying(true);
+        const amountInWei = parseUnits(amount, tokenDecimals);
+        
+        // Send ETH directly to the rETH contract - the receive() function will handle the conversion
+        const hash = await writeContractAsync({
+          address: contractAddress,
+          abi: [
+            {
+              inputs: [],
+              name: 'receive',
+              outputs: [],
+              stateMutability: 'payable',
+              type: 'receive'
+            }
+          ],
+          functionName: 'receive',
+          args: [],
+          value: amountInWei, // Send ETH value
+          chainId
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (error) {
+        console.error('Error supplying ETH to Rocket Pool:', error);
+        return false;
+      } finally {
+        setIsSupplying(false);
+      }
+    }, [address, contractAddress, protocol, tokenDecimals, writeContractAsync, chainId]),
+    
+    burnRocketPool: useCallback(async (rethAmount: string): Promise<boolean> => {
+      if (!contractAddress || protocol !== PROTOCOL_NAMES.ROCKET_POOL) return false;
+      
+      try {
+        setIsWithdrawing(true);
+        const amountInWei = parseUnits(rethAmount, tokenDecimals);
+        
+        const hash = await writeContractAsync({
+          address: contractAddress,
+          abi: protocolAbis.RocketPool,
+          functionName: 'burn',
+          args: [amountInWei], // Burn rETH amount
+          chainId
+        });
+        
+        setTxHash(hash);
+        return true;
+      } catch (error) {
+        console.error('Error burning rETH from Rocket Pool:', error);
         return false;
       } finally {
         setIsWithdrawing(false);

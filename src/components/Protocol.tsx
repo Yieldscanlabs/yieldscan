@@ -9,6 +9,8 @@ import lido from '../assets/protocols/lido.svg'
 import spark from '../assets/protocols/spark.png'
 import pendle from '../assets/protocols/pendle.svg'
 import fluid from '../assets/protocols/fluid.png'
+import rocketpool from '../assets/protocols/rocketpool.webp'
+import eigenlayer from '../assets/protocols/eigenlayer.svg'
 
 interface ProtocolProps {
   name: string | null;
@@ -31,6 +33,8 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Spark': spark,
   'Pendle': pendle,
   'Fluid': fluid,
+  'Rocket Pool': rocketpool,
+  'EigenLayer': eigenlayer,
   // Add more protocols as needed
 };
 

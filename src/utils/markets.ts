@@ -121,3 +121,10 @@ export const EIGEN_LAYER_MARKETS: Record<number, Record<string, string>> = {
     'ETH': '0x91E677b07F7AF907ec9a428aafA9fc14a0d3A338',
   }
 }
+
+export const ROCKET_POOL_MARKETS: Record<number, Record<string, string>> = {
+  // Ethereum Mainnet
+  1: {
+    'ETH': '0xDD3f50F8A6CafbE9b31a427582963f465E745AF8',
+  }
+}

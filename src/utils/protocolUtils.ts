@@ -1,6 +1,6 @@
 import type { SupportedToken } from '../types';
 import { PROTOCOL_NAMES } from './constants';
-import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS, SPARK_MARKETS, MORPHO_BLUE_MARKETS, FLUID_MARKETS } from './markets';
+import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS, SPARK_MARKETS, MORPHO_BLUE_MARKETS, FLUID_MARKETS, ROCKET_POOL_MARKETS } from './markets';
 import { EigenLayerUtils } from './eigenLayerUtils';
 
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
@@ -24,6 +24,8 @@ export const setupProtocol = (protocol: string, token: SupportedToken, chainId: 
     } else if(protocol === PROTOCOL_NAMES.EIGENLAYER) {
       // EigenLayer PodManager address (mainnet)
       return EigenLayerUtils.getDefaultPodManagerAddress();
+    } else if(protocol === PROTOCOL_NAMES.ROCKET_POOL) {
+      return ROCKET_POOL_MARKETS[chainId][token] as `0x${string}`;
     }
     return '0x'
 } 

@@ -23,6 +23,11 @@ export const protocolScores: ProtocolScore[] = [
     liquidity: 18700 // $18.7B
   },
   { 
+    name: 'EigenLayer', 
+    trustScore: 95, 
+    liquidity: 11700 // $11.7B
+  },
+  { 
     name: 'Morpho Blue', 
     trustScore: 94, 
     liquidity: 5200 // $5.2B
@@ -47,6 +52,11 @@ export const protocolScores: ProtocolScore[] = [
     trustScore: 90, 
     liquidity: 2313 // $850M
   },
+  {
+    name: 'Rocket Pool',
+    trustScore: 89,
+    liquidity: 1700 // $1.7B
+  },
   { 
     name: 'Fluid', 
     trustScore: 85, 
@@ -56,7 +66,8 @@ export const protocolScores: ProtocolScore[] = [
     name: 'Radiant', 
     trustScore: 60, 
     liquidity: 245 // $245M
-  }
+  },
+
 ];
 
 // Format liquidity with appropriate suffix

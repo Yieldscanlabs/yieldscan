@@ -237,6 +237,19 @@ export default [
     usdPrice: 2500 // Approximate value (will need to be updated dynamically in production)
   },
   {
+    token: 'rETH' as const,
+    chain: 'ETH' as const,
+    address: '0xae78736Cd615f374D3085123A210448E74Fc6393', // Rocket Pool rETH on Ethereum
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae78736Cd615f374D3085123A210448E74Fc6393/logo.png',
+    chainId: 1, // mainnet
+    protocol: 'Rocket Pool',
+    yieldBearingToken: true,
+    decimals: 18,
+    maxDecimalsShow: 6,
+    usdPrice: 3300 // Approximate value (will need to be updated dynamically in production)
+    
+  },
+  {
     token: 'PT stETH' as const,
     chain: 'ETH' as const,
     address: '0xf99985822fb361117FCf3768D34a6353E6022F5F', // Lido stETH on Ethereum

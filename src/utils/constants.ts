@@ -21,5 +21,6 @@ export const PROTOCOL_NAMES = {
   SPARK: 'Spark',
   MORPHO_BLUE: 'Morpho Blue',
   FLUID: 'Fluid',
-  EIGENLAYER: 'EigenLayer'
+  EIGENLAYER: 'EigenLayer',
+  ROCKET_POOL: 'Rocket Pool'
 };
