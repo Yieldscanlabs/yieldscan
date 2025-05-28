@@ -5,6 +5,7 @@ import styles from './WithdrawModal.module.css';
 import { useAssetStore } from '../store/assetStore';
 import useWalletConnection from '../hooks/useWalletConnection';
 import Protocol from './Protocol';
+import ThumbSlider from './ThumbSlider';
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -40,7 +41,6 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
     const { wallet } = useWalletConnection();
   const {fetchAssets} = useAssetStore()
   const [error, setError] = useState<string | null>(null);
-  const [activePercentage, setActivePercentage] = useState<number | null>(null);
   
   // Reset state when modal opens
   useEffect(() => {
@@ -48,35 +48,18 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
       setWithdrawAmount('');
       setPercentage(0);
       setError(null);
-      setActivePercentage(null);
     }
   }, [isOpen]);
 
-  // Update withdrawal amount when slider changes
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setPercentage(value);
+  // Handle slider percentage change
+  const handleSliderChange = (newPercentage: number) => {
+    setPercentage(newPercentage);
     
     // If 100% is selected, use the exact balance value to avoid rounding errors
-    if (value === 100) {
+    if (newPercentage === 100) {
       setWithdrawAmount(balance.toString());
     } else {
-      const calculatedAmount = (balance * value / 100).toFixed(6);
-      setWithdrawAmount(calculatedAmount);
-    }
-    setActivePercentage(null);
-  };
-  
-  // Set predefined percentages
-  const handleQuickPercentage = (percent: number) => {
-    setPercentage(percent);
-    setActivePercentage(percent);
-    
-    // If 100% is selected, use the exact balance value to avoid rounding errors
-    if (percent === 100) {
-      setWithdrawAmount(balance.toString());
-    } else {
-      const calculatedAmount = (balance * percent / 100).toFixed(6);
+      const calculatedAmount = (balance * newPercentage / 100).toFixed(6);
       setWithdrawAmount(calculatedAmount);
     }
   };
@@ -182,47 +165,10 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
                   <div className={styles.amountUsd}>${amountUsd}</div>
                 </div>
                 
-                <div className={styles.sliderContainer}>
-                  <div className={styles.sliderTrack}>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={percentage}
-                      onChange={handleSliderChange}
-                      className={styles.amountSlider}
-                    />
-                    <div 
-                      className={styles.sliderProgress} 
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                    <div 
-                      className={styles.sliderThumb}
-                      style={{ left: `${percentage}%` }}
-                    >
-                      <span className={styles.sliderPercentage}>{percentage}%</span>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.percentageButtons}>
-                    <button 
-                      onClick={() => handleQuickPercentage(25)}
-                      className={activePercentage === 25 ? styles.active : ''}
-                    >25%</button>
-                    <button 
-                      onClick={() => handleQuickPercentage(50)}
-                      className={activePercentage === 50 ? styles.active : ''}
-                    >50%</button>
-                    <button 
-                      onClick={() => handleQuickPercentage(75)}
-                      className={activePercentage === 75 ? styles.active : ''}
-                    >75%</button>
-                    <button 
-                      onClick={() => handleQuickPercentage(100)}
-                      className={activePercentage === 100 ? styles.active : ''}
-                    >Max</button>
-                  </div>
-                </div>
+                <ThumbSlider
+                  value={percentage}
+                  onChange={handleSliderChange}
+                />
               </div>
 
               {error && <div className={styles.error}>{error}</div>}

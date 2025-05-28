@@ -4,6 +4,7 @@ import { calculateDailyYield, formatNumber } from '../utils/helpers';
 import { validateMinimumDeposit, getMinimumDepositErrorMessage } from '../utils/minimumDeposits';
 import styles from './DepositForm.module.css';
 import DepositModal from './DepositModal';
+import ThumbSlider from './ThumbSlider';
 import { useChainId, useSwitchChain } from 'wagmi';
 
 interface DepositFormProps {
@@ -26,7 +27,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
   const [percentage, setPercentage] = useState(0);
   const [dailyYieldUsd, setDailyYieldUsd] = useState('0');
   const [yearlyYieldUsd, setYearlyYieldUsd] = useState('0');
-  const [activePercentage, setActivePercentage] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [minimumDepositError, setMinimumDepositError] = useState<string | null>(null);
   const { chains, switchChain,  } = useSwitchChain()
@@ -35,20 +35,10 @@ const DepositForm: React.FC<DepositFormProps> = ({
   const maxAmount = parseFloat(asset.balance);
   const amountUsd = (parseFloat(amount) * usdPrice).toFixed(2);
   
-  // Update amount when slider changes
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setPercentage(value);
-    const calculatedAmount = (maxAmount * value / 100).toFixed(6);
-    setAmount(calculatedAmount);
-    setActivePercentage(null);
-  };
-  
-  // Set predefined percentages
-  const handleQuickPercentage = (percent: number) => {
-    setPercentage(percent);
-    setActivePercentage(percent);
-    const calculatedAmount = (maxAmount * percent / 100).toFixed(6);
+  // Handle slider percentage change
+  const handleSliderChange = (newPercentage: number) => {
+    setPercentage(newPercentage);
+    const calculatedAmount = (maxAmount * newPercentage / 100).toFixed(6);
     setAmount(calculatedAmount);
   };
   
@@ -118,49 +108,11 @@ const DepositForm: React.FC<DepositFormProps> = ({
           <div className={styles['amount-usd']}>${amountUsd}</div>
         </div>
         
-        <div className={styles['slider-container']}>
-          <div className={styles['apy-badge']}>{yieldOption.apy.toFixed(2)}% APY</div>
-          
-          <div className={styles['slider-track']}>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={percentage}
-              onChange={handleSliderChange}
-              className={styles['amount-slider']}
-            />
-            <div 
-              className={styles['slider-progress']} 
-              style={{ width: `${percentage}%` }}
-            ></div>
-            <div 
-              className={styles['slider-thumb']}
-              style={{ left: `${percentage}%` }}
-            >
-              <span className={styles['slider-percentage']}>{percentage}%</span>
-            </div>
-          </div>
-          
-          <div className={styles['percentage-buttons']}>
-            <button 
-              onClick={() => handleQuickPercentage(25)}
-              className={activePercentage === 25 ? styles.active : ''}
-            >25%</button>
-            <button 
-              onClick={() => handleQuickPercentage(50)}
-              className={activePercentage === 50 ? styles.active : ''}
-            >50%</button>
-            <button 
-              onClick={() => handleQuickPercentage(75)}
-              className={activePercentage === 75 ? styles.active : ''}
-            >75%</button>
-            <button 
-              onClick={() => handleQuickPercentage(100)}
-              className={activePercentage === 100 ? styles.active : ''}
-            >Max</button>
-          </div>
-        </div>
+        <ThumbSlider
+          value={percentage}
+          onChange={handleSliderChange}
+          badge={<span>{yieldOption.apy.toFixed(2)}% APY</span>}
+        />
         
         <div className={styles['yield-preview']}>
           <div className={styles['usd-earnings-highlight']}>
