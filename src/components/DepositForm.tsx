@@ -15,6 +15,7 @@ interface DepositFormProps {
   bestApyData?: {
     loading?: boolean;
   };
+  onBack?: () => void;
 }
 
 const DepositForm: React.FC<DepositFormProps> = ({
@@ -22,6 +23,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
   yieldOption,
   onDeposit,
   usdPrice,
+  onBack,
 }) => {
   const [amount, setAmount] = useState('0');
   const [percentage, setPercentage] = useState(0);
@@ -98,6 +100,17 @@ const DepositForm: React.FC<DepositFormProps> = ({
   return (
     <div className={styles['deposit-container']}>
       <div className={styles['deposit-form']}>
+        {onBack && (
+          <div className={styles['back-button-container']}>
+            <button 
+              className={styles['back-button']}
+              onClick={onBack}
+            >
+              &larr; 
+            </button>
+          </div>
+        )}
+        
         <h2>Deposit to {yieldOption.protocol}</h2>
         
         <div className={styles['amount-display']}>
@@ -150,7 +163,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
 
         {minimumDepositError && (
           <div className={styles['error-message']}>
-            <span className={styles['error-icon']}>⚠️</span>
+            <span className={styles['error-icon']}></span>
             <span>{minimumDepositError}</span>
           </div>
         )}

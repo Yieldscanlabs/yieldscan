@@ -195,16 +195,12 @@ function Wallet() {
     if (state.selectedAsset && state.showDepositForm) {
       return (
         <div className={styles.stepContainer}>
-          <div className={styles.backButtonContainer}>
-            <button onClick={handleBackToAssets} className={styles.backButton}>
-              &larr; Back to Assets
-            </button>
-          </div>
           <div className={styles.depositContainer}>
             <DepositForm 
               asset={state.selectedAsset}
               yieldOption={getSelectedYieldOption()}
               onDeposit={handleDeposit}
+              onBack={handleBackToAssets}
               usdPrice={parseFloat(state.selectedAsset.balanceUsd) / parseFloat(state.selectedAsset.balance)}
               bestApyData={state.bestApyData || undefined}
             />

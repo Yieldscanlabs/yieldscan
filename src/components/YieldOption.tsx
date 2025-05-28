@@ -67,7 +67,7 @@ const YieldOption: React.FC<YieldOptionProps> = ({
       <div className={styles['yield-details']}>
         <Protocol showTooltip={true} className={styles['yield-protocol']} name={bestProtocol} showLogo={true} /> 
         <span className={styles['yield-earning']}>${calculatedYearlyYieldUsd}/year</span>
-        {apyError && !bestApy && <span className={styles['yield-error']} title={apyError}>⚠️</span>}
+        {apyError && !bestApy && <span className={styles['yield-error']} title={apyError}></span>}
       </div>
     </>
   );

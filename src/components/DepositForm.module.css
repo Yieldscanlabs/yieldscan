@@ -4,6 +4,29 @@
   width: 100%;
 }
 
+.back-button-container {
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-speed);
+  font-size: 0.95rem;
+}
+
+.back-button:hover {
+  color: var(--primary-color);
+  background: rgba(108, 92, 231, 0.1);
+}
+
 .deposit-form {
   background-color: var(--surface-dark);
   border-radius: var(--radius-lg);
