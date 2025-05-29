@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
-import Header from './Header';
+import Header from './Header/index';
 import Footer from './Footer';
+import { Toaster } from 'react-hot-toast';
 import styles from './Layout.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import { useApyAutoRefresh, useApyStore } from '../store/apyStore';

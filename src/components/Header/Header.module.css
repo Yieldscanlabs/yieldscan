@@ -455,6 +455,18 @@
   }
 }
 
+@media (max-width: 900px) {
+  .earningsContainer {
+    display: none;
+  }
+  .dropdownThemeToggle {
+    display: none;
+  }
+  .dropdownDivider {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .earningsBadgeTotal {
     min-width: 180px;
@@ -475,5 +487,257 @@
 @media (max-width: 480px) {
   .earningsContainer {
     display: none;
+  }
+}
+
+/* Mobile Menu Styles */
+
+/* Hamburger Button */
+.hamburgerButton {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+}
+
+.hamburgerLine {
+  width: 20px;
+  height: 2px;
+  background-color: var(--text-primary);
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.hamburgerLine:not(:last-child) {
+  margin-bottom: 4px;
+}
+
+/* Hamburger animation when active */
+.hamburgerLineActive:nth-child(1) {
+  transform: rotate(45deg) translate(3px, 3px);
+}
+
+.hamburgerLineActive:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburgerLineActive:nth-child(3) {
+  transform: rotate(-45deg) translate(3px, -3px);
+}
+
+/* Mobile Menu Overlay */
+.mobileMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* Mobile Menu Sidebar */
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--surface-dark);
+  border-left: 1px solid var(--border-color);
+  z-index: 1001;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.mobileMenuOpen {
+  transform: translateX(0);
+}
+
+/* Mobile Menu Header */
+.mobileMenuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobileMenuLogo {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.mobileMenuCloseButton {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.mobileMenuCloseButton:hover {
+  background-color: var(--surface-medium);
+}
+
+/* Mobile Navigation */
+.mobileNavigation {
+  padding: 1rem 0;
+}
+
+.mobileNavLink {
+  display: block;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.mobileNavLink:hover {
+  background-color: var(--surface-medium);
+  color: var(--primary-color);
+}
+
+.mobileNavLinkActive {
+  color: var(--primary-color);
+  background-color: rgba(var(--primary-rgb), 0.1);
+  border-left-color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Mobile Wallet Section */
+.mobileWalletSection {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.mobileWalletInfo {
+  margin-bottom: 1rem;
+}
+
+.mobileWalletAddress {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  background-color: var(--surface-medium);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.mobileEarningsContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.mobileEarningsBadge {
+  background: linear-gradient(135deg, 
+    rgba(var(--success-rgb), 0.08) 0%, 
+    rgba(var(--success-rgb), 0.12) 100%);
+  border: 1px solid rgba(var(--success-rgb), 0.25);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mobileEarningsLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.mobileEarningsAmount {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--success-color);
+  letter-spacing: -0.01em;
+}
+
+.mobileWalletActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobileActionButton {
+  background-color: var(--surface-medium);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.mobileActionButton:hover {
+  background-color: var(--surface-light);
+  border-color: var(--primary-color);
+}
+
+.mobileDisconnectButton {
+  background-color: rgba(var(--error-rgb), 0.1);
+  border-color: rgba(var(--error-rgb), 0.3);
+  color: var(--error-color);
+}
+
+.mobileDisconnectButton:hover {
+  background-color: rgba(var(--error-rgb), 0.2);
+  border-color: var(--error-color);
+}
+
+.mobileThemeToggle {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+/* Show hamburger and hide desktop navigation on mobile */
+@media (max-width: 900px) {
+  .hamburgerButton {
+    display: flex;
+  }
+
+  .navigation {
+    display: none;
+  }
+
+  .header {
+    flex-direction: row;
+    height: 60px;
+    padding: 1rem;
+  }
+
+  .headerLeft {
+    width: auto;
+    gap: 1rem;
+  }
+
+  .headerRight {
+    width: auto;
   }
 }

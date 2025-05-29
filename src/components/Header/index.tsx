@@ -1,57 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAccount } from 'wagmi';
-import { shortenAddress } from '../utils/helpers';
-import styles from './Header.module.css';
-import Logo from './Logo';
-import { useAssetStore } from '../store/assetStore';
-import { useApyStore } from '../store/apyStore';
-import type { ProtocolApys } from '../store/apyStore';
-import ThemeToggle from './ThemeToggle';
+import { useAssetStore } from '../../store/assetStore';
+import { useApyStore } from '../../store/apyStore';
+import type { ProtocolApys } from '../../store/apyStore';
+import DesktopHeader from './components/DesktopHeader';
+import MobileMenu from './components/MobileMenu';
+import { getExplorerUrl, copyToClipboard } from './utils';
 
 interface HeaderProps {
   isConnected: boolean;
   address?: string;
   disconnectWallet: () => void;
 }
-
-// Helper function to get the explorer URL for a given chain
-const getExplorerUrl = (chainId: number, address: string): string => {
-  const explorers: Record<number, string> = {
-    1: 'https://etherscan.io',
-    56: 'https://bscscan.com',
-    42161: 'https://arbiscan.io',
-    137: 'https://polygonscan.com',
-    8453: 'https://basescan.org',
-    10: 'https://optimistic.etherscan.io',
-  };
-  
-  const baseUrl = explorers[chainId] || 'https://etherscan.io';
-  return `${baseUrl}/address/${address}`;
-};
-
-// Helper function to copy text to clipboard
-const copyToClipboard = async (text: string): Promise<boolean> => {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (err) {
-    // Fallback for older browsers
-    try {
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      return successful;
-    } catch (fallbackErr) {
-      console.error('Failed to copy text: ', fallbackErr);
-      return false;
-    }
-  }
-};
 
 const Header: React.FC<HeaderProps> = ({ 
   isConnected, 
@@ -60,8 +21,10 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { assets } = useAssetStore();
   const { apyData } = useApyStore();
   const { chainId } = useAccount();
@@ -108,6 +71,7 @@ const Header: React.FC<HeaderProps> = ({
   // Use state for the live value
   const [totalValue, setTotalValue] = useState(totalHoldings || 1000);
   const [apy, setApy] = useState(calculateWeightedApy());
+
   // Format value with proper comma separators and 18 decimal places
   const formatValue = (value: number): string => {
     // Ensure the value is a valid number
@@ -164,9 +128,7 @@ const Header: React.FC<HeaderProps> = ({
     setTotalValue(initialValue);
     setApy(weightedApy);
     
-    
     // Calculate the per-tick growth rate based on APY
-    // Formula: value * (1 + APY/100)^(tick/ticks_per_year) - value
     const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
     
     const timer = setInterval(() => {
@@ -177,14 +139,9 @@ const Header: React.FC<HeaderProps> = ({
         // Use high precision multiplication to ensure decimal changes are visible
         const newValue = prevValue * growthRate;
         
-        // Log occasionally to verify growth in the decimal places
-        if (Math.random() < 0.01) {
-       
-        }
-        
         return newValue;
       });
-    }, 100); // Update more frequently (100ms) to see changes in smaller decimal places
+    }, 100);
     
     // Cleanup timer on unmount
     return () => clearInterval(timer);
@@ -196,6 +153,9 @@ const Header: React.FC<HeaderProps> = ({
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -203,6 +163,24 @@ const Header: React.FC<HeaderProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   // Reset copy success message after 2 seconds
   useEffect(() => {
@@ -214,6 +192,10 @@ const Header: React.FC<HeaderProps> = ({
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const handleCopyAddress = async () => {
@@ -233,106 +215,36 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className={`${styles.header} ${isVisible ? styles.headerVisible : styles.headerHidden}`}>
-      <div className={styles.headerLeft}>
-        <Link to="/" className={styles.titleLink}>
-          <Logo />
-        </Link>
-        
-        {/* Navigation Links */}
-        <nav className={styles.navigation}>
-          {/* Always show Home */}
-          <Link 
-            to="/" 
-            className={`${styles.navLink} ${location.pathname === '/' ? styles.activeLink : ''}`}
-          >
-            Wallet
-          </Link>
-          
-          {/* Only show My Yields when connected */}
-          {isConnected && (
-            <Link 
-              to="/yields" 
-              className={`${styles.navLink} ${location.pathname === '/yields' ? styles.activeLink : ''}`}
-            >
-              My Yields
-            </Link>
-          )}
-          <Link 
-            to="/explore" 
-            className={`${styles.navLink} ${location.pathname === '/explore' ? styles.activeLink : ''}`}
-          >
-            Explore
-          </Link>
-          <Link 
-            to="/alerts" 
-            className={`${styles.navLink} ${location.pathname === '/alerts' ? styles.activeLink : ''}`}
-          >
-            Alerts
-          </Link>
-        </nav>
-      </div>
-      
-      <div className={styles.headerRight}>
-        {/* Display total value if connected */}
-        {isConnected && (
-          <div className={styles.earningsContainer}>
-            <div className={styles.earningsBadgeTotal}>
-              <span className={styles.earningsLabel}>Total Savings:</span>
-              <span className={styles.earningsAmount}>
-                ~${formatValue(totalValue)}
-              </span>
-            </div>
-          </div>
-        )}
-        
-        {/* Wallet address and dropdown */}
-        {isConnected && address && (
-          <div className={styles.walletContainer} ref={dropdownRef}>
-            <div 
-              className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
-              onClick={toggleDropdown}
-            >
-              {shortenAddress(address)}
-              <span className={styles.dropdownArrow}>▼</span>
-            </div>
-            {isDropdownOpen && (
-              <div className={styles.walletDropdown}>
-                <button 
-                  onClick={handleCopyAddress} 
-                  className={styles.dropdownButton}
-                >
-                  {copySuccess ? 'Copied!' : 'Copy Address'}
-                </button>
-                
-                <button 
-                  onClick={handleOpenExplorer} 
-                  className={styles.dropdownButton}
-                >
-                  View on Explorer
-                </button>
-                
-                <div className={styles.dropdownDivider}></div>
-                
-                <div className={styles.dropdownThemeToggle}>
-                  <ThemeToggle />
-                </div>
-                
-                <div className={styles.dropdownDivider}></div>
-                
-                <button 
-                  onClick={disconnectWallet} 
-                  className={`${styles.dropdownButton} ${styles.disconnectButton}`}
-                >
-                  Disconnect
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </header>
+    <>
+      <DesktopHeader
+        isVisible={isVisible}
+        isConnected={isConnected}
+        address={address}
+        location={location}
+        totalValue={totalValue}
+        formatValue={formatValue}
+        isDropdownOpen={isDropdownOpen}
+        toggleDropdown={toggleDropdown}
+        toggleMobileMenu={toggleMobileMenu}
+        isMobileMenuOpen={isMobileMenuOpen}
+        dropdownRef={dropdownRef}
+        copySuccess={copySuccess}
+        handleCopyAddress={handleCopyAddress}
+        handleOpenExplorer={handleOpenExplorer}
+        disconnectWallet={disconnectWallet}
+      />
+
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        setIsOpen={setIsMobileMenuOpen}
+        mobileMenuRef={mobileMenuRef}
+        isConnected={isConnected}
+        location={location}
+        totalValue={totalValue}
+        formatValue={formatValue}
+      />
+    </>
   );
 };
 
-export default Header;
+export default Header; 

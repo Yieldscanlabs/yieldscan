@@ -44,3 +44,22 @@
   text-decoration: none;
   color: inherit;
 }
+
+/* Mobile styles - hide text and show only logo image */
+@media (max-width: 900px) {
+  .title {
+    display: none;
+  }
+  
+  .logoContainer {
+    gap: 0;
+  }
+  
+  .logoContainer img {
+    height: 32px;
+  }
+  
+  .slogan {
+    display: none;
+  }
+}
