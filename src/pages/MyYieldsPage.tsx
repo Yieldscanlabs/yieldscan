@@ -58,6 +58,24 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
+  // Force cards view on mobile screens (900px and below)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 900 && viewType !== 'cards') {
+        setViewType('cards');
+      }
+    };
+
+    // Check on mount
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewType, setViewType]);
+
   // Add keyboard shortcut to focus search
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

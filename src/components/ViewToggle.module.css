@@ -57,9 +57,16 @@
 }
 
 /* Responsive design */
+@media (max-width: 900px) {
+  .viewToggle {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   .viewToggle {
     margin-bottom: 1rem;
+    display: none !important;
   }
   
   .label {
