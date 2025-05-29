@@ -81,8 +81,16 @@
   font-weight: 700;
 }
 
+.allNetworksMobileText {
+  display: none;
+}
+
+.allNetworksFullText {
+  display: inline;
+}
+
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 1240px) {
   .networkSelector {
     gap: 0.5rem;
   }
@@ -91,7 +99,27 @@
     padding: 0.5rem;
   }
   
+  /* Hide all network names on mobile */
   .networkName {
+    display: none;
+  }
+  
+  /* Hide the icon for "All Networks" option on mobile */
+  .allNetworksOption .networkIcon {
+    display: none;
+  }
+  
+  /* Show only "All" text for All Networks option on mobile */
+  .allNetworksName {
+    display: block !important;
     font-size: 0.8rem;
+  }
+  
+  .allNetworksFullText {
+    display: none;
+  }
+  
+  .allNetworksMobileText {
+    display: inline;
   }
 }

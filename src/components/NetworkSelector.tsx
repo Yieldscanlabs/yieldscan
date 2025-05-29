@@ -68,13 +68,16 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   return (
     <div className={`${styles.networkSelector} ${className}`}>
       <div 
-        className={`${styles.networkOption} ${selectedNetwork === 'all' ? styles.selected : ''}`} 
+        className={`${styles.networkOption} ${styles.allNetworksOption} ${selectedNetwork === 'all' ? styles.selected : ''}`} 
         onClick={() => onChange('all')}
       >
         <div className={`${styles.networkIcon} ${styles.all}`}>
           <span className={styles.allIcon}>✦</span>
         </div>
-        <span className={styles.networkName}>All Networks</span>
+        <span className={`${styles.networkName} ${styles.allNetworksName}`}>
+          <span className={styles.allNetworksFullText}>All Networks</span>
+          <span className={styles.allNetworksMobileText}>All</span>
+        </span>
       </div>
       
       {AVAILABLE_NETWORKS.map(chainId => (
