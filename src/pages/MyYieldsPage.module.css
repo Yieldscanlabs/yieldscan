@@ -1235,6 +1235,44 @@
   }
 }
 
+@media (max-width: 900px) {
+  .filtersContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+    align-items: end;
+  }
+  
+  /* Network selector takes first column */
+  .filterItem {
+    margin-left: 0 !important;
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .protocolSearchViewGroup {
+    display: contents;
+  }
+  
+  /* ViewToggle is hidden */
+  .protocolSearchViewGroup > *:nth-child(1) {
+    display: none;
+  }
+  
+  /* SearchBar goes to second row, spans both columns */
+  .protocolSearchViewGroup > *:nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  
+  /* ProtocolSelector goes to first row, second column */
+  .protocolSearchViewGroup > *:nth-child(3) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
 @media (max-width: 768px) {
   .filtersContainer {
     flex-direction: column;
