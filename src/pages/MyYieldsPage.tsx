@@ -4,6 +4,8 @@ import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import { useApyStore } from '../store/apyStore';
 import { useEarnStore } from '../store/earnStore';
+import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
+import useWalletConnection from '../hooks/useWalletConnection';
 import type { Asset } from '../types';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard/YieldCard';
@@ -18,15 +20,18 @@ import YieldsTable from '../components/YieldsTable';
 import PageHeader from '../components/PageHeader';
 
 const MyYieldsPage: React.FC = () => {
+  const { wallet } = useWalletConnection();
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // State for total deposited and total earning
+  // State for total deposited, total withdrawn, and total earning
   const [totalDeposited, setTotalDeposited] = useState<number>(0);
+  const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
+  const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
   
   // Use userPreferencesStore for view toggle state
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
@@ -36,8 +41,17 @@ const MyYieldsPage: React.FC = () => {
   
   // Get the earnings data from the earnStore
   const { 
-    isLoading: earningsLoading
+    isLoading: earningsLoading,
+    getTotalEarnings
   } = useEarnStore();
+
+  // Get deposits and withdrawals data
+  const { 
+    getUserActivity,
+    getTotalDepositsForUser,
+    getTotalWithdrawalsForUser,
+    isLoading: activityLoading
+  } = useDepositsAndWithdrawalsStore();
   
   // No need to fetch manually here since it's now handled in Layout
   
@@ -192,37 +206,336 @@ const MyYieldsPage: React.FC = () => {
     return undefined;
   };
 
-  // Calculate total yields and check for optimizations
-  // This effect uses allYieldAssets instead of filteredYieldAssets
+  // Calculate weighted average APY for Aave and Radiant tokens
+  const calculateWeightedApy = (): number => {
+    let totalWeightedApy = 0;
+    let totalValue = 0;
+    
+    // Get Aave and Radiant assets from current balances
+    const supportedAssets = allYieldAssets.filter(asset => {
+      const token = tokens.find(
+        t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+      );
+      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant';
+    });
+
+    supportedAssets.forEach(asset => {
+      const balanceValue = parseFloat(asset.balanceUsd || '0');
+      if (isNaN(balanceValue) || balanceValue === 0) return;
+      
+      // Get APY for this asset from apyStore if available
+      let assetApy = 0;
+      if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
+        const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
+        assetApy = apys[asset.protocol.toLowerCase()] || 0;
+      }
+      
+      // If no APY found, use defaults: 3% for Aave, 4% for Radiant
+      if (assetApy === 0) {
+        const token = tokens.find(
+          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+        );
+        assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
+      }
+      
+      totalWeightedApy += assetApy * balanceValue;
+      totalValue += balanceValue;
+    });
+    
+    // Return weighted average APY (default to 3.5% if no supported assets)
+    return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
+  };
+
+  // Calculate totals using real data from stores
   useEffect(() => {
-    if (allYieldAssets.length === 0) {
+    if (!wallet.address) {
       setTotalDeposited(0);
+      setTotalWithdrawn(0);
       setTotalEarned(0);
+      setLiveTotalEarned(0);
       return;
     }
 
-    let totalDepositedAmount = 0;
+    // Get real deposits and withdrawals data from the store
+    const userData = getUserActivity(wallet.address);
+    
+    if (!userData) {
+      setTotalDeposited(0);
+      setTotalWithdrawn(0);
+      setTotalEarned(0);
+      setLiveTotalEarned(0);
+      return;
+    }
 
-    // Process each yield-bearing asset
-    const processAssets = async () => {
-      for (const asset of allYieldAssets) {
-        // Add to total deposited
-        totalDepositedAmount += parseFloat(asset.balanceUsd);
+    let totalDepositsUsd = 0;
+    let totalWithdrawalsUsd = 0;
+
+    // Helper function to find token decimals
+    const findTokenDecimals = (chainId: number, protocolName: string, tokenSymbol: string): number => {
+      // Find the token in the tokens array that matches the chain, protocol, and symbol
+      const token = tokens.find(t => 
+        t.chainId === chainId && 
+        t.protocol?.toLowerCase() === protocolName.toLowerCase() && 
+        (t.token.toUpperCase().includes(tokenSymbol.toUpperCase()) || t.token === tokenSymbol)
+      );
+      
+      if (token) {
+        return token.decimals;
       }
       
-      // Calculate total earned as 2% of total deposited (mock data)
-      const totalEarnedAmount = totalDepositedAmount * 0.02;
+      // Fallback: try to find the underlying asset (non-yield-bearing version)
+      const underlyingToken = tokens.find(t => 
+        t.chainId === chainId && 
+        !t.yieldBearingToken &&
+        t.token.toUpperCase() === tokenSymbol.toUpperCase()
+      );
       
-      // Update state with calculated totals
-      setTotalDeposited(totalDepositedAmount);
-      setTotalEarned(totalEarnedAmount);
+      if (underlyingToken) {
+        return underlyingToken.decimals;
+      }
+      
+      // Default fallback based on common token decimals
+      if (tokenSymbol.toUpperCase() === 'USDC' || tokenSymbol.toUpperCase() === 'USDT') {
+        return 6; // Most USDC/USDT have 6 decimals
+      }
+      
+      return 18; // Default to 18 decimals for other tokens
     };
-    
-    processAssets();
-  }, [allYieldAssets, getBestApy, apyData, tokens, lastUpdated]);
 
+    // Calculate Aave and Radiant earnings using: current_balance - deposits + withdrawals
+    const calculateSupportedEarnings = (): number => {
+      let totalEarnings = 0;
+
+      // Get Aave and Radiant assets from current balances
+      const supportedAssets = allYieldAssets.filter(asset => {
+        const token = tokens.find(
+          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+        );
+        return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant';
+      });
+
+      supportedAssets.forEach(asset => {
+        // Current balance in USD
+        const currentBalanceUsd = parseFloat(asset.balanceUsd);
+
+        // Find corresponding deposits and withdrawals for this token
+        let depositsUsd = 0;
+        let withdrawalsUsd = 0;
+
+        Object.entries(userData).forEach(([chainIdStr, chainData]) => {
+          const chainId = parseInt(chainIdStr, 10);
+          if (chainId !== asset.chainId) return;
+
+          // Get the protocol data (Aave or Radiant)
+          const token = tokens.find(
+            t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+          );
+          const protocolName = token?.protocol;
+          
+          if (!protocolName) return;
+          
+          const protocolData = (chainData as Record<string, any>)[protocolName];
+          if (!protocolData) return;
+
+          // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
+          let tokenSymbol = asset.token;
+          
+          // Handle specific token mappings
+          if (protocolName.toLowerCase() === 'aave') {
+            // Aave token mappings
+            if (tokenSymbol === 'aUSDC' || tokenSymbol === 'AUSDC') {
+              tokenSymbol = 'USDC';
+            } else if (tokenSymbol === 'AUSDT') {
+              tokenSymbol = 'USDT';
+            } else if (tokenSymbol === 'AWETH') {
+              tokenSymbol = 'ETH'; // WETH is usually referred to as ETH in deposits
+            } else if (tokenSymbol === 'aBnbUSDC') {
+              tokenSymbol = 'USDC';
+            } else if (tokenSymbol === 'aBnbUSDT') {
+              tokenSymbol = 'USDT';
+            } else if (tokenSymbol === 'aBnbWBNB') {
+              tokenSymbol = 'wBNB'; // BNB Wrapped BNB
+            } else if (tokenSymbol === 'aArbUSDT') {
+              tokenSymbol = 'USDT';
+            } else if (tokenSymbol.startsWith('a') || tokenSymbol.startsWith('A')) {
+              // Generic handling for other aTokens - remove 'a' prefix
+              tokenSymbol = tokenSymbol.substring(1);
+            }
+          } else if (protocolName.toLowerCase() === 'radiant') {
+            // Radiant token mappings
+            if (tokenSymbol === 'Radiant USDC') {
+              tokenSymbol = 'USDC';
+            } else if (tokenSymbol === 'Radiant USDT') {
+              tokenSymbol = 'USDT';
+            }
+          }
+
+          const tokenData = protocolData[tokenSymbol];
+          if (!tokenData) {
+            console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
+            return;
+          }
+
+          const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
+          
+          // Convert BigInt values to regular numbers with proper decimals
+          const depositsRawString = tokenData.totalDeposit || '0';
+          const withdrawalsRawString = tokenData.totalWithdraw || '0';
+          
+          const depositsBigInt = BigInt(depositsRawString);
+          const withdrawalsBigInt = BigInt(withdrawalsRawString);
+          const divisor = BigInt('1' + '0'.repeat(decimals));
+          
+          const depositsWhole = depositsBigInt / divisor;
+          const depositsRemainder = depositsBigInt % divisor;
+          const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
+          
+          const withdrawalsWhole = withdrawalsBigInt / divisor;
+          const withdrawalsRemainder = withdrawalsBigInt % divisor;
+          const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
+          
+          // Find token price for USD conversion - use the underlying asset price
+          const tokenInfo = tokens.find(t => 
+            t.chainId === chainId && 
+            !t.yieldBearingToken &&
+            (t.token.toUpperCase() === tokenSymbol.toUpperCase())
+          );
+          
+          const tokenPrice = tokenInfo?.usdPrice || 1;
+          
+          depositsUsd += depositsFormatted * tokenPrice;
+          withdrawalsUsd += withdrawalsFormatted * tokenPrice;
+        });
+
+        // Calculate earnings for this token: current_balance - deposits + withdrawals
+        const tokenEarnings = currentBalanceUsd - depositsUsd + withdrawalsUsd;
+        totalEarnings += tokenEarnings;
+
+        console.log(`${asset.token} earnings calculation:`, {
+          protocol: tokens.find(t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId)?.protocol,
+          currentBalanceUsd,
+          depositsUsd,
+          withdrawalsUsd,
+          tokenEarnings
+        });
+      });
+
+      return totalEarnings;
+    };
+
+    // Process deposits and withdrawals for each chain and protocol (Aave and Radiant)
+    Object.entries(userData).forEach(([chainIdStr, chainData]) => {
+      const chainId = parseInt(chainIdStr, 10);
+      
+      Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
+        // Only process Aave and Radiant protocol data to be consistent with earnings calculation
+        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant') return;
+        
+        Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
+          const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
+          
+          // Convert BigInt values to regular numbers with proper decimals
+          const depositsRawString = (tokenData as any).totalDeposit || '0';
+          const withdrawalsRawString = (tokenData as any).totalWithdraw || '0';
+          
+          // Handle as BigInt and use BigInt arithmetic for division
+          const depositsBigInt = BigInt(depositsRawString);
+          const withdrawalsBigInt = BigInt(withdrawalsRawString);
+          
+          // Create divisor as BigInt more carefully
+          const divisor = BigInt('1' + '0'.repeat(decimals)); // Creates 10^decimals as BigInt
+          
+          // Do BigInt division to get the main units, then handle remainder for precision
+          const depositsWhole = depositsBigInt / divisor;
+          const depositsRemainder = depositsBigInt % divisor;
+          const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
+          
+          const withdrawalsWhole = withdrawalsBigInt / divisor;
+          const withdrawalsRemainder = withdrawalsBigInt % divisor;
+          const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
+          
+          // Find token price for USD conversion - use underlying asset price
+          const tokenInfo = tokens.find(t => 
+            t.chainId === chainId && 
+            !t.yieldBearingToken &&
+            (t.token.toUpperCase() === tokenSymbol.toUpperCase())
+          );
+          
+          const tokenPrice = tokenInfo?.usdPrice || 1; // Default to $1 if no price found
+          
+          // Add to totals in USD
+          totalDepositsUsd += depositsFormatted * tokenPrice;
+          totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
+        });
+      });
+    });
+
+    // Calculate earnings: Use supported protocols calculation (Aave and Radiant)
+    const supportedEarnings = calculateSupportedEarnings();
+    
+    // For non-Aave protocols, we could still use the existing APY-based calculation
+    // const otherProtocolEarnings = getTotalEarnings().lifetime; // You can uncomment this if needed
+    
+    const totalEarnedUsd = supportedEarnings; // Only Aave and Radiant earnings for now, as requested
+
+    // Update state with real data
+    setTotalDeposited(totalDepositsUsd);
+    setTotalWithdrawn(totalWithdrawalsUsd);
+    setTotalEarned(totalEarnedUsd);
+    setLiveTotalEarned(totalEarnedUsd);
+  }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets]);
+
+  // Live ticker effect - update earnings every 100ms based on Aave APY
+  useEffect(() => {
+    if (!wallet.address || totalEarned <= 0) return;
+    
+    // Set initial live value
+    setLiveTotalEarned(totalEarned);
+    
+    // Calculate the weighted APY for Aave tokens
+    const weightedApy = calculateWeightedApy();
+    
+    // Calculate the per-tick growth rate based on APY
+    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
+    
+    const timer = setInterval(() => {
+      setLiveTotalEarned(prevValue => {
+        // Calculate growth for this tick
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        
+        // Use high precision multiplication to ensure decimal changes are visible
+        const newValue = prevValue * growthRate;
+        
+        return newValue;
+      });
+    }, 100);
+    
+    // Cleanup timer on unmount or when dependencies change
+    return () => clearInterval(timer);
+  }, [totalEarned, wallet.address, allYieldAssets, apyData]);
+
+  // Format value with proper comma separators and more decimal places for precision
+  const formatLiveValue = (value: number): string => {
+    // Ensure the value is a valid number
+    if (typeof value !== 'number' || isNaN(value)) {
+      return '0.000000000000000000';
+    }
+    
+    try {
+      // Use higher precision (18 decimal places) to match the header's live ticker
+      if (value >= 1000) {
+        return value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 });
+      } else {
+        return value.toFixed(18);
+      }
+    } catch (error) {
+      console.error('Error formatting value:', error);
+      return '0.000000000000000000';
+    }
+  };
+  
   // Loading state
-  if (loading || earningsLoading) {
+  if (loading || earningsLoading || activityLoading) {
     return (
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
@@ -300,24 +613,33 @@ const MyYieldsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary section - filtered data */}
+      {/* Summary section - real data from stores */}
       <div className={styles.summaryCards}>
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Deposited</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(filteredYieldAssets.reduce((sum, asset) => sum + parseFloat(asset.balanceUsd), 0), 2)}
+            ${formatNumber(totalDeposited, 2)}
           </div>
           <div className={styles.summarySubtext}>
-            {selectedNetwork !== 'all' || selectedProtocol !== 'all' ? 'Filtered assets' : 'Across all yield protocols'}
+            Total deposited to Aave & Radiant protocols
           </div>
         </div>
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Earned</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(filteredYieldAssets.reduce((sum, asset) => sum + parseFloat(asset.balanceUsd), 0) * 0.02, 2)}
+            ${formatLiveValue(liveTotalEarned)}
           </div>
           <div className={styles.summarySubtext}>
-            {selectedNetwork !== 'all' || selectedProtocol !== 'all' ? 'Filtered earnings' : 'Total earnings to date'}
+            Aave & Radiant earnings (balance - deposits + withdrawals)
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Total Withdrawn</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(totalWithdrawn, 2)}
+          </div>
+          <div className={styles.summarySubtext}>
+            Total withdrawn from Aave & Radiant protocols
           </div>
         </div>
       </div>

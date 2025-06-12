@@ -7,6 +7,7 @@ import useWalletConnection from '../hooks/useWalletConnection';
 import { useApyAutoRefresh, useApyStore } from '../store/apyStore';
 import { useAssetStore } from '../store/assetStore';
 import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
+import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
 import { useEffect } from 'react';
 import GlobalOptimizationModal from './GlobalOptimizationModal';
 import GlobalLockModal from './GlobalLockModal';
@@ -23,19 +24,24 @@ const Layout = () => {
     fetchEarnings, 
     lastUpdated: earningsLastUpdated
   } = useEarnStore();
+  const { 
+    fetchUserActivity, 
+    lastUpdated: activityLastUpdated
+  } = useDepositsAndWithdrawalsStore();
   
   // Initialize theme on app startup
   useTheme();
   
-  // Initialize auto-refresh for APY, Assets, and Earnings
+  // Initialize auto-refresh for APY, Assets, and Earnings (no auto-refresh for deposits/withdrawals due to long fetch time)
   useApyAutoRefresh();
   useEarningsAutoRefresh(wallet.address);
   
-  // Fetch assets and earnings when wallet connection changes
+  // Fetch assets, earnings, and user activity when wallet connection changes
   useEffect(() => {
     if (wallet.address) {
       fetchEarnings(wallet.address, true);
       fetchAssets(wallet.address, true);
+      fetchUserActivity(wallet.address, true);
     }
   }, [wallet.address]);
   
@@ -45,6 +51,12 @@ const Layout = () => {
       // Any code to run when Earnings data is refreshed
     }
   }, [earningsLastUpdated, wallet.isConnected]);
+
+  useEffect(() => {
+    if (activityLastUpdated && wallet.isConnected) {
+      // Any code to run when Deposits/Withdrawals data is refreshed
+    }
+  }, [activityLastUpdated, wallet.isConnected]);
 
   return (
     <div className={styles.layout}>
