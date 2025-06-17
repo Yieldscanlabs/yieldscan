@@ -9,9 +9,8 @@ import tokens from '../utils/tokens';
 import { useOptimizationStore } from '../store/optimizationStore';
 import OptimizeInformationModal from './OptimizeInformationModal';
 import type { TokenWithLockYield } from './YieldCard/types';
-import WithdrawModal from './WithdrawModal';
+import { useWithdrawModalStore } from '../store/withdrawModalStore';
 import LockAPYInformationModal from './LockAPYInformationModal';
-import { useYieldCard } from './YieldCard/useYieldCard';
 import { useApyStore } from '../store/apyStore';
 
 interface YieldsTableProps {
@@ -32,7 +31,9 @@ const YieldsTableRow: React.FC<{
 }> = ({ asset, optimizationData, onOptimize, onWithdraw, onLockApy }) => {
   const balanceValue = parseFloat(asset.balanceUsd);
   const [isOptimizeModalOpen, setIsOptimizeModalOpen] = useState(false);
+  const [isLockAPYModalOpen, setIsLockAPYModalOpen] = useState(false);
   const { openModal } = useOptimizationStore();
+  const { openModal: openWithdrawModal } = useWithdrawModalStore();
   const { apyData } = useApyStore();
 
   // Get current protocol and APY from the asset and token data
@@ -55,29 +56,6 @@ const YieldsTableRow: React.FC<{
   // Use the same logic as YieldCard to determine if Lock APY is available
   const hasLockYield = token !== undefined && (token as unknown as TokenWithLockYield).lockYield !== undefined;
   const lockYieldDetails = hasLockYield ? (token as unknown as TokenWithLockYield).lockYield : undefined;
-
-  // Use the YieldCard hook for withdraw and lock functionality
-  const {
-    isWithdrawModalOpen,
-    isLockAPYModalOpen,
-    isProcessingWithdrawal,
-    isConfirming,
-    isConfirmed,
-    protocol,
-    isNativeToken,
-    balanceNum,
-    openWithdrawModal,
-    closeWithdrawModal,
-    openLockAPYModal,
-    closeLockAPYModal,
-    handleLockAPYConfirm,
-    handleWithdrawComplete,
-    handleWithdraw
-  } = useYieldCard({ 
-    asset, 
-    onOptimize: onOptimize ? () => onOptimize(asset) : undefined, 
-    onLockAPY: onLockApy ? () => onLockApy(asset) : undefined
-  });
 
   // Handle optimization - same logic as YieldCard
   const handleOptimizeClick = () => {
@@ -112,8 +90,38 @@ const YieldsTableRow: React.FC<{
     if (asset.withdrawUri) {
       window.open(asset.withdrawUri, '_blank', 'noopener noreferrer');
     } else {
-      openWithdrawModal();
+      // Use the new withdrawal modal store
+      openWithdrawModal({
+        asset,
+        protocol: currentProtocol || '',
+        balance: parseFloat(asset.balance),
+        maxDecimals: asset.maxDecimalsShow || 6,
+        isNativeToken: asset.address === '0x',
+        onWithdraw: async (amount: string) => {
+          // Placeholder for withdrawal logic
+          console.log('Withdrawing', amount, asset.token);
+          return true;
+        },
+        onComplete: () => {
+          // Placeholder for completion logic
+          console.log('Withdrawal completed');
+        }
+      });
     }
+  };
+
+  // Handle Lock APY modal
+  const openLockAPYModal = () => {
+    setIsLockAPYModalOpen(true);
+  };
+
+  const closeLockAPYModal = () => {
+    setIsLockAPYModalOpen(false);
+  };
+
+  const handleLockAPYConfirm = () => {
+    setIsLockAPYModalOpen(false);
+    // Handle lock APY confirmation logic here
   };
 
   return (
@@ -210,22 +218,7 @@ const YieldsTableRow: React.FC<{
         </td>
       </tr>
 
-      {/* Modals - same as YieldCard */}
-      <WithdrawModal
-        isOpen={isWithdrawModalOpen}
-        onClose={closeWithdrawModal}
-        onComplete={handleWithdrawComplete}
-        asset={asset}
-        protocol={protocol}
-        balance={balanceNum}
-        maxDecimals={asset.maxDecimalsShow || 6}
-        onWithdraw={handleWithdraw}
-        isProcessing={isProcessingWithdrawal}
-        isConfirming={isConfirming}
-        isConfirmed={isConfirmed}
-        isNativeToken={isNativeToken}
-      />
-      
+      {/* Lock APY Modal */}
       {lockYieldDetails && (
         <LockAPYInformationModal
           isOpen={isLockAPYModalOpen}
@@ -235,10 +228,11 @@ const YieldsTableRow: React.FC<{
           protocol={lockYieldDetails.protocol}
           expirationDate={lockYieldDetails.expirationDate}
           currentAPY={currentApy}
-          amountToLock={balanceNum}
+          amountToLock={parseFloat(asset.balance)}
         />
       )}
 
+      {/* Optimization Modal */}
       {optimizationData && (
         <OptimizeInformationModal
           isOpen={isOptimizeModalOpen}

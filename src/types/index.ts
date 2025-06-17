@@ -11,6 +11,7 @@ export interface Asset {
   withdrawUri?: string;
   protocol?: string;
   withdrawContract?: string;
+  underlyingAsset?: string;
   chainId: number;
     yieldBearingToken: boolean;
   balanceUsd: string;

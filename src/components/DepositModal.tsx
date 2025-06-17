@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import styles from './DepositModal.module.css';
 import { formatNumber } from '../utils/helpers';
-import { validateMinimumDeposit, getMinimumDepositErrorMessage } from '../utils/minimumDeposits';
-import type { Asset, SupportedToken } from '../types';
-import useERC20 from '../hooks/useERC20';
-import type {SupportedProtocol} from '../hooks/useUnifiedYield';
-import useUnifiedYield from '../hooks/useUnifiedYield';
-import { PROTOCOL_NAMES } from '../utils/constants';
-import { useAssetStore } from '../store/assetStore';
-import useWalletConnection from '../hooks/useWalletConnection';
-import { setupProtocol } from '../utils/protocolUtils';
+import type { Asset } from '../types';
 import Protocol from './Protocol';
+import useDepositSteps from '../hooks/useDepositSteps';
+import useWalletConnection from '../hooks/useWalletConnection';
+import { useAssetStore } from '../store/assetStore';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -38,185 +33,75 @@ const DepositModal: React.FC<DepositModalProps> = ({
   protocol,
   yearlyYieldUsd
 }) => {
-  const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const { wallet }  = useWalletConnection()
-  const [error, setError] = useState<string | null>(null);
-  const { fetchAssets } = useAssetStore()
-  
-  // Check if the token is native (address is '0x')
-  const isNativeToken = asset.address === '0x';
-  
-  // Protocol contract address - in a real app this would come from a config or lookup
-  const protocolAddress: `0x${string}` = setupProtocol(protocol, asset.token as SupportedToken, asset.chainId);
-  
-  // Initialize ERC20 hook for approval checking
-  const { 
-    hasEnoughAllowance,
-    approve,
-    isApproving
-  } = useERC20({
-    tokenAddress: asset.address as `0x${string}`,
-    spenderAddress: protocolAddress,
+  const { wallet } = useWalletConnection();
+  const { fetchAssets } = useAssetStore();
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  // Use the new dynamic steps hook
+  const {
+    steps,
+    isLoading: isLoadingSteps,
+    error: stepsError,
+    currentStep,
+    isExecuting,
+    executedSteps,
+    executionError,
+    isConfirming,
+    isConfirmed,
+    executeAllSteps,
+    retryCurrentStep
+  } = useDepositSteps({
+    contractAddress: asset.address,
     chainId: asset.chainId,
+    protocol: protocol.toLowerCase(),
+    amount,
     tokenDecimals: asset.decimals
   });
 
-  const { 
-    supply, 
-    supplyETH,
-    supplyNative
-  } = useUnifiedYield({
-        protocol: protocol as SupportedProtocol,
-        contractAddress: protocolAddress as `0x${string}` || '0x',
-        tokenAddress: asset.address as `0x${string}`,
-        tokenDecimals: asset.decimals,
-        chainId: asset.chainId
-    });
+  // Auto-start execution when modal opens and steps are loaded
+  useEffect(() => {
+    if (isOpen && steps.length > 0 && !hasStarted && !isExecuting && !isCompleted) {
+      setHasStarted(true);
+      
+      // Call onLockInitiate when starting
+      if (onLockInitiate) {
+        onLockInitiate();
+      }
+      
+      // Start executing all steps
+      executeAllSteps().then((success) => {
+        if (success) {
+          setIsCompleted(true);
+          // Refresh assets after successful deposit
+          if (wallet.address) {
+            fetchAssets(wallet.address, false);
+          }
+          
+          // Complete after a brief delay
+          setTimeout(() => {
+            onComplete(true);
+          }, 1500);
+        }
+      });
+    }
+  }, [isOpen, steps.length, hasStarted, isExecuting, isCompleted]);
 
-  // Check if we need approval or already have enough allowance
+  // Reset state when modal closes/opens
   useEffect(() => {
     if (isOpen) {
-      // For native tokens, skip to deposit step
-      if (isNativeToken) {
-        setStep(1); // Only one step needed for native tokens
-      } else {
-        setStep(1); // Start at approval step for ERC20 tokens
-      }
-      setError(null);
-      
-      if (isNativeToken) {
-        // Skip approval for native tokens
-        handleSupply();
-      } else {
-        // Check approval for ERC20 tokens
-        handleApprove();
-      }
+      setHasStarted(false);
+      setIsCompleted(false);
     }
-  }, [isOpen, hasEnoughAllowance]);
-  
-  // Update loading state when approval status changes
-  useEffect(() => {
-    setIsLoading(isApproving);
-  }, [isApproving]);
-  
-  // Handle the approval
-  const handleApprove = async () => {
-    if (isNativeToken) {
-      // Skip approval for native tokens
-      handleSupply();
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    
-    // Call onLockInitiate when approval starts
-    if (onLockInitiate) {
-      onLockInitiate();
-    }
-    
-    try {
-      const didApprove = await hasEnoughAllowance(amount);
-      if (didApprove) {
-        handleSupply();
-        return;
-      }
-      const success = await approve(amount, protocolAddress);
-      
-      if (success) {
-        handleSupply()
-      } else {
-        setError("Approval failed. Please try again.");
-        setIsLoading(false);
-      }
-    } catch (err) {
-      console.error("Error during approval:", err);
-      setError("An error occurred during approval. Please try again.");
-      setIsLoading(false);
-    }
-  };
+  }, [isOpen]);
 
-  const handleSupply = async () => {
-    // Validate minimum deposit before proceeding
-    const validation = validateMinimumDeposit(
-      amount,
-      asset.chainId,
-      asset.address,
-      protocol
-    );
-    
-    if (!validation.isValid && validation.minimumRequired > 0) {
-      setError(getMinimumDepositErrorMessage(
-        validation.minimumRequired,
-        asset.token,
-        protocol
-      ));
-      setIsLoading(false);
-      return;
-    }
-    
-    // For ERC20 tokens, move to step 2
-    // For native tokens, stay at step 1 (only step)
-    if (!isNativeToken) {
-      setStep(2);
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    
-    // Call onLockInitiate when supply starts
-    if (onLockInitiate) {
-      onLockInitiate();
-    }
-    
-    try {
-      let success = false;
-      
-      // For Aave protocol and native ETH, use the special depositETH function
-      if (isNativeToken && protocol === PROTOCOL_NAMES.AAVE) {
-        // For native ETH on Aave, we use the supplyETH function which calls depositETH on the gateway contract
-        // onBehalfOf parameter is the user's address
-        success = await supplyETH(amount, wallet.address as `0x${string}`);
-      } else if(isNativeToken && protocol === PROTOCOL_NAMES.FLUID) {
-        success = await supplyNative(amount, wallet.address as `0x${string}`);
-      } else {
-        // For all other tokens/protocols, use the regular supply function
-        success = await supply(amount);
-      }
-      
-      if (success) {
-        // For ERC20 tokens, move to step 3
-        // For native tokens, move to step 2 (complete)
-        setStep(isNativeToken ? 2 : 3);
-        // Move to complete after a brief delay
-        fetchAssets(wallet.address, false);
-        setTimeout(() => {
-          onComplete(true);
-        }, 1500);
-      } else {
-        setError("Deposit failed. Please try again.");
-        setIsLoading(false);
-      }
-    } catch (err) {
-      console.error("Error during deposit:", err);
-      setError("An error occurred during deposit. Please try again.");
-      setIsLoading(false);
-    }
-  }
-  
-  // Handle retry if approval fails
+  // Handle retry
   const handleRetry = () => {
-    setError(null);
-    if (isNativeToken) {
-      handleSupply();
-    } else {
-      handleApprove();
-    }
+    retryCurrentStep();
   };
 
   if (!isOpen) return null;
-  
+
   // Create a handler that checks if modal can be closed
   const handleCloseAttempt = (e: React.MouseEvent) => {
     if (!isLocked) {
@@ -226,7 +111,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
       e.stopPropagation();
     }
   };
-  
+
+  const error = stepsError || executionError;
+
   return (
     <div className={styles.overlay} onClick={handleCloseAttempt}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -266,55 +153,51 @@ const DepositModal: React.FC<DepositModalProps> = ({
               </span>
             </div>
           </div>
-          
+
           <div className={styles.progressContainer}>
-            <div className={styles.verticalProgressSteps}>
-              {!isNativeToken && (
-                <>
-                  <div className={`${styles.verticalProgressStep} ${step >= 1 ? styles.active : ''} ${step > 1 ? styles.completed : ''}`}>
-                    <div className={styles.stepDot}>
-                      {step > 1 ? '✓' : '1'}
-                    </div>
-                    <div className={styles.stepContent}>
-                      <div className={styles.stepLabel}>Approval</div>
-                      <div className={styles.stepDescription}>
-                        {step === 1 && isLoading ? (
-                          <>Approving {asset.token} to be used by {protocol}...</>
-                        ) : step === 1 && error ? (
-                          <span className={styles.errorText}>Approval failed. Please retry.</span>
-                        ) : step > 1 ? (
-                          <span className={styles.successText}>Approval successful</span>
-                        ) : null}
-                      </div>
-                      {step === 1 && isLoading && <div className={styles.stepSpinner}></div>}
-                    </div>
-                  </div>
-                  
-                  <div className={styles.verticalProgressLine}></div>
-                </>
-              )}
-              
-              <div className={`${styles.verticalProgressStep} ${step >= (isNativeToken ? 1 : 2) ? styles.active : ''}`}>
-                <div className={styles.stepDot}>
-                  {step > (isNativeToken ? 1 : 2) ? '✓' : isNativeToken ? '1' : '2'}
-                </div>
-                <div className={styles.stepContent}>
-                  <div className={styles.stepLabel}>Deposit</div>
-                  <div className={styles.stepDescription}>
-                    {(isNativeToken && step === 1) || (!isNativeToken && step === 2) ? (
-                      isLoading ? (
-                        <>Depositing {formatNumber(parseFloat(amount), 4)} {asset.token} to {protocol}...</>
-                      ) : (
-                        <>Ready to deposit {formatNumber(parseFloat(amount), 4)} {asset.token} to {protocol}</>
-                      )
-                    ) : (
-                      !isNativeToken && <>Waiting for approval...</>
-                    )}
-                  </div>
-                  {((isNativeToken && step === 1) || (!isNativeToken && step === 2)) && isLoading && <div className={styles.stepSpinner}></div>}
-                </div>
+            {isLoadingSteps ? (
+              <div className={styles.loadingSteps}>
+                <div className={styles.stepSpinner}></div>
+                <span>Loading deposit steps...</span>
               </div>
-            </div>
+            ) : steps.length > 0 ? (
+              <div className={styles.verticalProgressSteps}>
+                {steps.map((step, index) => {
+                  const isActive = index === currentStep;
+                  const isCompleted = executedSteps.has(index);
+                  const isCurrentlyExecuting = isActive && isExecuting;
+
+                  return (
+                    <div key={step.id}>
+                      <div className={`${styles.verticalProgressStep} ${isActive || isCompleted ? styles.active : ''} ${isCompleted ? styles.completed : ''}`}>
+                        <div className={styles.stepDot}>
+                          {isCompleted ? '✓' : index + 1}
+                        </div>
+                        <div className={styles.stepContent}>
+                          <div className={styles.stepLabel}>{step.title}</div>
+                          <div className={styles.stepDescription}>
+                            {isCurrentlyExecuting ? (
+                              <>Executing {step.description.toLowerCase()}...</>
+                            ) : isCompleted ? (
+                              <span className={styles.successText}>{step.title} completed</span>
+                            ) : isActive && error ? (
+                              <span className={styles.errorText}>{step.title} failed. Please retry.</span>
+                            ) : (
+                              step.description
+                            )}
+                          </div>
+                          {isCurrentlyExecuting && <div className={styles.stepSpinner}></div>}
+                        </div>
+                      </div>
+                      
+                      {index < steps.length - 1 && (
+                        <div className={styles.verticalProgressLine}></div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
             
             {error && (
               <div className={styles.error}>
@@ -325,7 +208,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
               </div>
             )}
             
-            {isLocked && isLoading && (
+            {isLocked && (isExecuting || isConfirming) && (
               <div className={styles.lockWarning}>
                 Please wait for the transaction to complete. This modal cannot be closed.
               </div>

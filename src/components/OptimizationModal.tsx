@@ -1,29 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import styles from './DepositModal.module.css'; // Reuse the deposit modal styles
 import { formatNumber } from '../utils/helpers';
-import type { Asset, SupportedToken } from '../types';
-import useERC20 from '../hooks/useERC20';
-import type { SupportedProtocol } from '../hooks/useUnifiedYield';
-import useUnifiedYield from '../hooks/useUnifiedYield';
-import tokens from '../utils/tokens';
-import { setupProtocol } from '../utils/protocolUtils';
+import type { Asset } from '../types';
 import Protocol from './Protocol';
-
-// Helper to get the protocol contract address
-
-
-// Helper to find the underlying token
-const getUnderlyingToken = (asset: Asset) => {
-  const token = tokens.find(
-    t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-  );
-  
-  if (!token || !token.underlyingAsset) return null;
-  
-  return tokens.find(
-    t => t.address.toLowerCase() === token.underlyingAsset?.toLowerCase() && t.chainId === asset.chainId && !t.yieldBearingToken
-  );
-};
+import useWithdrawSteps from '../hooks/useWithdrawSteps';
+import useDepositSteps from '../hooks/useDepositSteps';
+import { useAssetStore } from '../store/assetStore';
+import { useAccount } from 'wagmi';
 
 interface OptimizationModalProps {
   isOpen: boolean;
@@ -48,181 +31,149 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   betterApy,
   additionalYearlyUsd
 }) => {
-  // Current step: 1 = withdraw, 2 = approve, 3 = deposit
-  const [step, setStep] = useState(1); 
-  const [isLoading, setIsLoading] = useState(false);
+  const { address } = useAccount();
+  const { fetchAssets } = useAssetStore();
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  
-  // Get underlying token for deposit after withdrawal
-  const underlyingToken = getUnderlyingToken(asset);
-  // Protocol addresses
-  const betterProtocolAddress = underlyingToken ? 
-    setupProtocol(betterProtocol, underlyingToken.token as SupportedToken, asset.chainId) : 
-    '0x' as `0x${string}`;
-  
-  // Initialize yield hooks for both protocols
-  const { 
-    withdraw,
-    isConfirmed: isConfirmedWithdraw
-  } = useUnifiedYield({
-    protocol: currentProtocol as SupportedProtocol,
-    contractAddress: asset.withdrawContract as `0x${string}` || '0x',
-    tokenAddress: underlyingToken?.address as `0x${string}` || '0x',
-    tokenDecimals: asset.decimals || 18,
-    chainId: asset.chainId
-  });
-  
-  const {
-    supply,
-    isConfirmed: isConfirmedSupply
-  } = useUnifiedYield({
-    protocol: betterProtocol as SupportedProtocol,
-    contractAddress: betterProtocolAddress,
-    tokenAddress: underlyingToken?.address as `0x${string}` || '0x',
-    tokenDecimals: underlyingToken?.decimals || 18,
-    chainId: asset.chainId
-  });
-  
-  // For approval of underlying token to better protocol
-  const {
-    hasEnoughAllowance,
-    approve,
-  } = useERC20({
-    tokenAddress: underlyingToken?.address as `0x${string}` || '0x',
-    spenderAddress: betterProtocolAddress,
-    tokenDecimals: underlyingToken?.decimals || 18,
-    chainId: asset.chainId
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Get withdrawal steps
+  const withdrawSteps = useWithdrawSteps({
+    contractAddress: asset.address,
+    chainId: asset.chainId,
+    protocol: currentProtocol,
+    amount: asset.balance,
+    tokenDecimals: asset.decimals,
+    asset
   });
 
-  // Add a ref to track if the process has been started
-  const hasStartedRef = React.useRef(false);
+  // Get deposit steps for the underlying asset
+  const depositSteps = useDepositSteps({
+    contractAddress: asset.underlyingAsset || asset.address,
+    chainId: asset.chainId,
+    protocol: betterProtocol,
+    amount: asset.balance,
+    tokenDecimals: asset.decimals
+  });
 
-  // Start the optimization process when opened
-  useEffect(() => {
-    console.log(isOpen, 'asdkaslk')
-    if (isOpen && !hasStartedRef.current) {
-      // Set the ref to true to prevent multiple executions
-      hasStartedRef.current = true;
-      
-      // Reset states
-      setStep(1);
-      setError(null);
-      setIsLoading(false);
-      
-      // Begin withdrawal immediately when modal opens
-      handleWithdraw();
-    } else if (!isOpen) {
-      // Reset the ref when modal is closed
-      hasStartedRef.current = false;
+  // Combine all steps into a single array
+  const allSteps = useMemo(() => {
+    interface CombinedStep {
+      title: string;
+      description: string;
+      type: 'withdraw' | 'deposit';
+      originalIndex: number;
+      [key: string]: any; // Allow other properties from the original steps
     }
-  }, [isOpen, asset.balance]);
-  
-  // Monitor the withdraw confirmation
-  useEffect(() => {
-    if (isConfirmedWithdraw && step === 1) {
-      // Move to approval step once withdrawal is confirmed
-      setStep(2);
-      handleApprove();
-    }
-  }, [isConfirmedWithdraw]);
-  
-  // Monitor the supply confirmation
-  useEffect(() => {
-    if (isConfirmedSupply && step === 3) {
-      // Complete the process
-      setIsLoading(false);
-      setTimeout(() => {
-        onComplete(true);
-      }, 1500);
-    }
-  }, [isConfirmedSupply]);
-  
-  // Step 1: Withdraw from current protocol
-  const handleWithdraw = async () => {
-    setIsLoading(true);
-    setError(null);
     
-    try {
-      const success = await withdraw(asset.balance);
-      
-      if (!success) {
-        setError("Withdrawal failed. Please try again.");
-        setIsLoading(false);
-      }
-      // We don't move to step 2 here - we wait for confirmation via the useEffect
-    } catch (err) {
-      console.error("Error during withdrawal:", err);
-      setError("An error occurred during withdrawal. Please try again.");
-      setIsLoading(false);
-    }
-  };
-  
-  // Step 2: Approve the underlying token for the new protocol
-  const handleApprove = async () => {
-    setIsLoading(true);
-    setError(null);
+    const combined: CombinedStep[] = [];
     
+    // Add withdrawal steps with "Withdraw" prefix
+    withdrawSteps.steps.forEach((step, index) => {
+      combined.push({
+        ...step,
+        title: `Withdraw: ${step.title}`,
+        type: 'withdraw' as const,
+        originalIndex: index
+      });
+    });
+    
+    // Add deposit steps with "Deposit" prefix
+    depositSteps.steps.forEach((step, index) => {
+      combined.push({
+        ...step,
+        title: `Deposit: ${step.title}`,
+        type: 'deposit' as const,
+        originalIndex: index
+      });
+    });
+    
+    return combined;
+  }, [withdrawSteps.steps, depositSteps.steps]);
+
+  const executeStep = useCallback(async (stepIndex: number) => {
+    if (stepIndex >= allSteps.length || isExecuting) return false;
+
+    const currentStep = allSteps[stepIndex];
+    setIsExecuting(true);
+    setError(null);
+
     try {
-      // Check if we already have allowance
-      const hasAllowance = await hasEnoughAllowance(asset.balance);
-      if (hasAllowance) {
-        // Skip to deposit if already approved
-        setStep(3);
-        handleDeposit();
-        return;
-      }
-      
-      const success = await approve(asset.balance, betterProtocolAddress);
-      
-      if (success) {
-        setStep(3);
-        handleDeposit();
+      let success = false;
+
+      if (currentStep.type === 'withdraw') {
+        success = await withdrawSteps.executeStep(currentStep.originalIndex);
       } else {
-        setError("Approval failed. Please try again.");
-        setIsLoading(false);
+        success = await depositSteps.executeStep(currentStep.originalIndex);
       }
-    } catch (err) {
-      console.error("Error during approval:", err);
-      setError("An error occurred during approval. Please try again.");
-      setIsLoading(false);
-    }
-  };
-  
-  // Step 3: Deposit to the better protocol
-  const handleDeposit = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const success = await supply(asset.balance);
+
+      if (success) {
+        setCompletedSteps(prev => new Set([...prev, stepIndex]));
+        setCurrentStepIndex(stepIndex + 1);
+      } else {
+        setError(`Failed to execute ${currentStep.title}`);
+      }
       
-      if (!success) {
-        setError("Deposit failed. Please try again.");
-        setIsLoading(false);
-      }
-      // We wait for confirmation via the useEffect
+      setIsExecuting(false);
+      return success;
     } catch (err) {
-      console.error("Error during deposit:", err);
-      setError("An error occurred during deposit. Please try again.");
-      setIsLoading(false);
+      console.error('Error executing step:', err);
+      setError(`Error executing ${currentStep.title}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsExecuting(false);
+      return false;
     }
-  };
-  
-  // Handle retry if any step fails
-  const handleRetry = () => {
+  }, [allSteps, withdrawSteps, depositSteps, isExecuting]);
+
+  // Auto-start when modal opens
+  useEffect(() => {
+    if (isOpen && !hasStarted && allSteps.length > 0) {
+      setHasStarted(true);
+      setCurrentStepIndex(0);
+      setCompletedSteps(new Set());
+      setError(null);
+      executeStep(0);
+    } else if (!isOpen) {
+      setHasStarted(false);
+      setCurrentStepIndex(0);
+      setCompletedSteps(new Set());
+      setError(null);
+      setIsExecuting(false);
+    }
+  }, [isOpen, allSteps.length, hasStarted, executeStep]);
+
+  // Handle step progression
+  useEffect(() => {
+    if (hasStarted && !isExecuting && !error && currentStepIndex > 0 && currentStepIndex < allSteps.length) {
+      const timer = setTimeout(() => {
+        executeStep(currentStepIndex);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (currentStepIndex >= allSteps.length && allSteps.length > 0 && hasStarted) {
+      // All steps completed - refresh assets then complete
+      const completeOptimization = async () => {
+        if (address) {
+          await fetchAssets(address, false); // Refresh assets silently
+        }
+        setTimeout(() => {
+          onComplete(true);
+        }, 1500);
+      };
+      completeOptimization();
+    }
+  }, [currentStepIndex, isExecuting, error, hasStarted, allSteps.length, executeStep, onComplete, address, fetchAssets]);
+
+  const retryCurrentStep = () => {
     setError(null);
-    
-    if (step === 1) {
-      handleWithdraw();
-    } else if (step === 2) {
-      handleApprove();
-    } else if (step === 3) {
-      handleDeposit();
-    }
+    executeStep(currentStepIndex);
   };
 
   if (!isOpen) return null;
-  
+
+  const isLoading = withdrawSteps.isLoading || depositSteps.isLoading;
+  const allCompleted = currentStepIndex >= allSteps.length && allSteps.length > 0;
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -266,93 +217,72 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
               </span>
             </div>
           </div>
-          
-          <div className={styles.progressContainer}>
-            <div className={styles.verticalProgressSteps}>
-              <div className={`${styles.verticalProgressStep} ${step >= 1 ? styles.active : ''} ${step > 1 ? styles.completed : ''}`}>
-                <div className={styles.stepDot}>
-                  {step > 1 ? '✓' : '1'}
-                </div>
-                <div className={styles.stepContent}>
-                  <div className={styles.stepLabel}>Withdraw</div>
-                  <div className={styles.stepDescription}>
-                    {step === 1 && isLoading ? (
-                      <>Withdrawing {asset.token} from {currentProtocol}...</>
-                    ) : step === 1 && error ? (
-                      <span className={styles.errorText}>Withdrawal failed. Please retry.</span>
-                    ) : step > 1 ? (
-                      <span className={styles.successText}>Withdrawal successful</span>
-                    ) : null}
-                  </div>
-                  {step === 1 && isLoading && <div className={styles.stepSpinner}></div>}
-                </div>
-              </div>
-              
-              <div className={styles.verticalProgressLine}></div>
-              
-              <div className={`${styles.verticalProgressStep} ${step >= 2 ? styles.active : ''} ${step > 2 ? styles.completed : ''}`}>
-                <div className={styles.stepDot}>
-                  {step > 2 ? '✓' : '2'}
-                </div>
-                <div className={styles.stepContent}>
-                  <div className={styles.stepLabel}>Approve</div>
-                  <div className={styles.stepDescription}>
-                    {step === 2 && isLoading ? (
-                      <>Approving transfer to {betterProtocol}...</>
-                    ) : step === 2 && error ? (
-                      <span className={styles.errorText}>Approval failed. Please retry.</span>
-                    ) : step > 2 ? (
-                      <span className={styles.successText}>Approval successful</span>
-                    ) : null}
-                  </div>
-                  {step === 2 && isLoading && <div className={styles.stepSpinner}></div>}
-                </div>
-              </div>
-              
-              <div className={styles.verticalProgressLine}></div>
-              
-              <div className={`${styles.verticalProgressStep} ${step >= 3 ? styles.active : ''}`}>
-                <div className={styles.stepDot}>
-                  {step > 3 ? '✓' : '3'}
-                </div>
-                <div className={styles.stepContent}>
-                  <div className={styles.stepLabel}>Deposit</div>
-                  <div className={styles.stepDescription}>
-                    {step === 3 && isLoading ? (
-                      <>Depositing into {betterProtocol}...</>
-                    ) : step === 3 && error ? (
-                      <span className={styles.errorText}>Deposit failed. Please retry.</span>
-                    ) : step > 3 ? (
-                      <span className={styles.successText}>Deposit successful</span>
-                    ) : null}
-                  </div>
-                  {step === 3 && isLoading && <div className={styles.stepSpinner}></div>}
-                </div>
-              </div>
+
+          {isLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSpinner}></div>
+              <p>Loading optimization steps...</p>
             </div>
-            
-            {error && (
-              <div className={styles.error}>
-                {error}
-                <button className={styles.retryButton} onClick={handleRetry}>
-                  Retry
-                </button>
+          ) : allSteps.length === 0 ? (
+            <div className={styles.errorContainer}>
+              <p>No optimization steps available</p>
+            </div>
+          ) : allCompleted ? (
+            <div className={styles.successContainer}>
+              <div className={styles.successIcon}>✓</div>
+              <h4 className={styles.successTitle}>Optimization Complete!</h4>
+              <p className={styles.successMessage}>
+                Your {asset.token} has been successfully moved from {currentProtocol} to {betterProtocol} for higher yield.
+              </p>
+              <button className={styles.completeButton} onClick={() => onComplete(true)}>
+                Done
+              </button>
+            </div>
+          ) : (
+            <div className={styles.stepsContainer}>
+              <div className={styles.stepsHeader}>
+                <h4>Optimization Progress</h4>
+                <span className={styles.stepCounter}>{completedSteps.size} of {allSteps.length} completed</span>
               </div>
-            )}
-            
-            {step === 3 && isConfirmedSupply && (
-              <div className={styles.successContainer}>
-                <div className={styles.successIcon}>✓</div>
-                <h4 className={styles.successTitle}>Optimization Complete!</h4>
-                <p className={styles.successMessage}>
-                  Your {asset.token} has been successfully moved to {betterProtocol} for higher yield.
-                </p>
-                <button className={styles.completeButton} onClick={() => onComplete(true)}>
-                  Done
-                </button>
+              
+              <div className={styles.stepsList}>
+                {allSteps.map((step, index) => {
+                  const isCompleted = completedSteps.has(index);
+                  const isCurrent = currentStepIndex === index;
+                  const isPending = index > currentStepIndex;
+                  
+                  return (
+                    <div 
+                      key={`${step.type}-${step.originalIndex}`}
+                      className={`${styles.stepItem} ${isCompleted ? styles.completed : ''} ${isCurrent ? styles.active : ''} ${isPending ? styles.pending : ''}`}
+                    >
+                      <div className={styles.stepNumber}>
+                        {isCompleted ? '✓' : index + 1}
+                      </div>
+                      <div className={styles.stepContent}>
+                        <div className={styles.stepTitle}>{step.title}</div>
+                        <div className={styles.stepDescription}>
+                          {step.description}
+                        </div>
+                        {isCurrent && isExecuting && (
+                          <div className={styles.stepSpinner}></div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
+
+              {error && (
+                <div className={styles.errorContainer}>
+                  <p className={styles.errorText}>{error}</p>
+                  <button className={styles.retryButton} onClick={retryCurrentStep}>
+                    Retry
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

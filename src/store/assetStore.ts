@@ -4,10 +4,12 @@ import { formatUnits } from 'viem';
 import { useEffect } from 'react';
 import Moralis from 'moralis';
 import type { Asset } from '../types';
-import tokens from '../utils/tokens';
 
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
+
+// API endpoint for fetching tokens/assets
+const ASSETS_API_ENDPOINT = 'http://localhost:4023/api/assets?includeDisabled=false';
 
 // Moralis API configuration
 const MORALIS_API_KEY = import.meta.env.VITE_MORALIS_API;
@@ -28,6 +30,20 @@ const chainIdToMoralisChain = {
   42161: '0xa4b1', // Arbitrum
   8453: '0x2105'  // Base
 } as const;
+
+// Async function to fetch tokens from API
+async function fetchTokens() {
+  const response = await fetch(ASSETS_API_ENDPOINT);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const data = await response.json();
+  if (!data.assets || !Array.isArray(data.assets)) {
+    throw new Error('Invalid response format: expected assets array');
+  }
+  return data.assets;
+}
+
 interface AssetStore {
   // State
   assets: Asset[];
@@ -68,8 +84,11 @@ export const useAssetStore = create<AssetStore>()(
         
         try {
           const assets: Asset[] = [];
-          const supportedChainIds = [...new Set(tokens.map(t => t.chainId))];
           
+          // First, fetch the available tokens from the API
+          const tokens = await fetchTokens();
+          const supportedChainIds = [...new Set(tokens.map((t: any) => t.chainId))];
+          console.log(tokens)
           // Fetch token balances for each supported chain
           const balancePromises = supportedChainIds.map(async (chainId) => {
             const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
@@ -117,6 +136,7 @@ export const useAssetStore = create<AssetStore>()(
                   maxDecimalsShow: token.maxDecimalsShow,
                   protocol: token.protocol,
                   withdrawContract: token.withdrawContract,
+                  underlyingAsset: token.underlyingAsset,
                   balance,
                   yieldBearingToken: Boolean(token.yieldBearingToken),
                   chainId: token.chainId,
@@ -142,6 +162,7 @@ export const useAssetStore = create<AssetStore>()(
                   maxDecimalsShow: token.maxDecimalsShow,
                   protocol: token.protocol,
                   withdrawContract: token.withdrawContract,
+                  underlyingAsset: token.underlyingAsset,
                   balance,
                   //@ts-ignore
                   withdrawUri: token?.withdrawUri,
