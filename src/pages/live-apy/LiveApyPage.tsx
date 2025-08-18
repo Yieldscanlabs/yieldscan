@@ -9,7 +9,7 @@ import TrustScores from './components/TrustScores';
 import PageHeader from '../../components/PageHeader';
 
 const LiveApyPage: React.FC = () => {
-  const { apyData, isLoading, error, fetchApys } = useApyStore();
+  const { apyData, isLoading, error, fetchApys, fetchDefinitions } = useApyStore();
   const { wallet } = useWalletConnection();
   const [activeTab, setActiveTab] = useState<string>('best-apy');
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -25,44 +25,45 @@ const LiveApyPage: React.FC = () => {
   // Refresh data on mount
   useEffect(() => {
     fetchApys(true);
+    fetchDefinitions()
     setLastUpdated(new Date());
     // Set up interval to refresh data every 5 minutes
     const intervalId = setInterval(() => {
       fetchApys(true);
       setLastUpdated(new Date());
     }, 5 * 60 * 1000);
-    
+
     return () => clearInterval(intervalId);
   }, [fetchApys]);
 
   return (
     <div className={styles.container}>
-      <PageHeader 
+      <PageHeader
         title="Explore"
         subtitle="Discover the best yield opportunities across DeFi protocols"
       />
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-      
+
       <div className={styles.tabContent}>
         {activeTab === 'best-apy' && (
-          <ApyTable 
+          <ApyTable
             apyData={apyData}
             isLoading={isLoading}
             error={error}
           />
         )}
-        
+
         {activeTab === 'trust-scores' && (
           <TrustScores />
         )}
       </div>
-      
+
       <div className={styles.twoColumnLayout}>
         <div className={styles.column}>
           {/* Left column intentionally empty for now */}
         </div>
-  
+
       </div>
     </div>
   );
