@@ -51,6 +51,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
 
   // Get deposit steps for the underlying asset
   const depositSteps = useDepositSteps({
+    id: asset.id,
     contractAddress: asset.underlyingAsset || asset.address,
     chainId: asset.chainId,
     protocol: betterProtocol,

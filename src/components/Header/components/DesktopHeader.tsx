@@ -47,7 +47,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     <header className={`${styles.header} ${isVisible ? styles.headerVisible : styles.headerHidden}`}>
       <div className={styles.headerLeft}>
         <Link to="/" className={styles.titleLink}>
-          <Logo />
+          {/* <Logo /> */}
         </Link>
         
         <Navigation 

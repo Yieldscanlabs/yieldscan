@@ -52,6 +52,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
     executeAllSteps,
     retryCurrentStep
   } = useDepositSteps({
+    id: asset.id,
     contractAddress: asset.address,
     chainId: asset.chainId,
     protocol: protocol.toLowerCase(),
@@ -63,12 +64,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
   useEffect(() => {
     if (isOpen && steps.length > 0 && !hasStarted && !isExecuting && !isCompleted) {
       setHasStarted(true);
-      
+
       // Call onLockInitiate when starting
       if (onLockInitiate) {
         onLockInitiate();
       }
-      
+
       // Start executing all steps
       executeAllSteps().then((success) => {
         if (success) {
@@ -77,7 +78,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
           if (wallet.address) {
             fetchAssets(wallet.address, false);
           }
-          
+
           // Complete after a brief delay
           setTimeout(() => {
             onComplete(true);
@@ -119,13 +120,13 @@ const DepositModal: React.FC<DepositModalProps> = ({
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>Deposit {asset.token}</h3>
-          <button 
-            className={`${styles.closeButton} ${isLocked ? styles.disabled : ''}`} 
+          <button
+            className={`${styles.closeButton} ${isLocked ? styles.disabled : ''}`}
             onClick={handleCloseAttempt}
             disabled={isLocked}
           >×</button>
         </div>
-        
+
         <div className={styles.modalContent}>
           <div className={styles.depositDetails}>
             <div className={styles.detailRow}>
@@ -189,7 +190,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
                           {isCurrentlyExecuting && <div className={styles.stepSpinner}></div>}
                         </div>
                       </div>
-                      
+
                       {index < steps.length - 1 && (
                         <div className={styles.verticalProgressLine}></div>
                       )}
@@ -198,7 +199,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
                 })}
               </div>
             ) : null}
-            
+
             {error && (
               <div className={styles.error}>
                 {error}
@@ -207,7 +208,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
                 </button>
               </div>
             )}
-            
+
             {isLocked && (isExecuting || isConfirming) && (
               <div className={styles.lockWarning}>
                 Please wait for the transaction to complete. This modal cannot be closed.

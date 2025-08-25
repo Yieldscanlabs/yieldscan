@@ -87,7 +87,7 @@ export const useAssetStore = create<AssetStore>()(
           
           // First, fetch the available tokens from the API
           const tokens = await fetchTokens();
-          const supportedChainIds = [...new Set(tokens.map((t: any) => t.chainId))];
+          const supportedChainIds = [...new Set(tokens.map((t: any) => t.chain.chainId))];
           console.log(tokens)
           // Fetch token balances for each supported chain
           const balancePromises = supportedChainIds.map(async (chainId) => {
@@ -118,7 +118,7 @@ export const useAssetStore = create<AssetStore>()(
           
           // Process all tokens and find matches with balances from Moralis
           for (const token of tokens) {
-            const chainResult = balanceResults.find(result => result?.chainId === token.chainId);
+            const chainResult = balanceResults.find(result => result?.chainId === token.chain.chainId);
             
             if (!chainResult) continue;
             
@@ -126,23 +126,24 @@ export const useAssetStore = create<AssetStore>()(
               // Handle native token
               const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
               if (nativeBalanceRaw > 0n) {
-                const balance = formatUnits(nativeBalanceRaw, token.decimals);
-                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+                const balance = formatUnits(nativeBalanceRaw, token.chain.decimals);
+                const balanceUsd = (parseFloat(balance) * 2).toString();
                 
                 assets.push({
-                  token: token.token,
+                  id: token.id,
+                  token: token.symbol,
                   address: token.address,
-                  chain: token.chain,
-                  maxDecimalsShow: token.maxDecimalsShow,
-                  protocol: token.protocol,
+                  chain: token.chain.name,
+                  maxDecimalsShow: 6,
+                  protocol: token.protocol.name,
                   withdrawContract: token.withdrawContract,
                   underlyingAsset: token.underlyingAsset,
                   balance,
                   yieldBearingToken: Boolean(token.yieldBearingToken),
-                  chainId: token.chainId,
-                  decimals: token.decimals,
+                  chainId: token.chain.chainId,
+                  decimals: token.chain.decimals,
                   balanceUsd,
-                  icon: token.icon
+                  icon: token.image
                 });
               }
             } else {
@@ -152,25 +153,26 @@ export const useAssetStore = create<AssetStore>()(
               );
               
               if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
-                const balance = formatUnits(BigInt(tokenBalance.balance), token.decimals);
-                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+                const balance = formatUnits(BigInt(tokenBalance.balance), token.chain.decimals);
+                const balanceUsd = (parseFloat(balance) * 2).toString();
                 
                 assets.push({
-                  token: token.token,
+                  id: token.id,
+                  token: token.symbol,
                   address: token.address,
-                  chain: token.chain,
-                  maxDecimalsShow: token.maxDecimalsShow,
-                  protocol: token.protocol,
+                  chain: token.chain.name,
+                  maxDecimalsShow: 6,
+                  protocol: token.protocol.name,
                   withdrawContract: token.withdrawContract,
                   underlyingAsset: token.underlyingAsset,
                   balance,
                   //@ts-ignore
                   withdrawUri: token?.withdrawUri,
                   yieldBearingToken: Boolean(token.yieldBearingToken),
-                  chainId: token.chainId,
-                  decimals: token.decimals,
+                  chainId: token.chain.chainId,
+                  decimals: token.chain.decimals,
                   balanceUsd,
-                  icon: token.icon
+                  icon: token.image
                 });
               }
             }

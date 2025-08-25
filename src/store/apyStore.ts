@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
-import { PROTOCOL_NAMES } from '../utils/constants';
+import { API_BASE_URL, PROTOCOL_NAMES } from '../utils/constants';
 // @ts-ignore
 import { ethers } from "ethers";
 
@@ -56,10 +56,9 @@ export interface ApyStore {
   getBestApy: (chainId: number, address: string) => { bestApy: number | null; bestProtocol: string | null };
   setAutoRefresh: (enabled: boolean) => void;
 }
-
 // API endpoint for fetching APY data
-const APY_API_ENDPOINT = 'http://65.109.34.27:5678';
-const DEFINITIONS_API_ENDPOINT = 'http://localhost:4023/api/definitions';
+const APY_API_ENDPOINT = API_BASE_URL;
+const DEFINITIONS_API_ENDPOINT = API_BASE_URL + '/api/definitions';
 
 // Auto-refresh interval in milliseconds (3 seconds)
 const AUTO_REFRESH_INTERVAL = 30000;
@@ -89,8 +88,6 @@ export const useApyStore = create<ApyStore>()(
           if (!response.ok) {
             throw new Error(`API response error: ${response.statusText}`);
           }
-
-
 
           // The API returns data already in the format we need
           const data: ApiResponseStructure = await response.json();
@@ -142,9 +139,8 @@ export const useApyStore = create<ApyStore>()(
         }
         const responseJson = await response.json();
         const definitions = responseJson.definitions;
-        console.log("getApy", definitions[0].apy)
+        // console.log("getApy", definitions[0].apy)
         const getApyEval = eval(`(${definitions[0].apy})`);
-        // console.log("getApyEval", getApyEval)
         (async () => {
           console.log("resGetAPy", await getApyEval());
         })();

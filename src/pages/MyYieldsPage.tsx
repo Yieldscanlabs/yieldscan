@@ -26,39 +26,39 @@ const MyYieldsPage: React.FC = () => {
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
   // State for total deposited, total withdrawn, and total earning
   const [totalDeposited, setTotalDeposited] = useState<number>(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
-  
+
   // Use userPreferencesStore for view toggle state
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
-  
+
   // Get the getBestApy method from the store
   const { getBestApy, lastUpdated, apyData } = useApyStore();
-  
+
   // Get the earnings data from the earnStore
-  const { 
+  const {
     isLoading: earningsLoading,
     getTotalEarnings
   } = useEarnStore();
 
   // Get deposits and withdrawals data
-  const { 
+  const {
     getUserActivity,
     getTotalDepositsForUser,
     getTotalWithdrawalsForUser,
     isLoading: activityLoading
   } = useDepositsAndWithdrawalsStore();
-  
+
   // No need to fetch manually here since it's now handled in Layout
-  
+
   // Get total earnings for display
 
   // Get unique protocols from tokens
-  const uniqueProtocols = useMemo(() => 
+  const uniqueProtocols = useMemo(() =>
     Array.from(new Set(tokens
       .filter(token => token.protocol && token.yieldBearingToken)
       .map(token => token.protocol)
@@ -67,13 +67,15 @@ const MyYieldsPage: React.FC = () => {
   );
 
   // Get all yield-bearing assets without filtering by protocol
-  const allYieldAssets = useMemo(() => 
-    assets.filter(asset => asset.yieldBearingToken),
+  const allYieldAssets = useMemo(() =>
+    assets.filter(asset => true),
     [assets]
   );
 
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
+    console.log("You don't have any assets currently earning yield.", assets);
+
     const handleResize = () => {
       if (window.innerWidth <= 900 && viewType !== 'cards') {
         setViewType('cards');
@@ -112,11 +114,11 @@ const MyYieldsPage: React.FC = () => {
   }, []);
 
   // Memoize filtered yield-bearing tokens for display only
-  const filteredYieldAssets = useMemo(() => 
+  const filteredYieldAssets = useMemo(() =>
     allYieldAssets.filter(asset => {
       // Filter by network if selected
       if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
-      
+
       // Filter by protocol if selected
       if (selectedProtocol !== 'all') {
         const token = tokens.find(
@@ -124,7 +126,7 @@ const MyYieldsPage: React.FC = () => {
         );
         if (!token || token.protocol !== selectedProtocol) return false;
       }
-      
+
       // Filter by search query
       if (searchQuery) {
         const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
@@ -134,14 +136,14 @@ const MyYieldsPage: React.FC = () => {
         const matchesProtocol = token?.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
         if (!matchesToken && !matchesProtocol) return false;
       }
-      
+
       return true;
     }),
     [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, tokens]
   );
 
   // Get unique chain IDs from assets for the network selector
-  const uniqueChainIds = useMemo(() => 
+  const uniqueChainIds = useMemo(() =>
     Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
     [assets]
   );
@@ -152,33 +154,33 @@ const MyYieldsPage: React.FC = () => {
     const token = tokens.find(
       t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
     );
-    
+
     if (!token) return undefined;
-    
+
     // Determine which protocol this yield-bearing token belongs to
     const currentProtocol = token.protocol;
     if (!currentProtocol) return undefined;
-    
+
     // Find the underlying asset for this yield token
     const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
     const underlyingToken = tokens.find(
       t => t.token === underlyingTokenSymbol && t.chainId === token.chainId && !t.yieldBearingToken
     );
-    
+
     if (!underlyingToken) return undefined;
-    
+
     // Get best APY from the store
     const { bestApy, bestProtocol } = getBestApy(
       underlyingToken.chainId,
       underlyingToken.address.toLowerCase()
     );
-    
+
     // If no best APY found, skip this asset
     if (bestApy === null || !bestProtocol) return undefined;
-    
+
     //@ts-ignore
     const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
-    
+
     // Check if there's a better APY available
     if (bestProtocol !== currentProtocol && bestApy > currentApyEstimate) {
       // Calculate additional yield if user switches to better protocol
@@ -188,11 +190,11 @@ const MyYieldsPage: React.FC = () => {
       const betterYearlyUsd = (balanceNum * (bestApy / 100)) * usdPrice;
       const additionalYearlyUsd = betterYearlyUsd - currentYearlyUsd;
       const apyImprovement = ((bestApy - currentApyEstimate) / currentApyEstimate * 100);
-      
-      const betterProtocolName = bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES 
-        ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] 
+
+      const betterProtocolName = bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES
+        ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES]
         : bestProtocol;
-      
+
       return {
         currentProtocol,
         currentApy: currentApyEstimate,
@@ -202,7 +204,7 @@ const MyYieldsPage: React.FC = () => {
         apyImprovement: parseFloat(apyImprovement.toFixed(0))
       };
     }
-    
+
     return undefined;
   };
 
@@ -210,7 +212,7 @@ const MyYieldsPage: React.FC = () => {
   const calculateWeightedApy = (): number => {
     let totalWeightedApy = 0;
     let totalValue = 0;
-    
+
     // Get Aave and Radiant assets from current balances
     const supportedAssets = allYieldAssets.filter(asset => {
       const token = tokens.find(
@@ -222,14 +224,14 @@ const MyYieldsPage: React.FC = () => {
     supportedAssets.forEach(asset => {
       const balanceValue = parseFloat(asset.balanceUsd || '0');
       if (isNaN(balanceValue) || balanceValue === 0) return;
-      
+
       // Get APY for this asset from apyStore if available
       let assetApy = 0;
       if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
         const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
         assetApy = apys[asset.protocol.toLowerCase()] || 0;
       }
-      
+
       // If no APY found, use defaults: 3% for Aave, 4% for Radiant
       if (assetApy === 0) {
         const token = tokens.find(
@@ -237,11 +239,11 @@ const MyYieldsPage: React.FC = () => {
         );
         assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
       }
-      
+
       totalWeightedApy += assetApy * balanceValue;
       totalValue += balanceValue;
     });
-    
+
     // Return weighted average APY (default to 3.5% if no supported assets)
     return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
   };
@@ -258,7 +260,7 @@ const MyYieldsPage: React.FC = () => {
 
     // Get real deposits and withdrawals data from the store
     const userData = getUserActivity(wallet.address);
-    
+
     if (!userData) {
       setTotalDeposited(0);
       setTotalWithdrawn(0);
@@ -273,32 +275,32 @@ const MyYieldsPage: React.FC = () => {
     // Helper function to find token decimals
     const findTokenDecimals = (chainId: number, protocolName: string, tokenSymbol: string): number => {
       // Find the token in the tokens array that matches the chain, protocol, and symbol
-      const token = tokens.find(t => 
-        t.chainId === chainId && 
-        t.protocol?.toLowerCase() === protocolName.toLowerCase() && 
+      const token = tokens.find(t =>
+        t.chainId === chainId &&
+        t.protocol?.toLowerCase() === protocolName.toLowerCase() &&
         (t.token.toUpperCase().includes(tokenSymbol.toUpperCase()) || t.token === tokenSymbol)
       );
-      
+
       if (token) {
         return token.decimals;
       }
-      
+
       // Fallback: try to find the underlying asset (non-yield-bearing version)
-      const underlyingToken = tokens.find(t => 
-        t.chainId === chainId && 
+      const underlyingToken = tokens.find(t =>
+        t.chainId === chainId &&
         !t.yieldBearingToken &&
         t.token.toUpperCase() === tokenSymbol.toUpperCase()
       );
-      
+
       if (underlyingToken) {
         return underlyingToken.decimals;
       }
-      
+
       // Default fallback based on common token decimals
       if (tokenSymbol.toUpperCase() === 'USDC' || tokenSymbol.toUpperCase() === 'USDT') {
         return 6; // Most USDC/USDT have 6 decimals
       }
-      
+
       return 18; // Default to 18 decimals for other tokens
     };
 
@@ -331,15 +333,15 @@ const MyYieldsPage: React.FC = () => {
             t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
           );
           const protocolName = token?.protocol;
-          
+
           if (!protocolName) return;
-          
+
           const protocolData = (chainData as Record<string, any>)[protocolName];
           if (!protocolData) return;
 
           // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
           let tokenSymbol = asset.token;
-          
+
           // Handle specific token mappings
           if (protocolName.toLowerCase() === 'aave') {
             // Aave token mappings
@@ -377,32 +379,32 @@ const MyYieldsPage: React.FC = () => {
           }
 
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-          
+
           // Convert BigInt values to regular numbers with proper decimals
           const depositsRawString = tokenData.totalDeposit || '0';
           const withdrawalsRawString = tokenData.totalWithdraw || '0';
-          
+
           const depositsBigInt = BigInt(depositsRawString);
           const withdrawalsBigInt = BigInt(withdrawalsRawString);
           const divisor = BigInt('1' + '0'.repeat(decimals));
-          
+
           const depositsWhole = depositsBigInt / divisor;
           const depositsRemainder = depositsBigInt % divisor;
           const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
-          
+
           const withdrawalsWhole = withdrawalsBigInt / divisor;
           const withdrawalsRemainder = withdrawalsBigInt % divisor;
           const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
-          
+
           // Find token price for USD conversion - use the underlying asset price
-          const tokenInfo = tokens.find(t => 
-            t.chainId === chainId && 
+          const tokenInfo = tokens.find(t =>
+            t.chainId === chainId &&
             !t.yieldBearingToken &&
             (t.token.toUpperCase() === tokenSymbol.toUpperCase())
           );
-          
+
           const tokenPrice = tokenInfo?.usdPrice || 1;
-          
+
           depositsUsd += depositsFormatted * tokenPrice;
           withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
@@ -426,43 +428,43 @@ const MyYieldsPage: React.FC = () => {
     // Process deposits and withdrawals for each chain and protocol (Aave and Radiant)
     Object.entries(userData).forEach(([chainIdStr, chainData]) => {
       const chainId = parseInt(chainIdStr, 10);
-      
+
       Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
         // Only process Aave and Radiant protocol data to be consistent with earnings calculation
         if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant') return;
-        
+
         Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-          
+
           // Convert BigInt values to regular numbers with proper decimals
           const depositsRawString = (tokenData as any).totalDeposit || '0';
           const withdrawalsRawString = (tokenData as any).totalWithdraw || '0';
-          
+
           // Handle as BigInt and use BigInt arithmetic for division
           const depositsBigInt = BigInt(depositsRawString);
           const withdrawalsBigInt = BigInt(withdrawalsRawString);
-          
+
           // Create divisor as BigInt more carefully
           const divisor = BigInt('1' + '0'.repeat(decimals)); // Creates 10^decimals as BigInt
-          
+
           // Do BigInt division to get the main units, then handle remainder for precision
           const depositsWhole = depositsBigInt / divisor;
           const depositsRemainder = depositsBigInt % divisor;
           const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
-          
+
           const withdrawalsWhole = withdrawalsBigInt / divisor;
           const withdrawalsRemainder = withdrawalsBigInt % divisor;
           const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
-          
+
           // Find token price for USD conversion - use underlying asset price
-          const tokenInfo = tokens.find(t => 
-            t.chainId === chainId && 
+          const tokenInfo = tokens.find(t =>
+            t.chainId === chainId &&
             !t.yieldBearingToken &&
             (t.token.toUpperCase() === tokenSymbol.toUpperCase())
           );
-          
+
           const tokenPrice = tokenInfo?.usdPrice || 1; // Default to $1 if no price found
-          
+
           // Add to totals in USD
           totalDepositsUsd += depositsFormatted * tokenPrice;
           totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
@@ -472,10 +474,10 @@ const MyYieldsPage: React.FC = () => {
 
     // Calculate earnings: Use supported protocols calculation (Aave and Radiant)
     const supportedEarnings = calculateSupportedEarnings();
-    
+
     // For non-Aave protocols, we could still use the existing APY-based calculation
     // const otherProtocolEarnings = getTotalEarnings().lifetime; // You can uncomment this if needed
-    
+
     const totalEarnedUsd = supportedEarnings; // Only Aave and Radiant earnings for now, as requested
 
     // Update state with real data
@@ -488,28 +490,28 @@ const MyYieldsPage: React.FC = () => {
   // Live ticker effect - update earnings every 100ms based on Aave APY
   useEffect(() => {
     if (!wallet.address || totalEarned <= 0) return;
-    
+
     // Set initial live value
     setLiveTotalEarned(totalEarned);
-    
+
     // Calculate the weighted APY for Aave tokens
     const weightedApy = calculateWeightedApy();
-    
+
     // Calculate the per-tick growth rate based on APY
     const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
-    
+
     const timer = setInterval(() => {
       setLiveTotalEarned(prevValue => {
         // Calculate growth for this tick
         const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-        
+
         // Use high precision multiplication to ensure decimal changes are visible
         const newValue = prevValue * growthRate;
-        
+
         return newValue;
       });
     }, 100);
-    
+
     // Cleanup timer on unmount or when dependencies change
     return () => clearInterval(timer);
   }, [totalEarned, wallet.address, allYieldAssets, apyData]);
@@ -520,7 +522,7 @@ const MyYieldsPage: React.FC = () => {
     if (typeof value !== 'number' || isNaN(value)) {
       return '0.000000000000000000';
     }
-    
+
     try {
       // Use higher precision (18 decimal places) to match the header's live ticker
       if (value >= 1000) {
@@ -533,7 +535,7 @@ const MyYieldsPage: React.FC = () => {
       return '0.000000000000000000';
     }
   };
-  
+
   // Loading state
   if (loading || earningsLoading || activityLoading) {
     return (
@@ -572,11 +574,11 @@ const MyYieldsPage: React.FC = () => {
   // Render the content
   return (
     <div className={styles.container}>
-      <PageHeader 
+      <PageHeader
         title="My Yields"
         subtitle="Track and optimize your yield-bearing positions"
       />
-      
+
       {/* Filters container with earnings summary */}
       <div className={styles.filtersContainer}>
         {/* Network selector for filtering yields */}
@@ -589,10 +591,10 @@ const MyYieldsPage: React.FC = () => {
             className={styles.networkSelector}
           />
         </div>
-        
+
         {/* Protocol, Search and View Toggle Group */}
         <div className={styles.protocolSearchViewGroup}>
-          <ViewToggle 
+          <ViewToggle
             currentView={viewType}
             onViewChange={setViewType}
           />
@@ -651,7 +653,7 @@ const MyYieldsPage: React.FC = () => {
             <div className={styles.yieldGrid}>
               {filteredYieldAssets.map((asset) => {
                 const optimizationData = getOptimizationDataForAsset(asset);
-                
+
                 // Handle optimization for this specific asset
                 const handleOptimize = () => {
                   console.log('Starting optimization for:', asset.token);
@@ -659,7 +661,7 @@ const MyYieldsPage: React.FC = () => {
                     console.log(`Optimizing ${asset.token} from ${optimizationData.currentProtocol} to ${optimizationData.betterProtocol}`);
                   }
                 };
-                
+
                 return (
                   <YieldCard
                     key={`${asset.token}-${asset.chainId}`}
@@ -688,7 +690,7 @@ const MyYieldsPage: React.FC = () => {
                   Try changing the network or protocol filter to see your assets.
                 </p>
               </div>
-              <button 
+              <button
                 className={styles.resetFiltersButton}
                 onClick={() => {
                   setSelectedNetwork('all');

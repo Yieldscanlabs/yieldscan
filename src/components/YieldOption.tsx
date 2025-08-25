@@ -15,6 +15,8 @@ const YieldOption: React.FC<YieldOptionProps> = ({
   asset,
   bestApyData
 }) => {
+  console.log({bestApyData});
+  
   // Extract bestApy data from props instead of using the hook directly
   const { 
     bestApy,

@@ -42,7 +42,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       >
         <div className={styles.mobileMenuHeader}>
           <Link to="/" className={styles.mobileMenuLogo} onClick={closeMobileMenu}>
-            <Logo />
+            {/* <Logo /> */}
           </Link>
           <button 
             className={styles.mobileMenuCloseButton}
