@@ -14,10 +14,11 @@ export interface Asset {
   withdrawContract?: string;
   underlyingAsset?: string;
   chainId: number;
-    yieldBearingToken: boolean;
+  yieldBearingToken: boolean;
   balanceUsd: string;
-    maxDecimalsShow: number;
+  maxDecimalsShow: number;
   icon?: string;
+  totalDeposited?: number;
 }
 
 export interface YieldOption {

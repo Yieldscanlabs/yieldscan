@@ -13,18 +13,18 @@ import YieldInfo from './YieldInfo';
 import YieldActions from './YieldActions';
 
 const YieldCard: React.FC<YieldCardProps> = (props) => {
-  const { 
+  const {
     asset,
     optimizationData,
-    onOptimize, 
-    onLockAPY 
+    onOptimize,
+    onLockAPY
   } = props;
   
   const { openModal } = useOptimizationStore();
   const { openInformationModal } = useOptimizeInformationStore();
   const { openLockAPYInformationModal } = useLockAPYInformationStore();
   const { openModal: openWithdrawModalGlobal } = useWithdrawModalStore();
-  
+
   const {
     // Token and protocol info
     protocol,
@@ -36,12 +36,12 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     daysUntilMaturity,
     isNativeToken,
     chainId,
-    
+
     // Calculated values
     balanceNum,
     dailyYieldUsd,
     yearlyYieldUsd,
-    
+
     // Event handlers
     handleLockAPYConfirm,
     handleWithdrawComplete,
@@ -68,7 +68,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     console.log('handleOptimizeConfirm called', { optimizationData });
     if (optimizationData) {
       console.log('Opening transaction modal via store');
-      
+
       // Open the transaction modal using the global store (like Lock flow)
       openModal({
         asset,
@@ -77,7 +77,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         betterProtocol: optimizationData.betterProtocol,
         betterApy: optimizationData.betterApy,
         additionalYearlyUsd: optimizationData.additionalYearlyUsd,
-        onOptimize: onOptimize || (() => {})
+        onOptimize: onOptimize || (() => { })
       });
     }
   };
@@ -105,7 +105,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     openWithdrawModalGlobal({
       asset,
       protocol,
-      balance: balanceNum,
+      balance: asset.totalDeposited || balanceNum,
       maxDecimals: asset.maxDecimalsShow || 6,
       isNativeToken,
       onWithdraw: handleWithdraw,
@@ -139,13 +139,13 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
             </div>
           </div>
         </div>
-        
+
         <div className={styles.apyBadge}>
           <span className={styles.apyValue}>{apy.toFixed(2)}%</span>
           <span className={styles.apyLabel}>APY</span>
         </div>
       </div>
-      
+
       <YieldInfo
         asset={asset}
         apy={apy}
@@ -153,7 +153,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         dailyYieldUsd={dailyYieldUsd}
         yearlyYieldUsd={yearlyYieldUsd}
       />
-      
+
       <YieldActions
         asset={asset}
         hasLockYield={hasLockYield}

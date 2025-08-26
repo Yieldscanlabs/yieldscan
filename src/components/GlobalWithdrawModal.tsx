@@ -40,6 +40,7 @@ const GlobalWithdrawModal: React.FC = () => {
     executeAllSteps,
     retryCurrentStep
   } = useWithdrawSteps({
+    id: asset?.id || '',
     contractAddress: asset?.address || '',
     chainId: asset?.chainId || 1,
     protocol: protocol || '',

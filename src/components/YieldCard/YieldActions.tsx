@@ -17,25 +17,25 @@ const YieldActions: React.FC<YieldActionsProps> = ({
       {/* Action Buttons */}
       <div className={styles.cardActionRow}>
         {asset.withdrawUri ? (
-          <a 
-            href={asset.withdrawUri} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href={asset.withdrawUri}
+            target="_blank"
+            rel="noopener noreferrer"
             className={styles.actionButton}
           >
-            <span className={styles.buttonIcon}>↗</span> 
+            <span className={styles.buttonIcon}>↗</span>
             Withdraw
           </a>
         ) : (
           <button className={styles.actionButton} onClick={onWithdrawClick}>
-            <span className={styles.buttonIcon}>↓</span> 
-            {chainId !== asset.chainId 
+            <span className={styles.buttonIcon}>↓</span>
+            {chainId !== asset.chainId
               ? `Withdraw`
               : 'Withdraw'
             }
           </button>
         )}
-        
+
         {optimizationData && onOptimize && (
           <button className={`${tableStyles.actionButton} ${tableStyles.optimizeButton} ${styles.actionButtonAccent}`} onClick={onOptimize}>
             <span>Optimize</span>

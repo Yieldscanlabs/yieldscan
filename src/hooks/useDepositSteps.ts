@@ -53,10 +53,6 @@ interface StepExecutionState {
   txHash?: `0x${string}`;
 }
 
-interface Response {
-  deposit: string;
-}
-
 export default function useDepositSteps({
   id,
   contractAddress,

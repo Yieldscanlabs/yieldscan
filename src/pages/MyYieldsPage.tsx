@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, use } from 'react';
 import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
@@ -68,13 +68,13 @@ const MyYieldsPage: React.FC = () => {
 
   // Get all yield-bearing assets without filtering by protocol
   const allYieldAssets = useMemo(() =>
-    assets.filter(asset => true),
+    assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
 
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
-    console.log("You don't have any assets currently earning yield.", assets);
+    console.log("ASSETS", assets);
 
     const handleResize = () => {
       if (window.innerWidth <= 900 && viewType !== 'cards') {
@@ -114,33 +114,58 @@ const MyYieldsPage: React.FC = () => {
   }, []);
 
   // Memoize filtered yield-bearing tokens for display only
-  const filteredYieldAssets = useMemo(() =>
-    allYieldAssets.filter(asset => {
-      // Filter by network if selected
-      if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
+  const filteredYieldAssets = useMemo(() => {
+    return allYieldAssets
+      .filter(asset => {
+        if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
+        if (selectedProtocol !== 'all' && asset.protocol?.toLowerCase() !== selectedProtocol.toLowerCase()) return false;
+        if (searchQuery) {
+          const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesProtocol = asset.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
+          if (!matchesToken && !matchesProtocol) return false;
+        }
+        return true;
+      })
+      .map(asset => {
+        let totalDeposited = 0;
+        const userData = getUserActivity(wallet.address || "");
+        if (userData) {
+          const chainData = (userData as Record<string, any>)[asset.chainId];
+          if (chainData) {
+            const protocolKey = asset.protocol || "";
+            const protocolData = (chainData as Record<string, any>)[protocolKey];
+            if (protocolData) {
+              const tokenKey = asset.token;
+              const tokenData =
+                protocolData[tokenKey] || protocolData[tokenKey.replace(/^a/i, "")];
+              if (tokenData) {
+                const decimals = asset.decimals || 18;
+                const divisor = BigInt("1" + "0".repeat(decimals));
 
-      // Filter by protocol if selected
-      if (selectedProtocol !== 'all') {
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        if (!token || token.protocol !== selectedProtocol) return false;
-      }
+                const depositsBigInt = BigInt(tokenData.totalDeposit || "0");
+                const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || "0");
 
-      // Filter by search query
-      if (searchQuery) {
-        const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        const matchesProtocol = token?.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
-        if (!matchesToken && !matchesProtocol) return false;
-      }
+                const depositsFormatted =
+                  Number(depositsBigInt / divisor) +
+                  Number(depositsBigInt % divisor) / Number(divisor);
 
-      return true;
-    }),
-    [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, tokens]
-  );
+                const withdrawalsFormatted =
+                  Number(withdrawalsBigInt / divisor) +
+                  Number(withdrawalsBigInt % divisor) / Number(divisor);
+
+
+                totalDeposited = depositsFormatted - withdrawalsFormatted;
+              }
+            }
+          }
+        }
+        return {
+          ...asset,
+          totalDeposited,
+        };
+      });
+  }, [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, wallet.address, getUserActivity]);
+
 
   // Get unique chain IDs from assets for the network selector
   const uniqueChainIds = useMemo(() =>
@@ -260,6 +285,7 @@ const MyYieldsPage: React.FC = () => {
 
     // Get real deposits and withdrawals data from the store
     const userData = getUserActivity(wallet.address);
+    console.log({ userData });
 
     if (!userData) {
       setTotalDeposited(0);
@@ -404,7 +430,6 @@ const MyYieldsPage: React.FC = () => {
           );
 
           const tokenPrice = tokenInfo?.usdPrice || 1;
-
           depositsUsd += depositsFormatted * tokenPrice;
           withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
@@ -554,6 +579,7 @@ const MyYieldsPage: React.FC = () => {
       </div>
     );
   }
+  console.log("allYieldAssets", allYieldAssets);
 
   // Empty state - no yield-bearing assets at all
   if (allYieldAssets.length === 0) {

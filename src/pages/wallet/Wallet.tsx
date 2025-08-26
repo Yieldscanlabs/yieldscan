@@ -157,7 +157,7 @@ function Wallet() {
     // Filter assets by selected network and search query
     const filteredAssets = assets.filter(asset => {
       // Filter out yield bearing tokens
-      if (asset.yieldBearingToken) return false;
+      if (asset.yieldBearingToken) return true;
       
       // Filter by network
       const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;

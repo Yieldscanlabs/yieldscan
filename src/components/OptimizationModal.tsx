@@ -41,6 +41,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
 
   // Get withdrawal steps
   const withdrawSteps = useWithdrawSteps({
+    id: asset.id,
     contractAddress: asset.address,
     chainId: asset.chainId,
     protocol: currentProtocol,
