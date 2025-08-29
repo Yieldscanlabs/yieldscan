@@ -10,21 +10,22 @@ interface YieldOptionProps {
   bestApyData: BestApyResult;
 }
 
-const YieldOption: React.FC<YieldOptionProps> = ({ 
-  loading, 
+const YieldOption: React.FC<YieldOptionProps> = ({
+  loading,
   asset,
   bestApyData
 }) => {
-  console.log({bestApyData});
-  
   // Extract bestApy data from props instead of using the hook directly
-  const { 
+  const {
     bestApy,
     bestProtocol,
     loading: apyLoading,
     error: apyError
   } = bestApyData;
-  
+
+  console.log({ bestApyData });
+
+
   // Calculate the best APY to display (either from option or real-time data)
   const displayApy = useMemo(() => {
     if (bestApy !== null) {
@@ -38,8 +39,18 @@ const YieldOption: React.FC<YieldOptionProps> = ({
     if (asset && displayApy) {
       const balanceNum = parseFloat(asset.balance || '0');
       const apyDecimal = parseFloat(displayApy.toString()) / 100;
-      return (balanceNum * apyDecimal).toFixed(2);
+      const value = balanceNum * apyDecimal;
+
+      if (value === 0) return "0";
+
+      // Dynamically adjust decimals
+      let decimals = 2;
+      if (value < 0.01) decimals = 6;  // show more for tiny values
+      if (value < 0.0001) decimals = 8;
+
+      return value.toFixed(decimals);
     }
+    return "0";
   }, [asset, displayApy]);
 
   if (loading || apyLoading) {
@@ -61,13 +72,13 @@ const YieldOption: React.FC<YieldOptionProps> = ({
       <div className={styles['yield-apy']}>
         {displayApy}% APY
         {apyLoading && <span className={styles['updating-icon']} title="Updating APY...">⟳</span>}
-    
+
         {/* {option.lockupDays > 0 && (
           <span className={styles['lock-icon']} title={`${option.lockupDays} days lockup`}>🔒</span>
         )} */}
       </div>
       <div className={styles['yield-details']}>
-        <Protocol showTooltip={true} className={styles['yield-protocol']} name={bestProtocol} showLogo={true} /> 
+        <Protocol showTooltip={true} className={styles['yield-protocol']} name={bestProtocol} showLogo={true} />
         <span className={styles['yield-earning']}>${calculatedYearlyYieldUsd}/year</span>
         {apyError && !bestApy && <span className={styles['yield-error']} title={apyError}></span>}
       </div>

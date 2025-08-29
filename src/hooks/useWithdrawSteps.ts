@@ -5,35 +5,11 @@ import useERC20 from './useERC20';
 import type { Asset } from '../types';
 import { API_BASE_URL } from '../utils/constants';
 
-interface FunctionConfig {
-  name: string;
-  type: string;
-  stateMutability: string;
-  inputs: Array<{
-    name: string;
-    type: string;
-  }>;
-  outputs: Array<{
-    name?: string;
-    type: string;
-  }>;
-}
-
 interface WithdrawStep {
   title: string;
   description: string;
   fn: () => Promise<any>;
   id: string;
-}
-
-interface StepsResponse {
-  steps: WithdrawStep[];
-  count: number;
-  contractAddress: string;
-  chainId: number;
-  chainName: string;
-  protocol: string;
-  assetId: string;
 }
 
 interface UseWithdrawStepsOptions {
@@ -167,64 +143,12 @@ export default function useWithdrawSteps({
       //@ts-ignore
       txHash = await step.fn(amount, address, tokenDecimals, chainId);
 
+      if (txHash && !txHash.startsWith("0x")) {
+        throw new Error(txHash);
+      }
+
       setExecutionState(prev => ({ ...prev, txHash }));
       success = true;
-
-      // if (step.functionConfig.name === 'approve') {
-      //   // Handle approval step using ERC20 hook
-      //   if (hasEnoughAllowance(amount)) {
-      //     success = true; // Already approved
-      //   } else {
-      //     success = await approve(amount, step.contractAddress as Address);
-      //     // The ERC20 hook manages its own transaction hash
-      //   }
-      // } else {
-      //   // Handle other steps (withdraw, etc.) using direct contract calls
-      //   const amountInWei = parseUnits(amount, tokenDecimals);
-
-      //   // Prepare arguments based on function inputs
-      //   const args = step.functionConfig.inputs.map(input => {
-      //     // Check if there's a specific address type for this input
-      //     const inputAddressType = step.addressType?.[input.name];
-
-      //     switch (input.name) {
-      //       case 'asset':
-      //         return resolveAddress(inputAddressType || 'underlying', step);
-      //       case 'amount':
-      //         return amountInWei;
-      //       case 'onBehalfOf':
-      //       case 'to':
-      //       case 'receiver':
-      //         return resolveAddress(inputAddressType || 'user', step);
-      //       case 'referralCode':
-      //         return 0;
-      //       case 'spender':
-      //         return resolveAddress(inputAddressType || 'contract', step);
-      //       default:
-      //         // For unknown parameters, try to infer based on type and address type
-      //         if (input.type === 'address') {
-      //           return resolveAddress(inputAddressType || 'user', step);
-      //         } else if (input.type === 'uint256') {
-      //           return amountInWei;
-      //         } else if (input.type === 'uint16') {
-      //           return 0;
-      //         }
-      //         return '0x';
-      //     }
-      //   });
-
-      //   // Execute the contract function - use step.contractAddress for the contract interaction
-      //   txHash = await writeContractAsync({
-      //     address: step.contractAddress as Address, // This is the protocol contract address
-      //     abi: [step.functionConfig],
-      //     functionName: step.functionConfig.name,
-      //     args,
-      //     chainId
-      //   });
-
-      //   setExecutionState(prev => ({ ...prev, txHash }));
-      //   success = true;
-      // }
 
       if (success) {
         setExecutionState(prev => ({

@@ -4,16 +4,16 @@ import { formatUnits } from 'viem';
 import { useEffect } from 'react';
 import Moralis from 'moralis';
 import type { Asset } from '../types';
+import { API_BASE_URL } from '../utils/constants';
 
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
 
 // API endpoint for fetching tokens/assets
-const ASSETS_API_ENDPOINT = 'http://localhost:4023/api/assets?includeDisabled=false';
+const ASSETS_API_ENDPOINT = API_BASE_URL + '/api/assets?includeDisabled=false';
 
 // Moralis API configuration
 const MORALIS_API_KEY = import.meta.env.VITE_MORALIS_API;
-console.log(import.meta.env)
 
 // Initialize Moralis SDK
 if (!Moralis.Core.isStarted) {
@@ -51,7 +51,7 @@ interface AssetStore {
   error: string | null;
   lastUpdated: number | null;
   autoRefreshEnabled: boolean;
-  
+
   // Actions
   fetchAssets: (address: string, showLoading?: boolean) => Promise<void>;
   clearErrors: () => void;
@@ -79,12 +79,12 @@ export const useAssetStore = create<AssetStore>()(
         if (showLoading) {
           set({ isLoading: true });
         }
-        
+
         set({ error: null });
-        
+
         try {
           const assets: Asset[] = [];
-          
+
           // First, fetch the available tokens from the API
           const tokens = await fetchTokens();
           const supportedChainIds = [...new Set(tokens.map((t: any) => t.chain.chainId))];
@@ -93,99 +93,103 @@ export const useAssetStore = create<AssetStore>()(
           const balancePromises = supportedChainIds.map(async (chainId) => {
             const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
             if (!moralisChain) return null;
-            
+
             // Fetch ERC20 tokens
             const tokenBalances = await Moralis.EvmApi.token.getWalletTokenBalances({
               address: walletAddress,
               chain: moralisChain
             });
-            
+
             // Fetch native token balance
             const nativeBalance = await Moralis.EvmApi.balance.getNativeBalance({
               address: walletAddress,
               chain: moralisChain
             });
-            
+
             return {
               chainId,
               tokenBalances: tokenBalances.toJSON(),
               nativeBalance: nativeBalance.toJSON()
             };
           });
-          
+
           // Wait for all balance requests to complete
           const balanceResults = await Promise.all(balancePromises);
-          
+
           // Process all tokens and find matches with balances from Moralis
           for (const token of tokens) {
             const chainResult = balanceResults.find(result => result?.chainId === token.chain.chainId);
-            
+
             if (!chainResult) continue;
-            
+
             if (token.address === '0x') {
               // Handle native token
               const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
               if (nativeBalanceRaw > 0n) {
                 const balance = formatUnits(nativeBalanceRaw, token.chain.decimals);
-                const balanceUsd = (parseFloat(balance) * 2).toString();
-                
-                assets.push({
-                  id: token.id,
-                  token: token.symbol,
-                  address: token.address,
-                  chain: token.chain.name,
-                  maxDecimalsShow: 6,
-                  protocol: token.protocol.name,
-                  withdrawContract: token.withdrawContract,
-                  underlyingAsset: token.underlyingAsset,
-                  balance,
-                  yieldBearingToken: Boolean(token.yieldBearingToken),
-                  chainId: token.chain.chainId,
-                  decimals: token.chain.decimals,
-                  balanceUsd,
-                  icon: token.image
-                });
+                const balanceUsd = (parseFloat(balance) * 1).toString();
+
+                for (const def of token.definitions || []) {
+                  assets.push({
+                    id: token.id,
+                    token: token.symbol,
+                    address: token.address,
+                    chain: token.chain.name,
+                    maxDecimalsShow: 6,
+                    protocol: def.protocol.name,
+                    withdrawContract: def.withdraw,
+                    underlyingAsset: token.underlyingAsset,
+                    balance,
+                    yieldBearingToken: Boolean(token.yieldBearingToken),
+                    chainId: token.chain.chainId,
+                    decimals: token.chain.decimals,
+                    balanceUsd,
+                    icon: token.image,
+                    withdrawUri: def.withdraw // or token?.withdrawUri if you want
+                  });
+                }
               }
             } else {
               // Handle ERC20 tokens
               const tokenBalance = chainResult.tokenBalances.find(
                 (tb: any) => tb.token_address.toLowerCase() === token.address.toLowerCase()
               );
-              
+
               if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
                 const balance = formatUnits(BigInt(tokenBalance.balance), token.chain.decimals);
-                const balanceUsd = (parseFloat(balance) * 2).toString();
-                
-                assets.push({
-                  id: token.id,
-                  token: token.symbol,
-                  address: token.address,
-                  chain: token.chain.name,
-                  maxDecimalsShow: 6,
-                  protocol: token.protocol.name,
-                  withdrawContract: token.withdrawContract,
-                  underlyingAsset: token.underlyingAsset,
-                  balance,
-                  //@ts-ignore
-                  withdrawUri: token?.withdrawUri,
-                  yieldBearingToken: Boolean(token.yieldBearingToken),
-                  chainId: token.chain.chainId,
-                  decimals: token.chain.decimals,
-                  balanceUsd,
-                  icon: token.image
-                });
+                const balanceUsd = (parseFloat(balance) * 1).toString();
+
+                for (const def of token.definitions || []) {
+                  assets.push({
+                    id: token.id,
+                    token: token.symbol,
+                    address: token.address,
+                    chain: token.chain.name,
+                    maxDecimalsShow: 6,
+                    protocol: def.protocol.name,
+                    withdrawContract: def.withdraw,
+                    underlyingAsset: token.underlyingAsset,
+                    balance,
+                    yieldBearingToken: Boolean(token.yieldBearingToken),
+                    chainId: token.chain.chainId,
+                    decimals: token.chain.decimals,
+                    balanceUsd,
+                    icon: token.image,
+                    withdrawUri: def.withdraw // or token?.withdrawUri
+                  });
+                }
               }
             }
           }
-          
-          set({ 
+
+          set({
             assets,
             isLoading: false,
             lastUpdated: Date.now()
           });
         } catch (error) {
           console.error('Error fetching assets from Moralis:', error);
-          set({ 
+          set({
             error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
             isLoading: false
           });
@@ -197,7 +201,7 @@ export const useAssetStore = create<AssetStore>()(
 
       // Enable or disable auto-refresh
       setAutoRefresh: (enabled: boolean) => set({ autoRefreshEnabled: enabled }),
-      
+
       // Get an asset by its address and chain ID
       getAssetByAddress: (address: string, chainId: number) => {
         const state = get();
@@ -226,33 +230,33 @@ let autoRefreshInitialized = false;
  */
 export function useAssetAutoRefresh(address: string) {
   const { fetchAssets, autoRefreshEnabled } = useAssetStore();
-  
+
   useEffect(() => {
     if (!address || address === '0x' || autoRefreshInitialized) {
       return;
     }
-    
+
     autoRefreshInitialized = true;
-    
+
     // Initial fetch
     fetchAssets(address, true);
-    
+
     // Track if the tab is visible
     let isTabVisible = !document.hidden;
-    
+
     // Handle visibility change
     const handleVisibilityChange = () => {
       isTabVisible = !document.hidden;
-      
+
       // If tab becomes visible and auto-refresh is enabled, do an immediate refresh
       if (isTabVisible && useAssetStore.getState().autoRefreshEnabled) {
         fetchAssets(address, false);
       }
     };
-    
+
     // Register visibility change event listener
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     // Set up auto-refresh interval
     const intervalId = setInterval(() => {
       // Only fetch if auto-refresh is enabled AND tab is visible
@@ -261,7 +265,7 @@ export function useAssetAutoRefresh(address: string) {
         fetchAssets(address, false);
       }
     }, AUTO_REFRESH_INTERVAL);
-    
+
     // Clean up interval and event listener on unmount
     return () => {
       clearInterval(intervalId);

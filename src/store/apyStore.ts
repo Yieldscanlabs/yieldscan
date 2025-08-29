@@ -57,7 +57,7 @@ export interface ApyStore {
   setAutoRefresh: (enabled: boolean) => void;
 }
 // API endpoint for fetching APY data
-const APY_API_ENDPOINT = API_BASE_URL;
+const APY_API_ENDPOINT = API_BASE_URL+ '/api/apy';
 const DEFINITIONS_API_ENDPOINT = API_BASE_URL + '/api/definitions';
 
 // Auto-refresh interval in milliseconds (3 seconds)
@@ -139,7 +139,6 @@ export const useApyStore = create<ApyStore>()(
         }
         const responseJson = await response.json();
         const definitions = responseJson.definitions;
-        // console.log("getApy", definitions[0].apy)
         const getApyEval = eval(`(${definitions[0].apy})`);
         (async () => {
           console.log("resGetAPy", await getApyEval());
