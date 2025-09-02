@@ -84,7 +84,7 @@ export default function useDepositSteps({
 
       setSteps([{
         title: "depositing",
-        description: "description",
+        description: "",
         fn: sortedSteps,
         id: "1"
       }]);

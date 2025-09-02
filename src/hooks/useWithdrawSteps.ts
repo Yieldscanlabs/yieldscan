@@ -100,7 +100,7 @@ export default function useWithdrawSteps({
 
       setSteps([{
         title: "withdrawing",
-        description: "description",
+        description: "",
         fn: sortedSteps,
         id: "1"
       }]);

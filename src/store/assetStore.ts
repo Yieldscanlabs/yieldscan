@@ -10,7 +10,7 @@ import { API_BASE_URL } from '../utils/constants';
 const AUTO_REFRESH_INTERVAL = 60000;
 
 // API endpoint for fetching tokens/assets
-const ASSETS_API_ENDPOINT = API_BASE_URL + '/api/assets?includeDisabled=false';
+const ASSETS_API_ENDPOINT = API_BASE_URL + '/api/assets?limit=100&includeDisabled=false';
 
 // Moralis API configuration
 const MORALIS_API_KEY = import.meta.env.VITE_MORALIS_API;
@@ -126,8 +126,8 @@ export const useAssetStore = create<AssetStore>()(
               // Handle native token
               const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
               if (nativeBalanceRaw > 0n) {
-                const balance = formatUnits(nativeBalanceRaw, token.chain.decimals);
-                const balanceUsd = (parseFloat(balance) * 1).toString();
+                const balance = formatUnits(nativeBalanceRaw, token.decimals);
+                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
 
                 for (const def of token.definitions || []) {
                   assets.push({
@@ -135,16 +135,16 @@ export const useAssetStore = create<AssetStore>()(
                     token: token.symbol,
                     address: token.address,
                     chain: token.chain.name,
-                    maxDecimalsShow: 6,
+                    maxDecimalsShow: token.maxDecimalsShow,
                     protocol: def.protocol.name,
                     withdrawContract: def.withdraw,
                     underlyingAsset: token.underlyingAsset,
                     balance,
                     yieldBearingToken: Boolean(token.yieldBearingToken),
-                    chainId: token.chain.chainId,
-                    decimals: token.chain.decimals,
+                    chainId: Number(token.chain.chainId),
+                    decimals: token.decimals,
                     balanceUsd,
-                    icon: token.image,
+                    icon: API_BASE_URL + token.image,
                     withdrawUri: def.withdraw // or token?.withdrawUri if you want
                   });
                 }
@@ -156,8 +156,8 @@ export const useAssetStore = create<AssetStore>()(
               );
 
               if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
-                const balance = formatUnits(BigInt(tokenBalance.balance), token.chain.decimals);
-                const balanceUsd = (parseFloat(balance) * 1).toString();
+                const balance = formatUnits(BigInt(tokenBalance.balance), token.decimals);
+                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
 
                 for (const def of token.definitions || []) {
                   assets.push({
@@ -165,16 +165,16 @@ export const useAssetStore = create<AssetStore>()(
                     token: token.symbol,
                     address: token.address,
                     chain: token.chain.name,
-                    maxDecimalsShow: 6,
+                    maxDecimalsShow: token.maxDecimalsShow,
                     protocol: def.protocol.name,
                     withdrawContract: def.withdraw,
                     underlyingAsset: token.underlyingAsset,
                     balance,
                     yieldBearingToken: Boolean(token.yieldBearingToken),
-                    chainId: token.chain.chainId,
-                    decimals: token.chain.decimals,
+                    chainId: Number(token.chain.chainId),
+                    decimals: token.decimals,
                     balanceUsd,
-                    icon: token.image,
+                    icon: API_BASE_URL + token.image,
                     withdrawUri: def.withdraw // or token?.withdrawUri
                   });
                 }

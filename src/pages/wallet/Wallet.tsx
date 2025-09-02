@@ -168,7 +168,7 @@ function Wallet() {
       
       return matchesNetwork && matchesSearch;
     });
-    console.log(filteredAssets)
+    console.log({filteredAssets})
     const commonProps = {
       assets: filteredAssets,
       loading: assetsLoading,

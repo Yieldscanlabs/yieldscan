@@ -46,7 +46,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
   
   // Handle deposit by showing modal
   const handleDeposit = () => {
-    alert("OKs")
     setIsModalOpen(true);
   };
   
