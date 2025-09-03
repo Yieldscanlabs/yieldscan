@@ -18,8 +18,11 @@ import SearchBar from '../components/SearchBar';
 import { useUserPreferencesStore, type ViewType } from '../store/userPreferencesStore';
 import YieldsTable from '../components/YieldsTable';
 import PageHeader from '../components/PageHeader';
+import { useNavigate } from 'react-router-dom';
+import { formatUnits } from 'viem';
 
 const MyYieldsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { wallet } = useWalletConnection();
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
@@ -71,7 +74,9 @@ const MyYieldsPage: React.FC = () => {
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
-
+  const handleNavigate = () => {
+    navigate("/explore")
+  }
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
     console.log("ASSETS", assets);
@@ -128,6 +133,7 @@ const MyYieldsPage: React.FC = () => {
       })
       .map(asset => {
         let totalDeposited = 0;
+        let totalDepositedUsd = "";
         const userData = getUserActivity(wallet.address || "");
         if (userData) {
           const chainData = (userData as Record<string, any>)[asset.chainId];
@@ -155,6 +161,7 @@ const MyYieldsPage: React.FC = () => {
 
 
                 totalDeposited = depositsFormatted - withdrawalsFormatted;
+                totalDepositedUsd = (totalDeposited * asset.usd).toString();
               }
             }
           }
@@ -162,6 +169,7 @@ const MyYieldsPage: React.FC = () => {
         return {
           ...asset,
           totalDeposited,
+          totalDepositedUsd
         };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, wallet.address, getUserActivity]);
@@ -336,10 +344,10 @@ const MyYieldsPage: React.FC = () => {
 
       // Get Aave and Radiant assets from current balances
       const supportedAssets = allYieldAssets.filter(asset => {
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant';
+        // const token = tokens.find(
+        //   t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+        // );
+        return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant';
       });
 
       supportedAssets.forEach(asset => {
@@ -368,35 +376,35 @@ const MyYieldsPage: React.FC = () => {
           // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
           let tokenSymbol = asset.token;
 
-          // Handle specific token mappings
-          if (protocolName.toLowerCase() === 'aave') {
-            // Aave token mappings
-            if (tokenSymbol === 'aUSDC' || tokenSymbol === 'AUSDC') {
-              tokenSymbol = 'USDC';
-            } else if (tokenSymbol === 'AUSDT') {
-              tokenSymbol = 'USDT';
-            } else if (tokenSymbol === 'AWETH') {
-              tokenSymbol = 'ETH'; // WETH is usually referred to as ETH in deposits
-            } else if (tokenSymbol === 'aBnbUSDC') {
-              tokenSymbol = 'USDC';
-            } else if (tokenSymbol === 'aBnbUSDT') {
-              tokenSymbol = 'USDT';
-            } else if (tokenSymbol === 'aBnbWBNB') {
-              tokenSymbol = 'wBNB'; // BNB Wrapped BNB
-            } else if (tokenSymbol === 'aArbUSDT') {
-              tokenSymbol = 'USDT';
-            } else if (tokenSymbol.startsWith('a') || tokenSymbol.startsWith('A')) {
-              // Generic handling for other aTokens - remove 'a' prefix
-              tokenSymbol = tokenSymbol.substring(1);
-            }
-          } else if (protocolName.toLowerCase() === 'radiant') {
-            // Radiant token mappings
-            if (tokenSymbol === 'Radiant USDC') {
-              tokenSymbol = 'USDC';
-            } else if (tokenSymbol === 'Radiant USDT') {
-              tokenSymbol = 'USDT';
-            }
-          }
+          // // Handle specific token mappings
+          // if (protocolName.toLowerCase() === 'aave') {
+          //   // Aave token mappings
+          //   if (tokenSymbol === 'aUSDC' || tokenSymbol === 'AUSDC') {
+          //     tokenSymbol = 'USDC';
+          //   } else if (tokenSymbol === 'AUSDT') {
+          //     tokenSymbol = 'USDT';
+          //   } else if (tokenSymbol === 'AWETH') {
+          //     tokenSymbol = 'ETH'; // WETH is usually referred to as ETH in deposits
+          //   } else if (tokenSymbol === 'aBnbUSDC') {
+          //     tokenSymbol = 'USDC';
+          //   } else if (tokenSymbol === 'aBnbUSDT') {
+          //     tokenSymbol = 'USDT';
+          //   } else if (tokenSymbol === 'aBnbWBNB') {
+          //     tokenSymbol = 'wBNB'; // BNB Wrapped BNB
+          //   } else if (tokenSymbol === 'aArbUSDT') {
+          //     tokenSymbol = 'USDT';
+          //   } else if (tokenSymbol.startsWith('a') || tokenSymbol.startsWith('A')) {
+          //     // Generic handling for other aTokens - remove 'a' prefix
+          //     tokenSymbol = tokenSymbol.substring(1);
+          //   }
+          // } else if (protocolName.toLowerCase() === 'radiant') {
+          //   // Radiant token mappings
+          //   if (tokenSymbol === 'Radiant USDC') {
+          //     tokenSymbol = 'USDC';
+          //   } else if (tokenSymbol === 'Radiant USDT') {
+          //     tokenSymbol = 'USDT';
+          //   }
+          // }
 
           const tokenData = protocolData[tokenSymbol];
           if (!tokenData) {
@@ -579,7 +587,6 @@ const MyYieldsPage: React.FC = () => {
       </div>
     );
   }
-  console.log("allYieldAssets", allYieldAssets);
 
   // Empty state - no yield-bearing assets at all
   if (allYieldAssets.length === 0) {
@@ -591,7 +598,7 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.emptyState}>
           <h3>No yield-bearing assets found</h3>
           <p>You don't have any assets currently earning yield.</p>
-          <button className={styles.exploreButton}>Explore Yield Opportunities</button>
+          <button onClick={handleNavigate} className={styles.exploreButton}>Explore Yield Opportunities</button>
         </div>
       </div>
     );
@@ -690,7 +697,7 @@ const MyYieldsPage: React.FC = () => {
 
                 return (
                   <YieldCard
-                    key={`${asset.token}-${asset.chainId}`}
+                    key={`${asset.token}-${asset.chainId}-${asset.protocol}`}
                     asset={asset}
                     optimizationData={optimizationData}
                     onOptimize={handleOptimize}

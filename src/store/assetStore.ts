@@ -88,7 +88,7 @@ export const useAssetStore = create<AssetStore>()(
           // First, fetch the available tokens from the API
           const tokens = await fetchTokens();
           const supportedChainIds = [...new Set(tokens.map((t: any) => t.chain.chainId))];
-          console.log(tokens)
+          console.log({tokens})
           // Fetch token balances for each supported chain
           const balancePromises = supportedChainIds.map(async (chainId) => {
             const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
@@ -138,14 +138,15 @@ export const useAssetStore = create<AssetStore>()(
                     maxDecimalsShow: token.maxDecimalsShow,
                     protocol: def.protocol.name,
                     withdrawContract: def.withdraw,
-                    underlyingAsset: token.underlyingAsset,
+                    underlyingAsset: def.underlyingAsset,
                     balance,
-                    yieldBearingToken: Boolean(token.yieldBearingToken),
+                    yieldBearingToken: Boolean(def.yieldBearingToken),
                     chainId: Number(token.chain.chainId),
                     decimals: token.decimals,
                     balanceUsd,
                     icon: API_BASE_URL + token.image,
-                    withdrawUri: def.withdraw // or token?.withdrawUri if you want
+                    withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
+                    usd: token.usdPrice
                   });
                 }
               }
@@ -168,14 +169,15 @@ export const useAssetStore = create<AssetStore>()(
                     maxDecimalsShow: token.maxDecimalsShow,
                     protocol: def.protocol.name,
                     withdrawContract: def.withdraw,
-                    underlyingAsset: token.underlyingAsset,
+                    underlyingAsset: def.underlyingAsset,
                     balance,
-                    yieldBearingToken: Boolean(token.yieldBearingToken),
+                    yieldBearingToken: Boolean(def.yieldBearingToken),
                     chainId: Number(token.chain.chainId),
                     decimals: token.decimals,
                     balanceUsd,
                     icon: API_BASE_URL + token.image,
-                    withdrawUri: def.withdraw // or token?.withdrawUri
+                    withdrawUri: def.withdrawUri, // or token?.withdrawUri
+                    usd: token.usdPrice
                   });
                 }
               }

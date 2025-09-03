@@ -18,10 +18,10 @@ const YieldInfo: React.FC<YieldInfoProps> = ({
             {formatNumber(asset.totalDeposited || balanceNum, asset.maxDecimalsShow)} {asset.token}
           </div>
           <div className={styles.balanceUsd}>
-            ${formatNumber(parseFloat(asset.balanceUsd), 2)}
+            ${formatNumber(parseFloat(asset.totalDepositedUsd || "0"), 2)}
           </div>
         </div>
-        
+
         <div className={styles.yieldsColumn}>
           <div className={styles.yieldRow}>
             <span>Daily:</span> <span>${formatNumber(dailyYieldUsd, 2)}</span>

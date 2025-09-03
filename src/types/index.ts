@@ -19,6 +19,8 @@ export interface Asset {
   maxDecimalsShow: number;
   icon?: string;
   totalDeposited?: number;
+  totalDepositedUsd?: string;
+  usd: number
 }
 
 export interface YieldOption {

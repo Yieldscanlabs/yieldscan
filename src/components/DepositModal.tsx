@@ -48,7 +48,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
     executedSteps,
     executionError,
     isConfirming,
-    isConfirmed,
     executeAllSteps,
     retryCurrentStep
   } = useDepositSteps({

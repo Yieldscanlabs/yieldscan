@@ -180,8 +180,8 @@ export async function transfer(
 export async function safeApprove(
   tokenAddress: Address,
   spenderAddress: Address,
-  amount: string,
-  decimals: number,
+  _amount: string,
+  _decimals: number,
   writeContractAsync: UseWriteContractReturnType['writeContractAsync']
 ): Promise<`0x${string}` | null> {
   try {

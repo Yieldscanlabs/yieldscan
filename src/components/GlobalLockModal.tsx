@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import LockModal from './LockModal';
 import { useLockStore } from '../store/lockStore';
 

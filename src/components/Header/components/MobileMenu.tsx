@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
-import Logo from '../../Logo';
+// import Logo from '../../Logo';
 import styles from '../Header.module.css';
 
 interface MobileMenuProps {

@@ -40,17 +40,26 @@ const YieldsTableRow: React.FC<{
   const token = tokens.find(
     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
   );
-  
+
   // Get current protocol from asset or token
   const currentProtocol = asset.protocol || token?.protocol;
-  
+
   // Calculate current APY
   let currentApy = 0;
-  if (token && currentProtocol && token.underlyingAsset) {
-    const protocolKey = currentProtocol.toLowerCase();
-    const underlyingAsset = token.underlyingAsset.toLowerCase();
-    //@ts-ignore
-    currentApy = apyData[asset.chainId]?.[underlyingAsset]?.[protocolKey] || 0;
+  // if (token && currentProtocol && token.underlyingAsset) {
+  //   const protocolKey = currentProtocol.toLowerCase();
+  //   const underlyingAsset = token.underlyingAsset.toLowerCase();
+  //   //@ts-ignore
+  //   currentApy = apyData[asset.chainId]?.[underlyingAsset]?.[protocolKey] || 0;
+  // }
+
+  const tokenApyData = apyData[asset.chainId]?.[asset.address.toLowerCase()];
+  let protocolKey: string | undefined;
+  if (asset.protocol) {
+    protocolKey = asset.protocol.toLowerCase();
+    currentApy = tokenApyData[protocolKey as keyof typeof tokenApyData] || 0;
+  } else {
+    currentApy = 0;
   }
 
   // Use the same logic as YieldCard to determine if Lock APY is available
@@ -60,6 +69,8 @@ const YieldsTableRow: React.FC<{
   // Handle optimization - same logic as YieldCard
   const handleOptimizeClick = () => {
     if (optimizationData) {
+      console.log({optimizationData});
+      
       setIsOptimizeModalOpen(true);
     }
   };
@@ -68,7 +79,7 @@ const YieldsTableRow: React.FC<{
   const handleOptimizeConfirm = () => {
     if (optimizationData) {
       setIsOptimizeModalOpen(false);
-      
+
       openModal({
         asset,
         currentProtocol: optimizationData.currentProtocol,
@@ -94,7 +105,7 @@ const YieldsTableRow: React.FC<{
       openWithdrawModal({
         asset,
         protocol: currentProtocol || '',
-        balance: parseFloat(asset.balance),
+        balance: asset.totalDeposited || 0,
         maxDecimals: asset.maxDecimalsShow || 6,
         isNativeToken: asset.address === '0x',
         onWithdraw: async (amount: string) => {
@@ -129,7 +140,7 @@ const YieldsTableRow: React.FC<{
       <tr className={styles.assetRow}>
         <td className={styles.assetCell}>
           <div className={styles.assetInfo}>
-            <AssetIcon 
+            <AssetIcon
               assetIcon={asset.icon || ''}
               assetName={asset.token}
               chainId={asset.chainId}
@@ -141,16 +152,16 @@ const YieldsTableRow: React.FC<{
         <td className={styles.balanceCell}>
           <div className={styles.balanceGroup}>
             <span className={styles.balanceAmount}>
-              {formatNumber(asset.balance, asset.maxDecimalsShow)}
+              {formatNumber(asset.totalDeposited || 0, asset.maxDecimalsShow)}
             </span>
             <span className={styles.usdValue}>
-              ${formatNumber(balanceValue)}
+              ${formatNumber(asset.totalDepositedUsd || 0)}
             </span>
           </div>
         </td>
         <td className={styles.protocolCell}>
           {currentProtocol ? (
-            <Protocol 
+            <Protocol
               name={currentProtocol}
               showLogo={true}
               showName={true}
@@ -177,7 +188,7 @@ const YieldsTableRow: React.FC<{
         <td className={styles.actionsCell}>
           <div className={styles.actionsContainer}>
             {/* Withdraw Button - Always available */}
-            <button 
+            <button
               className={`${styles.actionButton} ${styles.withdrawButton}`}
               onClick={handleWithdrawClick}
               title="Withdraw funds"
@@ -195,7 +206,7 @@ const YieldsTableRow: React.FC<{
 
             {/* Optimize Button - Only if optimization data available */}
             {optimizationData && (
-              <button 
+              <button
                 className={`${styles.actionButton} ${styles.optimizeButton}`}
                 onClick={handleOptimizeClick}
                 title={`Switch to ${optimizationData.betterProtocol} for ${optimizationData.betterApy.toFixed(2)}% APY (+${optimizationData.apyImprovement}%)`}
@@ -206,7 +217,7 @@ const YieldsTableRow: React.FC<{
 
             {/* Lock APY Button - Only if hasLockYield is true */}
             {hasLockYield && (
-              <button 
+              <button
                 className={`${styles.actionButton} ${styles.lockApyButton}`}
                 onClick={openLockAPYModal}
                 title="Lock current APY rate"
@@ -246,8 +257,8 @@ const YieldsTableRow: React.FC<{
   );
 };
 
-const YieldsTable: React.FC<YieldsTableProps> = ({ 
-  assets, 
+const YieldsTable: React.FC<YieldsTableProps> = ({
+  assets,
   loading,
   getOptimizationDataForAsset,
   onOptimize,
@@ -287,19 +298,21 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
           </thead>
           <tbody>
             {assets.map((asset) => {
-              const assetKey = `${asset.token}-${asset.chain}`;
+              const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
               const optimizationData = getOptimizationDataForAsset(asset);
-
-              return (
-                <YieldsTableRow
-                  key={assetKey}
-                  asset={asset}
-                  optimizationData={optimizationData}
-                  onOptimize={onOptimize}
-                  onWithdraw={onWithdraw}
-                  onLockApy={onLockApy}
-                />
-              );
+              if (asset.totalDeposited && asset.totalDeposited > 0) {
+                return (
+                  <YieldsTableRow
+                    key={assetKey}
+                    asset={asset}
+                    optimizationData={optimizationData}
+                    onOptimize={onOptimize}
+                    onWithdraw={onWithdraw}
+                    onLockApy={onLockApy}
+                  />
+                );
+              }
+              return <></>
             })}
           </tbody>
         </table>

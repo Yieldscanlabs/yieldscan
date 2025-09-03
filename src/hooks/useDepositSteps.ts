@@ -57,13 +57,15 @@ export default function useDepositSteps({
 
   // Fetch steps from API
   const fetchSteps = useCallback(async () => {
+    console.log("fetchSteps", protocol);
+
     if (!contractAddress || !chainId || !protocol) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const url = API_BASE_URL + `/api/definitions/asset/${id}`;
+      const url = API_BASE_URL + `/api/definitions/asset/${id}/${protocol}`;
       const response = await fetch(url);
 
       console.log(response);
@@ -118,14 +120,14 @@ export default function useDepositSteps({
 
     try {
       let success = false;
-      let txHash: `0x${string}` | undefined;
+      let txHash: any;
 
       console.log("Executing step:", step);
       //@ts-ignore
       txHash = await step.fn(amount, address, tokenDecimals, chainId);
 
-      if (txHash && !txHash.startsWith("0x")) {
-        throw new Error(txHash);
+      if (typeof txHash === "object") {
+        throw new Error(txHash.details);
       }
 
       setExecutionState(prev => ({ ...prev, txHash }));

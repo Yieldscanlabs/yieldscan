@@ -36,7 +36,6 @@ const GlobalWithdrawModal: React.FC = () => {
     executedSteps,
     executionError,
     isConfirming,
-    isConfirmed,
     executeAllSteps,
     retryCurrentStep
   } = useWithdrawSteps({
@@ -107,7 +106,7 @@ const GlobalWithdrawModal: React.FC = () => {
   if (!isOpen || !asset) return null;
   
   // Calculate USD value
-  const usdPrice = parseFloat(asset.balanceUsd) / balance;
+  const usdPrice = asset.usd;
   const amountUsd = (parseFloat(withdrawAmount || '0') * usdPrice).toFixed(2);
 
   // Determine if we should show steps (only if more than 1 step)

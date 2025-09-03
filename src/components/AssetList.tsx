@@ -11,12 +11,14 @@ interface AssetListProps {
   selectedAsset: Asset | null;
 }
 
-const AssetList: React.FC<AssetListProps> = ({ 
-  assets, 
-  loading, 
+const AssetList: React.FC<AssetListProps> = ({
+  assets,
+  loading,
   onSelectAsset,
-  selectedAsset 
+  selectedAsset
 }) => {
+  console.log("AssetList length", assets.length);
+
   // Track best yield options for each asset
   const [assetYields, setAssetYields] = useState<Record<string, {
     loading: boolean;
@@ -40,7 +42,7 @@ const AssetList: React.FC<AssetListProps> = ({
       option?: YieldOption;
       yearlyYieldUsd: string;
     }> = {};
-    
+
     assets.forEach(asset => {
       const assetKey = `${asset.token}-${asset.chain}`;
       initialYieldState[assetKey] = {
@@ -48,11 +50,11 @@ const AssetList: React.FC<AssetListProps> = ({
         yearlyYieldUsd: '0.00'
       };
     });
-    
+
     setAssetYields(initialYieldState);
-    
+
     // Fetch yield options
- 
+
   }, [assets]);
 
   if (loading) {
@@ -63,7 +65,7 @@ const AssetList: React.FC<AssetListProps> = ({
       </div>
     );
   }
-  
+
   if (assets.length === 0) {
     return (
       <div className={styles['no-assets']}>
@@ -71,12 +73,12 @@ const AssetList: React.FC<AssetListProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className={styles['asset-list']}>
       <div className={styles['asset-grid']}>
         {assets.map((asset) => {
-          const assetKey = `${asset.token}-${asset.chain}`;
+          const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
           const yieldInfo = assetYields[assetKey];
           const price = getPrice(asset.token.toLowerCase());
           return (

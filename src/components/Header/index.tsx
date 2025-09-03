@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({
   
   // Use state for the live value
   const [totalValue, setTotalValue] = useState(totalHoldings || 1000);
-  const [apy, setApy] = useState(calculateWeightedApy());
+  const [, setApy] = useState(calculateWeightedApy());
 
   // Format value with proper comma separators and 18 decimal places
   const formatValue = (value: number): string => {

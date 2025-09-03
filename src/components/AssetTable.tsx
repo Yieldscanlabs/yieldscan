@@ -16,14 +16,14 @@ interface AssetTableProps {
   selectedAsset: Asset | null;
 }
 
-const AssetTable: React.FC<AssetTableProps> = ({ 
-  assets, 
-  loading, 
+const AssetTable: React.FC<AssetTableProps> = ({
+  assets,
+  loading,
   onSelectAsset,
-  selectedAsset 
+  selectedAsset
 }) => {
   const { getPrice } = usePriceStore();
-  const { apyData, isLoading: apyLoading } = useApyStore();
+  const { apyData } = useApyStore();
 
   const handleSelectAsset = (asset: Asset) => {
     const bestApyData = getBestYield(apyData, asset.chainId, asset.address);
@@ -63,85 +63,88 @@ const AssetTable: React.FC<AssetTableProps> = ({
           </thead>
           <tbody>
             {assets.map((asset) => {
-              const assetKey = `${asset.token}-${asset.chain}`;
+              const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
               const price = getPrice(asset.token.toLowerCase());
               const bestApyData = getBestYield(apyData, asset.chainId, asset.address);
               const isSelected = selectedAsset === asset;
               const balanceValue = price ? price * Number(asset.balance) : Number(asset.balanceUsd);
+              if (asset.protocol === bestApyData.bestProtocol) {
 
-              return (
-                <tr 
-                  key={assetKey}
-                  className={`${styles.assetRowButton} ${isSelected ? styles.selected : ''}`}
-                  onClick={() => handleSelectAsset(asset)}
-                >
-                  <td className={styles.assetCell}>
-                    <div className={styles.assetInfo}>
-                      <AssetIcon 
-                        assetIcon={asset.icon || ''}
-                        assetName={asset.token}
-                        chainId={asset.chainId}
-                        size="small"
-                      />
-                      <span className={styles.assetName}>{asset.token}</span>
-                    </div>
-                  </td>
-                  <td className={styles.balanceCell}>
-                    <div className={styles.balanceGroup}>
-                      <span className={styles.balanceAmount}>
-                        {formatNumber(asset.balance, asset.maxDecimalsShow)}
-                      </span>
-                      <span className={styles.usdValue}>
-                        ${formatNumber(balanceValue)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className={styles.earningsCell}>
-                    <div className={styles.earningsGroup}>
+                return (
+                  <tr
+                    key={assetKey}
+                    className={`${styles.assetRowButton} ${isSelected ? styles.selected : ''}`}
+                    onClick={() => handleSelectAsset(asset)}
+                  >
+                    <td className={styles.assetCell}>
+                      <div className={styles.assetInfo}>
+                        <AssetIcon
+                          assetIcon={asset.icon || ''}
+                          assetName={asset.token}
+                          chainId={asset.chainId}
+                          size="small"
+                        />
+                        <span className={styles.assetName}>{asset.token}</span>
+                      </div>
+                    </td>
+                    <td className={styles.balanceCell}>
+                      <div className={styles.balanceGroup}>
+                        <span className={styles.balanceAmount}>
+                          {formatNumber(asset.balance, asset.maxDecimalsShow)}
+                        </span>
+                        <span className={styles.usdValue}>
+                          ${formatNumber(balanceValue)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className={styles.earningsCell}>
+                      <div className={styles.earningsGroup}>
+                        {bestApyData?.bestApy ? (
+                          <span className={styles.earningsAmount}>
+                            ${((parseFloat(asset.balance) * bestApyData.bestApy) / 100).toFixed(2)}/year
+                          </span>
+                        ) : (
+                          <span className={styles.noEarningsData}>
+                            No data
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className={styles.protocolCell}>
+                      {bestApyData?.bestProtocol ? (
+                        <Protocol
+                          name={bestApyData.bestProtocol}
+                          showLogo={true}
+                          showName={true}
+                          size="small"
+                          className={styles.protocolDisplay}
+                        />
+                      ) : (
+                        <span className={styles.noProtocolData}>
+                          No protocol
+                        </span>
+                      )}
+                    </td>
+                    <td className={styles.apyCell}>
                       {bestApyData?.bestApy ? (
-                        <span className={styles.earningsAmount}>
-                          ${((parseFloat(asset.balance) * bestApyData.bestApy) / 100).toFixed(2)}/year
+                        <span className={styles.apyAmount}>
+                          {bestApyData.bestApy.toFixed(2)}% APY
                         </span>
                       ) : (
-                        <span className={styles.noEarningsData}>
+                        <span className={styles.noApyData}>
                           No data
                         </span>
                       )}
-                    </div>
-                  </td>
-                  <td className={styles.protocolCell}>
-                    {bestApyData?.bestProtocol ? (
-                      <Protocol 
-                        name={bestApyData.bestProtocol}
-                        showLogo={true}
-                        showName={true}
-                        size="small"
-                        className={styles.protocolDisplay}
-                      />
-                    ) : (
-                      <span className={styles.noProtocolData}>
-                        No protocol
-                      </span>
-                    )}
-                  </td>
-                  <td className={styles.apyCell}>
-                    {bestApyData?.bestApy ? (
-                      <span className={styles.apyAmount}>
-                        {bestApyData.bestApy.toFixed(2)}% APY
-                      </span>
-                    ) : (
-                      <span className={styles.noApyData}>
-                        No data
-                      </span>
-                    )}
-                  </td>
-                  <td className={styles.yieldCell}>
-                    <button className={styles.actionButtonAccent} onClick={() => handleSelectAsset(asset)}>
-                      Earn
-                    </button>
-                  </td>
-                </tr>
-              );
+                    </td>
+                    <td className={styles.yieldCell}>
+                      <button className={styles.actionButtonAccent} onClick={() => handleSelectAsset(asset)}>
+                        Earn
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+              return <></>;
             })}
           </tbody>
         </table>
