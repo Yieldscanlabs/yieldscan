@@ -91,23 +91,23 @@ export const useApyStore = create<ApyStore>()(
 
           // The API returns data already in the format we need
           const data: ApiResponseStructure = await response.json();
-          data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'] = {
-            ...data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
-            venus: 3.67,
-            radiant: 4,
-            morpho_blue: 5,
-            fluid: 6
-          }
-          data['1']['0x'] = {
-            aave: 1.23,
-            lido: 2.34,
-            fluid: 6,
-            rocket_pool: 7
-          }
-          data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'] = {
-            ...data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'],
-            venus: 2.38
-          }
+          // data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'] = {
+          //   ...data['1']['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
+          //   venus: 3.67,
+          //   radiant: 4,
+          //   morpho_blue: 5,
+          //   fluid: 6
+          // }
+          // data['1']['0x'] = {
+          //   aave: 1.23,
+          //   lido: 2.34,
+          //   fluid: 6,
+          //   rocket_pool: 7
+          // }
+          // data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'] = {
+          //   ...data['1']['0xdac17f958d2ee523a2206206994597c13d831ec7'],
+          //   venus: 2.38
+          // }
           // Ensure all addresses are lowercase for consistency
           const normalizedData: ApiResponseStructure = {};
           Object.entries(data).forEach(([chainIdStr, chainData]) => {

@@ -4,7 +4,8 @@ import { parseUnits, type Address } from 'viem';
 import useERC20 from './useERC20';
 import type { Asset } from '../types';
 import { API_BASE_URL } from '../utils/constants';
-
+// @ts-ignore
+import { ethers } from "ethers";
 interface WithdrawStep {
   title: string;
   description: string;
@@ -143,6 +144,7 @@ export default function useWithdrawSteps({
       txHash = await step.fn(amount, address, tokenDecimals, chainId);
 
       if (typeof txHash === "object") {
+        console.log({ txHash });
         throw new Error(txHash.details);
       }
 

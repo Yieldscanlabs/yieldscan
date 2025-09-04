@@ -127,6 +127,7 @@ export default function useDepositSteps({
       txHash = await step.fn(amount, address, tokenDecimals, chainId);
 
       if (typeof txHash === "object") {
+        console.log({txHash});
         throw new Error(txHash.details);
       }
 

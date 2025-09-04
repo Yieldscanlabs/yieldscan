@@ -37,10 +37,10 @@ function Wallet() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Use userPreferencesStore for view toggle state
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
-  
+
   const [state, setState] = useState<WalletState>({
     selectedAsset: null,
     bestApyData: null,
@@ -126,12 +126,12 @@ function Wallet() {
         token: state.selectedAsset.token,
         chain: state.selectedAsset.chain,
         apy: state.bestApyData.bestApy,
-        tvl: '$0', 
+        tvl: '$0',
         risk: 'Low',
         lockupDays: 0
       };
     }
-    
+
     return yieldOptions[0] || {
       id: '0',
       protocol: 'Loading...',
@@ -149,26 +149,28 @@ function Wallet() {
       return (
         <Loading
           message="Loading your assets"
-          subtitle="Scanning blockchain for your tokens..." 
+          subtitle="Scanning blockchain for your tokens..."
         />
       );
     }
 
     // Filter assets by selected network and search query
     const filteredAssets = assets.filter(asset => {
-      // Filter out yield bearing tokens
-      if (asset.yieldBearingToken) return true;
+      console.log("HEREEEE");
       
+      // Filter out yield bearing tokens
+      // if (asset.yieldBearingToken) return true;
+
       // Filter by network
       const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
-      
+
       // Filter by search query
-      const matchesSearch = state.searchQuery === '' || 
+      const matchesSearch = state.searchQuery === '' ||
         asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
-      
+
       return matchesNetwork && matchesSearch;
     });
-    console.log({filteredAssets})
+    console.log({ filteredAssets })
     const commonProps = {
       assets: filteredAssets,
       loading: assetsLoading,
@@ -176,39 +178,39 @@ function Wallet() {
       selectedAsset: state.selectedAsset
     };
 
-          return (
-        <div className={styles.assetViewContainer}>
-          <PageHeader 
-            title="Wallet"
-            subtitle="Only showing assets that can earn yield with the best APY"
+    return (
+      <div className={styles.assetViewContainer}>
+        <PageHeader
+          title="Wallet"
+          subtitle="Only showing assets that can earn yield with the best APY"
+        />
+        <div className={styles.controlsRow}>
+          <NetworkSelector
+            selectedNetwork={state.selectedNetwork}
+            networks={AVAILABLE_NETWORKS}
+            //@ts-ignore
+            onChange={handleNetworkChange}
           />
-          <div className={styles.controlsRow}>
-            <NetworkSelector
-              selectedNetwork={state.selectedNetwork}
-              networks={AVAILABLE_NETWORKS}
-              //@ts-ignore
-              onChange={handleNetworkChange}
+          <div className={styles.searchAndViewGroup}>
+            <ViewToggle
+              currentView={viewType}
+              onViewChange={handleViewChange}
             />
-            <div className={styles.searchAndViewGroup}>
-              <ViewToggle 
-                currentView={viewType}
-                onViewChange={handleViewChange}
-              />
-              <SearchBar
-                ref={searchInputRef}
-                placeholder="Search coins..."
-                value={state.searchQuery}
-                onChange={handleSearchChange}
-                showKeybind={true}
-              />
-            </div>
+            <SearchBar
+              ref={searchInputRef}
+              placeholder="Search coins..."
+              value={state.searchQuery}
+              onChange={handleSearchChange}
+              showKeybind={true}
+            />
           </div>
-          {viewType === 'cards' ? (
-            <AssetList {...commonProps} />
-          ) : (
-            <AssetTable {...commonProps} />
-          )}
         </div>
+        {viewType === 'cards' ? (
+          <AssetList {...commonProps} />
+        ) : (
+          <AssetTable {...commonProps} />
+        )}
+      </div>
     );
   };
 
@@ -221,7 +223,7 @@ function Wallet() {
       const protocol = state.bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
       const usdPrice = parseFloat(state.selectedAsset.balanceUsd) / parseFloat(state.selectedAsset.balance);
       const amountUsd = (parseFloat(state.depositData.amount) * usdPrice).toFixed(2);
-      
+
       return (
         <div className={styles.stepContainer}>
           <div className={styles.depositContainer}>
@@ -243,7 +245,7 @@ function Wallet() {
       return (
         <div className={styles.stepContainer}>
           <div className={styles.depositContainer}>
-            <DepositForm 
+            <DepositForm
               asset={state.selectedAsset}
               yieldOption={getSelectedYieldOption()}
               onDeposit={handleDeposit}
@@ -290,8 +292,8 @@ function Wallet() {
     <div className={styles.appWrapper}>
       <div className={styles.appContainer}>
         {renderContent()}
-        
-        <WalletModal 
+
+        <WalletModal
           isOpen={isModalOpen}
           onClose={closeConnectModal}
         />

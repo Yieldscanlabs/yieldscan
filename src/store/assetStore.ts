@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import Moralis from 'moralis';
 import type { Asset } from '../types';
 import { API_BASE_URL } from '../utils/constants';
+import { ethers } from 'ethers';
 
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
@@ -121,8 +122,7 @@ export const useAssetStore = create<AssetStore>()(
             const chainResult = balanceResults.find(result => result?.chainId === token.chain.chainId);
 
             if (!chainResult) continue;
-
-            if (token.address === '0x') {
+            if (!ethers.isAddress(token.address)) {
               // Handle native token
               const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
               if (nativeBalanceRaw > 0n) {
@@ -133,7 +133,7 @@ export const useAssetStore = create<AssetStore>()(
                   assets.push({
                     id: token.id,
                     token: token.symbol,
-                    address: token.address,
+                    address: "0x",
                     chain: token.chain.name,
                     maxDecimalsShow: token.maxDecimalsShow,
                     protocol: def.protocol.name,
