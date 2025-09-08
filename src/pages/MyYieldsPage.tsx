@@ -251,7 +251,7 @@ const MyYieldsPage: React.FC = () => {
       const token = tokens.find(
         t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
       );
-      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant';
+      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant' || token?.protocol?.toLowerCase() === 'compound';
     });
 
     supportedAssets.forEach(asset => {
@@ -347,7 +347,7 @@ const MyYieldsPage: React.FC = () => {
         // const token = tokens.find(
         //   t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
         // );
-        return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant';
+        return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound';
       });
 
       supportedAssets.forEach(asset => {
@@ -464,7 +464,7 @@ const MyYieldsPage: React.FC = () => {
 
       Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
         // Only process Aave and Radiant protocol data to be consistent with earnings calculation
-        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant') return;
+        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' || protocolName.toLowerCase() === 'compound') return;
 
         Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
