@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; URL=/" />
+  </head>
+  <body>
+    <script>
+      // Redirect to index.html while preserving the route
+      var redirectTo = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      sessionStorage.redirect = redirectTo + search + hash;
+      window.location.href = "/";
+    </script>
+  </body>
+</html>
