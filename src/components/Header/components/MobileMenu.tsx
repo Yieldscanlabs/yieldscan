@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
 // import Logo from '../../Logo';
 import styles from '../Header.module.css';
+import Logo from '../../Logo';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       >
         <div className={styles.mobileMenuHeader}>
           <Link to="/" className={styles.mobileMenuLogo} onClick={closeMobileMenu}>
-            {/* <Logo /> */}
+            <Logo />
           </Link>
           <button 
             className={styles.mobileMenuCloseButton}

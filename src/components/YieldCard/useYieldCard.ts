@@ -77,7 +77,11 @@ export function useYieldCard({ asset, onOptimize, onLockAPY }: YieldCardProps) {
   let protocolKey: string | undefined;
   if (asset.protocol) {
     protocolKey = asset.protocol.toLowerCase();
-    apy = tokenApyData[protocolKey as keyof typeof tokenApyData] || 0;
+    try {
+      apy = tokenApyData[protocolKey as keyof typeof tokenApyData] || 0;
+    }
+    catch (ex) {
+    }
   } else {
     apy = 0;
   }

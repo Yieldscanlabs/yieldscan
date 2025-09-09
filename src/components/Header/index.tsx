@@ -14,10 +14,10 @@ interface HeaderProps {
   disconnectWallet: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  isConnected, 
-  address, 
-  disconnectWallet 
+const Header: React.FC<HeaderProps> = ({
+  isConnected,
+  address,
+  disconnectWallet
 }) => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -28,16 +28,16 @@ const Header: React.FC<HeaderProps> = ({
   const { assets } = useAssetStore();
   const { apyData } = useApyStore();
   const { chainId } = useAccount();
-  
+
   // Scroll state for header visibility
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  
+
   // Calculate total yield-bearing holdings (with fallback to 0)
   const totalHoldings = assets
     .filter(asset => asset.yieldBearingToken)
     .reduce((sum, asset) => {
-      const balanceValue = parseFloat(asset.balanceUsd || '0');
+      const balanceValue = parseFloat(asset.currentBalanceInProtocolUsd || '0');
       return isNaN(balanceValue) ? sum : sum + balanceValue;
     }, 0);
 
@@ -45,29 +45,29 @@ const Header: React.FC<HeaderProps> = ({
   const calculateWeightedApy = () => {
     let totalWeightedApy = 0;
     let totalValue = 0;
-    
+
     assets.filter(asset => asset.yieldBearingToken).forEach(asset => {
       const balanceValue = parseFloat(asset.balanceUsd || '0');
       if (isNaN(balanceValue) || balanceValue === 0) return;
-      
+
       // Get APY for this asset from apyStore if available
       let assetApy = 0;
       if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
         const apys = apyData[asset.chainId][asset.address.toLowerCase()] as ProtocolApys;
         assetApy = apys[asset.protocol.toLowerCase() as keyof ProtocolApys] || 0;
       }
-      
+
       // If no APY found, use a default of 3%
       if (assetApy === 0) assetApy = 3;
-      
+
       totalWeightedApy += assetApy * balanceValue;
       totalValue += balanceValue;
     });
-    
+
     // Return weighted average APY (default to 4% if no yield-bearing assets)
     return totalValue > 0 ? (totalWeightedApy / totalValue) : 4;
   };
-  
+
   // Use state for the live value
   const [totalValue, setTotalValue] = useState(totalHoldings || 1000);
   const [, setApy] = useState(calculateWeightedApy());
@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({
     if (typeof value !== 'number' || isNaN(value)) {
       return '1000.000000000000000000';
     }
-    
+
     try {
       if (value >= 1000) {
         return value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 });
@@ -95,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({
   useEffect(() => {
     const controlHeader = () => {
       const currentScrollY = window.scrollY;
-      
+
       // Determine if should show or hide based on scroll direction
       if (currentScrollY < lastScrollY) {
         // Scrolling up
@@ -104,13 +104,13 @@ const Header: React.FC<HeaderProps> = ({
         // Scrolling down and not at the top
         setIsVisible(false);
       }
-      
+
       // Update last scroll position
       setLastScrollY(currentScrollY);
     };
-    
+
     window.addEventListener('scroll', controlHeader);
-    
+
     // Cleanup
     return () => {
       window.removeEventListener('scroll', controlHeader);
@@ -120,29 +120,29 @@ const Header: React.FC<HeaderProps> = ({
   // Live ticker effect - update total value every 100ms for more visible decimal changes
   useEffect(() => {
     if (!isConnected) return;
-    
+
     // Set initial values based on current holdings and APY
     const initialValue = totalHoldings > 0 ? totalHoldings : 1000;
     const weightedApy = calculateWeightedApy();
-    
+
     setTotalValue(initialValue);
     setApy(weightedApy);
-    
+
     // Calculate the per-tick growth rate based on APY
     const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
-    
+
     const timer = setInterval(() => {
       setTotalValue(prevValue => {
         // Calculate growth for this tick
         const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-        
+
         // Use high precision multiplication to ensure decimal changes are visible
         const newValue = prevValue * growthRate;
-        
+
         return newValue;
       });
     }, 100);
-    
+
     // Cleanup timer on unmount
     return () => clearInterval(timer);
   }, [isConnected, totalHoldings, assets, apyData]);
@@ -176,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };

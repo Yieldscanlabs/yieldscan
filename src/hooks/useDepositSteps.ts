@@ -57,8 +57,6 @@ export default function useDepositSteps({
 
   // Fetch steps from API
   const fetchSteps = useCallback(async () => {
-    console.log("fetchSteps", protocol);
-
     if (!contractAddress || !chainId || !protocol) return;
 
     setIsLoading(true);
@@ -67,9 +65,6 @@ export default function useDepositSteps({
     try {
       const url = API_BASE_URL + `/api/definitions/asset/${id}/${protocol}`;
       const response = await fetch(url);
-
-      console.log(response);
-
 
       if (!response.ok) {
         throw new Error(`Failed to fetch steps: ${response.statusText}`);
@@ -81,8 +76,6 @@ export default function useDepositSteps({
 
       // Sort steps by order
       const sortedSteps = getDepositEval;
-
-      console.log("sortedSteps", sortedSteps);
 
       setSteps([{
         title: "depositing",

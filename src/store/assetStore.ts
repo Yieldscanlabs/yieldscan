@@ -6,6 +6,7 @@ import Moralis from 'moralis';
 import type { Asset } from '../types';
 import { API_BASE_URL } from '../utils/constants';
 import { ethers } from 'ethers';
+import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
 
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
@@ -58,6 +59,7 @@ interface AssetStore {
   clearErrors: () => void;
   setAutoRefresh: (enabled: boolean) => void;
   getAssetByAddress: (address: string, chainId: number) => Asset | undefined;
+  setAssets: (assets: Asset[]) => void;
 }
 
 export const useAssetStore = create<AssetStore>()(
@@ -89,7 +91,7 @@ export const useAssetStore = create<AssetStore>()(
           // First, fetch the available tokens from the API
           const tokens = await fetchTokens();
           const supportedChainIds = [...new Set(tokens.map((t: any) => t.chain.chainId))];
-          console.log({tokens})
+          console.log({ tokens })
           // Fetch token balances for each supported chain
           const balancePromises = supportedChainIds.map(async (chainId) => {
             const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
@@ -130,24 +132,33 @@ export const useAssetStore = create<AssetStore>()(
                 const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
 
                 for (const def of token.definitions || []) {
-                  assets.push({
-                    id: token.id,
-                    token: token.symbol,
-                    address: "0x",
-                    chain: token.chain.name,
-                    maxDecimalsShow: token.maxDecimalsShow,
-                    protocol: def.protocol.name,
-                    withdrawContract: def.withdraw,
-                    underlyingAsset: def.underlyingAsset,
-                    balance,
-                    yieldBearingToken: Boolean(def.yieldBearingToken),
-                    chainId: Number(token.chain.chainId),
-                    decimals: token.decimals,
-                    balanceUsd,
-                    icon: API_BASE_URL + token.image,
-                    withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
-                    usd: token.usdPrice
-                  });
+                  const tokenBalanceY = chainResult.tokenBalances.find(
+                    (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
+                  );
+                  if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
+                    const balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
+                    const balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
+                    assets.push({
+                      id: token.id,
+                      token: token.symbol,
+                      address: "0x",
+                      chain: token.chain.name,
+                      maxDecimalsShow: token.maxDecimalsShow,
+                      protocol: def.protocol.name,
+                      withdrawContract: def.withdraw,
+                      underlyingAsset: def.underlyingAsset,
+                      balance,
+                      yieldBearingToken: Boolean(def.yieldBearingToken),
+                      chainId: Number(token.chain.chainId),
+                      decimals: token.decimals,
+                      balanceUsd,
+                      icon: API_BASE_URL + token.image,
+                      withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
+                      usd: token.usdPrice,
+                      currentBalanceInProtocol: Number(balanceY),
+                      currentBalanceInProtocolUsd: balanceUsdY
+                    });
+                  }
                 }
               }
             } else {
@@ -161,24 +172,34 @@ export const useAssetStore = create<AssetStore>()(
                 const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
 
                 for (const def of token.definitions || []) {
-                  assets.push({
-                    id: token.id,
-                    token: token.symbol,
-                    address: token.address,
-                    chain: token.chain.name,
-                    maxDecimalsShow: token.maxDecimalsShow,
-                    protocol: def.protocol.name,
-                    withdrawContract: def.withdraw,
-                    underlyingAsset: def.underlyingAsset,
-                    balance,
-                    yieldBearingToken: Boolean(def.yieldBearingToken),
-                    chainId: Number(token.chain.chainId),
-                    decimals: token.decimals,
-                    balanceUsd,
-                    icon: API_BASE_URL + token.image,
-                    withdrawUri: def.withdrawUri, // or token?.withdrawUri
-                    usd: token.usdPrice
-                  });
+
+                  const tokenBalanceY = chainResult.tokenBalances.find(
+                    (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
+                  );
+                  if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
+                    const balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
+                    const balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
+                    assets.push({
+                      id: token.id,
+                      token: token.symbol,
+                      address: token.address,
+                      chain: token.chain.name,
+                      maxDecimalsShow: token.maxDecimalsShow,
+                      protocol: def.protocol.name,
+                      withdrawContract: def.withdraw,
+                      underlyingAsset: def.underlyingAsset,
+                      balance,
+                      yieldBearingToken: Boolean(def.yieldBearingToken),
+                      chainId: Number(token.chain.chainId),
+                      decimals: token.decimals,
+                      balanceUsd,
+                      icon: API_BASE_URL + token.image,
+                      withdrawUri: def.withdrawUri, // or token?.withdrawUri
+                      usd: token.usdPrice,
+                      currentBalanceInProtocol: Number(balanceY),
+                      currentBalanceInProtocolUsd: balanceUsdY
+                    });
+                  }
                 }
               }
             }
@@ -211,6 +232,7 @@ export const useAssetStore = create<AssetStore>()(
           asset => asset.address.toLowerCase() === address.toLowerCase() && asset.chainId === chainId
         );
       },
+      setAssets: (assets: Asset[]) => set({ assets })
     }),
     {
       name: 'yieldscan-asset-store',

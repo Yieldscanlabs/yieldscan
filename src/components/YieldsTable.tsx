@@ -69,8 +69,6 @@ const YieldsTableRow: React.FC<{
   // Handle optimization - same logic as YieldCard
   const handleOptimizeClick = () => {
     if (optimizationData) {
-      console.log({optimizationData});
-      
       setIsOptimizeModalOpen(true);
     }
   };

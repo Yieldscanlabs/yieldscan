@@ -17,8 +17,6 @@ const AssetList: React.FC<AssetListProps> = ({
   onSelectAsset,
   selectedAsset
 }) => {
-  console.log("AssetList length", assets.length);
-
   // Track best yield options for each asset
   const [assetYields, setAssetYields] = useState<Record<string, {
     loading: boolean;
