@@ -45,40 +45,43 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
 }) => {
   return (
     <header className={`${styles.header} ${isVisible ? styles.headerVisible : styles.headerHidden}`}>
-      <div className={styles.headerLeft}>
-        <Link to="/" className={styles.titleLink}>
-          {/* <Logo /> */}
-        </Link>
-        
-        <Navigation 
-          isConnected={isConnected}
-          location={location}
-        />
-      </div>
-      
-      <div className={styles.headerRight}>
-        <EarningsDisplay
-          isConnected={isConnected}
-          totalValue={totalValue}
-          formatValue={formatValue}
-        />
-        
-        <WalletSection
-          isConnected={isConnected}
-          address={address}
-          isDropdownOpen={isDropdownOpen}
-          toggleDropdown={toggleDropdown}
-          dropdownRef={dropdownRef}
-          copySuccess={copySuccess}
-          handleCopyAddress={handleCopyAddress}
-          handleOpenExplorer={handleOpenExplorer}
-          disconnectWallet={disconnectWallet}
-        />
+      <div className={styles.headerContent}>
 
-        <HamburgerButton
-          isOpen={isMobileMenuOpen}
-          onClick={toggleMobileMenu}
-        />
+        <div className={styles.headerLeft}>
+          <Link to="/" className={styles.titleLink}>
+            {/* <Logo /> */}
+          </Link>
+
+          <Navigation
+            isConnected={isConnected}
+            location={location}
+          />
+        </div>
+
+        <div className={styles.headerRight}>
+          <EarningsDisplay
+            isConnected={isConnected}
+            totalValue={totalValue}
+            formatValue={formatValue}
+          />
+
+          <WalletSection
+            isConnected={isConnected}
+            address={address}
+            isDropdownOpen={isDropdownOpen}
+            toggleDropdown={toggleDropdown}
+            dropdownRef={dropdownRef}
+            copySuccess={copySuccess}
+            handleCopyAddress={handleCopyAddress}
+            handleOpenExplorer={handleOpenExplorer}
+            disconnectWallet={disconnectWallet}
+          />
+
+          <HamburgerButton
+            isOpen={isMobileMenuOpen}
+            onClick={toggleMobileMenu}
+          />
+        </div>
       </div>
     </header>
   );
