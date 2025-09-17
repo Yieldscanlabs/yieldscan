@@ -173,8 +173,6 @@ const MyYieldsPage: React.FC = () => {
         };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, wallet.address, getUserActivity]);
-
-
   // Get unique chain IDs from assets for the network selector
   const uniqueChainIds = useMemo(() =>
     Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
@@ -251,7 +249,7 @@ const MyYieldsPage: React.FC = () => {
       const token = tokens.find(
         t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
       );
-      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant' || token?.protocol?.toLowerCase() === 'compound';
+      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant' || token?.protocol?.toLowerCase() === 'compound' || token?.protocol?.toLowerCase() === 'yearn v3';
     });
 
     supportedAssets.forEach(asset => {
@@ -270,7 +268,7 @@ const MyYieldsPage: React.FC = () => {
         const token = tokens.find(
           t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
         );
-        assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
+        assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : token?.protocol?.toLowerCase() === 'yearn v3' ? 5 : 3;
       }
 
       totalWeightedApy += assetApy * balanceValue;
@@ -347,7 +345,7 @@ const MyYieldsPage: React.FC = () => {
         // const token = tokens.find(
         //   t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
         // );
-        return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound';
+        return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
       });
 
       supportedAssets.forEach(asset => {
@@ -464,7 +462,7 @@ const MyYieldsPage: React.FC = () => {
 
       Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
         // Only process Aave and Radiant protocol data to be consistent with earnings calculation
-        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' || protocolName.toLowerCase() === 'compound') return;
+        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' || protocolName.toLowerCase() === 'compound' || protocolName.toLowerCase() !== 'yearn v3') return;
 
         Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
@@ -656,7 +654,7 @@ const MyYieldsPage: React.FC = () => {
             ${formatNumber(totalDeposited, 2)}
           </div>
           <div className={styles.summarySubtext}>
-            Total deposited to Aave & Radiant protocols
+            Total deposited to Aave, Radiant, Compound & Yearn v3 protocols
           </div>
         </div>
         <div className={styles.summaryCard}>
