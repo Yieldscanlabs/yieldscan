@@ -20,7 +20,9 @@ export interface Asset {
   icon?: string;
   totalDeposited?: number;
   totalDepositedUsd?: string;
-  usd: number
+  usd: number;
+  currentBalanceInProtocol?: number;
+  currentBalanceInProtocolUsd?: string;
 }
 
 export interface YieldOption {

@@ -15,6 +15,16 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+  (function () {
+    if (sessionStorage.redirect) {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      window.history.replaceState(null, null, redirect);
+    }
+  })();
+</script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

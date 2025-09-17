@@ -59,6 +59,7 @@ const router = createBrowserRouter([
         element: <AlertsPage />,
       },
     ],
+
     // Add ScrollRestoration to handle scroll position
     element: (
       <>
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
       </>
     ),
   },
-]);
+],
+  // {
+  //   basename: '/yieldscan', // 👈 important for GitHub Pages
+  // }
+);
 
 export default router;

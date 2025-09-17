@@ -22,10 +22,6 @@ const YieldOption: React.FC<YieldOptionProps> = ({
     loading: apyLoading,
     error: apyError
   } = bestApyData;
-
-  console.log({ bestApyData });
-
-
   // Calculate the best APY to display (either from option or real-time data)
   const displayApy = useMemo(() => {
     if (bestApy !== null) {

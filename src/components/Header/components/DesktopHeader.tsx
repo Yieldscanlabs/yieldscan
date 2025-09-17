@@ -7,6 +7,7 @@ import EarningsDisplay from './EarningsDisplay';
 import WalletSection from './WalletSection';
 import HamburgerButton from './HamburgerButton';
 import styles from '../Header.module.css';
+import Logo from '../../Logo';
 
 interface DesktopHeaderProps {
   isVisible: boolean;
@@ -49,7 +50,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
 
         <div className={styles.headerLeft}>
           <Link to="/" className={styles.titleLink}>
-            {/* <Logo /> */}
+            <Logo />
           </Link>
 
           <Navigation

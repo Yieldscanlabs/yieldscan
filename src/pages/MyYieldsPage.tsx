@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, use } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
@@ -15,11 +15,10 @@ import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
 import ViewToggle from '../components/ViewToggle';
 import SearchBar from '../components/SearchBar';
-import { useUserPreferencesStore, type ViewType } from '../store/userPreferencesStore';
+import { useUserPreferencesStore } from '../store/userPreferencesStore';
 import YieldsTable from '../components/YieldsTable';
 import PageHeader from '../components/PageHeader';
 import { useNavigate } from 'react-router-dom';
-import { formatUnits } from 'viem';
 
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -162,6 +161,9 @@ const MyYieldsPage: React.FC = () => {
 
                 totalDeposited = depositsFormatted - withdrawalsFormatted;
                 totalDepositedUsd = (totalDeposited * asset.usd).toString();
+
+                console.log(`Total deposited for ${asset.token} on ${asset.chain} (${protocolKey}):`, { totalDeposited, totalDepositedUsd });
+
               }
             }
           }
@@ -245,15 +247,12 @@ const MyYieldsPage: React.FC = () => {
     let totalValue = 0;
 
     // Get Aave and Radiant assets from current balances
-    const supportedAssets = allYieldAssets.filter(asset => {
-      const token = tokens.find(
-        t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-      );
-      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant' || token?.protocol?.toLowerCase() === 'compound' || token?.protocol?.toLowerCase() === 'yearn v3';
+    const supportedAssets = filteredYieldAssets.filter(asset => {
+      return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
     });
 
     supportedAssets.forEach(asset => {
-      const balanceValue = parseFloat(asset.balanceUsd || '0');
+      const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
       if (isNaN(balanceValue) || balanceValue === 0) return;
 
       // Get APY for this asset from apyStore if available
@@ -264,12 +263,12 @@ const MyYieldsPage: React.FC = () => {
       }
 
       // If no APY found, use defaults: 3% for Aave, 4% for Radiant
-      if (assetApy === 0) {
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : token?.protocol?.toLowerCase() === 'yearn v3' ? 5 : 3;
-      }
+      // if (assetApy === 0) {
+      //   const token = tokens.find(
+      //     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+      //   );
+      //   assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
+      // }
 
       totalWeightedApy += assetApy * balanceValue;
       totalValue += balanceValue;
@@ -291,7 +290,6 @@ const MyYieldsPage: React.FC = () => {
 
     // Get real deposits and withdrawals data from the store
     const userData = getUserActivity(wallet.address);
-    console.log({ userData });
 
     if (!userData) {
       setTotalDeposited(0);
@@ -341,7 +339,7 @@ const MyYieldsPage: React.FC = () => {
       let totalEarnings = 0;
 
       // Get Aave and Radiant assets from current balances
-      const supportedAssets = allYieldAssets.filter(asset => {
+      const supportedAssets = filteredYieldAssets.filter(asset => {
         // const token = tokens.find(
         //   t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
         // );
@@ -350,21 +348,22 @@ const MyYieldsPage: React.FC = () => {
 
       supportedAssets.forEach(asset => {
         // Current balance in USD
-        const currentBalanceUsd = parseFloat(asset.balanceUsd);
+        const currentBalanceUsd = parseFloat(asset.currentBalanceInProtocolUsd || '0');
 
         // Find corresponding deposits and withdrawals for this token
         let depositsUsd = 0;
         let withdrawalsUsd = 0;
+        let protocolName = "";
 
         Object.entries(userData).forEach(([chainIdStr, chainData]) => {
           const chainId = parseInt(chainIdStr, 10);
           if (chainId !== asset.chainId) return;
 
           // Get the protocol data (Aave or Radiant)
-          const token = tokens.find(
-            t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-          );
-          const protocolName = token?.protocol;
+          // const token = tokens.find(
+          // t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+          // );
+          protocolName = asset.protocol || "";
 
           if (!protocolName) return;
 
@@ -429,28 +428,24 @@ const MyYieldsPage: React.FC = () => {
           const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
 
           // Find token price for USD conversion - use the underlying asset price
-          const tokenInfo = tokens.find(t =>
-            t.chainId === chainId &&
-            !t.yieldBearingToken &&
-            (t.token.toUpperCase() === tokenSymbol.toUpperCase())
-          );
+          // const tokenInfo = tokens.find(t =>
+          //   t.chainId === chainId &&
+          //   !t.yieldBearingToken &&
+          //   (t.token.toUpperCase() === tokenSymbol.toUpperCase())
+          // );
 
-          const tokenPrice = tokenInfo?.usdPrice || 1;
+          const tokenPrice = asset.usd;
           depositsUsd += depositsFormatted * tokenPrice;
           withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
 
         // Calculate earnings for this token: current_balance - deposits + withdrawals
-        const tokenEarnings = currentBalanceUsd - depositsUsd + withdrawalsUsd;
+        const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
+        // const tokenEarnings = depositsUsd - withdrawalsUsd;
         totalEarnings += tokenEarnings;
 
-        console.log(`${asset.token} earnings calculation:`, {
-          protocol: tokens.find(t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId)?.protocol,
-          currentBalanceUsd,
-          depositsUsd,
-          withdrawalsUsd,
-          tokenEarnings
-        });
+        console.log(`Earnings for ${asset.token} on ${asset.chain} (${protocolName}):`, { currentBalanceUsd, depositsUsd, withdrawalsUsd, tokenEarnings });
+
       });
 
       return totalEarnings;
@@ -462,7 +457,7 @@ const MyYieldsPage: React.FC = () => {
 
       Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
         // Only process Aave and Radiant protocol data to be consistent with earnings calculation
-        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' || protocolName.toLowerCase() === 'compound' || protocolName.toLowerCase() !== 'yearn v3') return;
+        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' && protocolName.toLowerCase() !== 'compound' && protocolName.toLowerCase() !== 'yearn v3') return;
 
         Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
@@ -488,13 +483,13 @@ const MyYieldsPage: React.FC = () => {
           const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
 
           // Find token price for USD conversion - use underlying asset price
-          const tokenInfo = tokens.find(t =>
+          const tokenInfo = allYieldAssets.find(t =>
             t.chainId === chainId &&
-            !t.yieldBearingToken &&
+            // !t.yieldBearingToken &&
             (t.token.toUpperCase() === tokenSymbol.toUpperCase())
           );
 
-          const tokenPrice = tokenInfo?.usdPrice || 1; // Default to $1 if no price found
+          const tokenPrice = tokenInfo?.usd || 1; // Default to $1 if no price found
 
           // Add to totals in USD
           totalDepositsUsd += depositsFormatted * tokenPrice;
@@ -512,7 +507,9 @@ const MyYieldsPage: React.FC = () => {
     const totalEarnedUsd = supportedEarnings; // Only Aave and Radiant earnings for now, as requested
 
     // Update state with real data
-    setTotalDeposited(totalDepositsUsd);
+    console.log({ totalDepositsUsd, totalWithdrawalsUsd, totalEarnedUsd });
+
+    setTotalDeposited(totalDepositsUsd - totalWithdrawalsUsd);
     setTotalWithdrawn(totalWithdrawalsUsd);
     setTotalEarned(totalEarnedUsd);
     setLiveTotalEarned(totalEarnedUsd);
@@ -527,6 +524,7 @@ const MyYieldsPage: React.FC = () => {
 
     // Calculate the weighted APY for Aave tokens
     const weightedApy = calculateWeightedApy();
+    console.log({ weightedApy });
 
     // Calculate the per-tick growth rate based on APY
     const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
@@ -538,7 +536,6 @@ const MyYieldsPage: React.FC = () => {
 
         // Use high precision multiplication to ensure decimal changes are visible
         const newValue = prevValue * growthRate;
-
         return newValue;
       });
     }, 100);
@@ -651,10 +648,10 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Deposited</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(totalDeposited, 2)}
+            ${formatNumber(totalDeposited, 4)}
           </div>
           <div className={styles.summarySubtext}>
-            Total deposited to Aave, Radiant, Compound & Yearn v3 protocols
+            Total deposited to protocols
           </div>
         </div>
         <div className={styles.summaryCard}>
@@ -663,16 +660,16 @@ const MyYieldsPage: React.FC = () => {
             ${formatLiveValue(liveTotalEarned)}
           </div>
           <div className={styles.summarySubtext}>
-            Aave & Radiant earnings (balance - deposits + withdrawals)
+            balance - (deposits - withdrawals)
           </div>
         </div>
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Withdrawn</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(totalWithdrawn, 2)}
+            ${formatNumber(totalWithdrawn, 4)}
           </div>
           <div className={styles.summarySubtext}>
-            Total withdrawn from Aave & Radiant protocols
+            Total withdrawn from protocols
           </div>
         </div>
       </div>
