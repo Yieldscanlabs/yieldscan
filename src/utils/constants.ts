@@ -24,5 +24,6 @@ export const PROTOCOL_NAMES = {
   MORPHO_BLUE: 'Morpho Blue',
   FLUID: 'Fluid',
   EIGENLAYER: 'EigenLayer',
-  ROCKET_POOL: 'Rocket Pool'
+  ROCKET_POOL: 'Rocket Pool',
+  YEARN: 'Yearn V3',
 };
