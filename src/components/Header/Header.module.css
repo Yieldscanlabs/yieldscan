@@ -1,8 +1,6 @@
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
+  padding: 1rem 0rem;
   background-color: var(--surface-dark);
   border-bottom: 1px solid var(--border-color);
   height: 60px;
@@ -10,9 +8,10 @@
   top: 0;
   left: 0;
   right: 0;
-  width: 100%;
   z-index: 1000;
   transition: all 0.3s ease;
+  width: 100%;
+  justify-content: center;
 }
 
 /* Header visibility classes */
@@ -23,7 +22,14 @@
 .headerHidden {
   transform: translateY(-100%);
 }
-
+.headerContent{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: calc(1538px + 4rem);
+  width: 100%;
+  padding-left: 2rem;
+}
 /* Remove the global body padding since we've added it to the Layout component */
 
 .headerLeft {
@@ -739,5 +745,12 @@
 
   .headerRight {
     width: auto;
+  }
+}
+
+@media   (max-width: 900px) {
+  .headerContent{
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
