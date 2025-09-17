@@ -127,81 +127,87 @@ export const useAssetStore = create<AssetStore>()(
             if (!ethers.isAddress(token.address)) {
               // Handle native token
               const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
-              if (nativeBalanceRaw > 0n) {
-                const balance = formatUnits(nativeBalanceRaw, token.decimals);
-                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+              console.log({ nativeBalanceRaw });
 
-                for (const def of token.definitions || []) {
-                  const tokenBalanceY = chainResult.tokenBalances.find(
-                    (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
-                  );
-                  if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
-                    const balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
-                    const balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
-                    assets.push({
-                      id: token.id,
-                      token: token.symbol,
-                      address: "0x",
-                      chain: token.chain.name,
-                      maxDecimalsShow: token.maxDecimalsShow,
-                      protocol: def.protocol.name,
-                      withdrawContract: def.withdraw,
-                      underlyingAsset: def.underlyingAsset,
-                      balance,
-                      yieldBearingToken: Boolean(def.yieldBearingToken),
-                      chainId: Number(token.chain.chainId),
-                      decimals: token.decimals,
-                      balanceUsd,
-                      icon: API_BASE_URL + token.image,
-                      withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
-                      usd: token.usdPrice,
-                      currentBalanceInProtocol: Number(balanceY),
-                      currentBalanceInProtocolUsd: balanceUsdY
-                    });
-                  }
+              // if (nativeBalanceRaw > 0n) {
+              const balance = formatUnits(nativeBalanceRaw, token.decimals);
+              const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+
+              for (const def of token.definitions || []) {
+                const tokenBalanceY = chainResult.tokenBalances.find(
+                  (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
+                );
+                let balanceY = '0';
+                let balanceUsdY = '0';
+                if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
+                  balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
+                  balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
                 }
+                assets.push({
+                  id: token.id,
+                  token: token.symbol,
+                  address: "0x",
+                  chain: token.chain.name,
+                  maxDecimalsShow: token.maxDecimalsShow,
+                  protocol: def.protocol.name,
+                  withdrawContract: def.withdraw,
+                  underlyingAsset: def.underlyingAsset,
+                  balance,
+                  yieldBearingToken: Boolean(def.yieldBearingToken),
+                  chainId: Number(token.chain.chainId),
+                  decimals: token.decimals,
+                  balanceUsd,
+                  icon: API_BASE_URL + token.image,
+                  withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
+                  usd: token.usdPrice,
+                  currentBalanceInProtocol: Number(balanceY),
+                  currentBalanceInProtocolUsd: balanceUsdY
+                });
               }
+              // }
             } else {
               // Handle ERC20 tokens
               const tokenBalance = chainResult.tokenBalances.find(
                 (tb: any) => tb.token_address.toLowerCase() === token.address.toLowerCase()
               );
 
-              if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
-                const balance = formatUnits(BigInt(tokenBalance.balance), token.decimals);
-                const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
+              // if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
+              const balance = formatUnits(BigInt(tokenBalance ? tokenBalance.balance : "0"), token.decimals);
+              const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
 
-                for (const def of token.definitions || []) {
+              for (const def of token.definitions || []) {
 
-                  const tokenBalanceY = chainResult.tokenBalances.find(
-                    (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
-                  );
-                  if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
-                    const balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
-                    const balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
-                    assets.push({
-                      id: token.id,
-                      token: token.symbol,
-                      address: token.address,
-                      chain: token.chain.name,
-                      maxDecimalsShow: token.maxDecimalsShow,
-                      protocol: def.protocol.name,
-                      withdrawContract: def.withdraw,
-                      underlyingAsset: def.underlyingAsset,
-                      balance,
-                      yieldBearingToken: Boolean(def.yieldBearingToken),
-                      chainId: Number(token.chain.chainId),
-                      decimals: token.decimals,
-                      balanceUsd,
-                      icon: API_BASE_URL + token.image,
-                      withdrawUri: def.withdrawUri, // or token?.withdrawUri
-                      usd: token.usdPrice,
-                      currentBalanceInProtocol: Number(balanceY),
-                      currentBalanceInProtocolUsd: balanceUsdY
-                    });
-                  }
+                const tokenBalanceY = chainResult.tokenBalances.find(
+                  (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
+                );
+                let balanceY = '0';
+                let balanceUsdY = '0';
+                if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
+                  balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
+                  balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
                 }
+                assets.push({
+                  id: token.id,
+                  token: token.symbol,
+                  address: token.address,
+                  chain: token.chain.name,
+                  maxDecimalsShow: token.maxDecimalsShow,
+                  protocol: def.protocol.name,
+                  withdrawContract: def.withdraw,
+                  underlyingAsset: def.underlyingAsset,
+                  balance,
+                  yieldBearingToken: Boolean(def.yieldBearingToken),
+                  chainId: Number(token.chain.chainId),
+                  decimals: token.decimals,
+                  balanceUsd,
+                  icon: API_BASE_URL + token.image,
+                  withdrawUri: def.withdrawUri, // or token?.withdrawUri
+                  usd: token.usdPrice,
+                  currentBalanceInProtocol: Number(balanceY),
+                  currentBalanceInProtocolUsd: balanceUsdY
+                });
               }
+              // }
             }
           }
 
