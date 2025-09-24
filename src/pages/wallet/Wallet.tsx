@@ -294,6 +294,10 @@ function Wallet() {
         <WalletModal
           isOpen={isModalOpen}
           onClose={closeConnectModal}
+          onManualAddress={(addr) => {
+            console.log("Manual address set:", addr);
+            // 👉 Pass this address into your zustand store: useAssetStore().fetchAssets(addr)
+          }}
         />
       </div>
     </div>

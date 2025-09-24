@@ -334,23 +334,15 @@ const MyYieldsPage: React.FC = () => {
       return 18; // Default to 18 decimals for other tokens
     };
 
-    // Calculate Aave and Radiant earnings using: current_balance - deposits + withdrawals
     const calculateSupportedEarnings = (): number => {
       let totalEarnings = 0;
 
-      // Get Aave and Radiant assets from current balances
       const supportedAssets = filteredYieldAssets.filter(asset => {
-        // const token = tokens.find(
-        //   t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        // );
         return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
       });
 
       supportedAssets.forEach(asset => {
-        // Current balance in USD
         const currentBalanceUsd = parseFloat(asset.currentBalanceInProtocolUsd || '0');
-
-        // Find corresponding deposits and withdrawals for this token
         let depositsUsd = 0;
         let withdrawalsUsd = 0;
         let protocolName = "";
@@ -358,11 +350,6 @@ const MyYieldsPage: React.FC = () => {
         Object.entries(userData).forEach(([chainIdStr, chainData]) => {
           const chainId = parseInt(chainIdStr, 10);
           if (chainId !== asset.chainId) return;
-
-          // Get the protocol data (Aave or Radiant)
-          // const token = tokens.find(
-          // t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-          // );
           protocolName = asset.protocol || "";
 
           if (!protocolName) return;
@@ -372,37 +359,6 @@ const MyYieldsPage: React.FC = () => {
 
           // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
           let tokenSymbol = asset.token;
-
-          // // Handle specific token mappings
-          // if (protocolName.toLowerCase() === 'aave') {
-          //   // Aave token mappings
-          //   if (tokenSymbol === 'aUSDC' || tokenSymbol === 'AUSDC') {
-          //     tokenSymbol = 'USDC';
-          //   } else if (tokenSymbol === 'AUSDT') {
-          //     tokenSymbol = 'USDT';
-          //   } else if (tokenSymbol === 'AWETH') {
-          //     tokenSymbol = 'ETH'; // WETH is usually referred to as ETH in deposits
-          //   } else if (tokenSymbol === 'aBnbUSDC') {
-          //     tokenSymbol = 'USDC';
-          //   } else if (tokenSymbol === 'aBnbUSDT') {
-          //     tokenSymbol = 'USDT';
-          //   } else if (tokenSymbol === 'aBnbWBNB') {
-          //     tokenSymbol = 'wBNB'; // BNB Wrapped BNB
-          //   } else if (tokenSymbol === 'aArbUSDT') {
-          //     tokenSymbol = 'USDT';
-          //   } else if (tokenSymbol.startsWith('a') || tokenSymbol.startsWith('A')) {
-          //     // Generic handling for other aTokens - remove 'a' prefix
-          //     tokenSymbol = tokenSymbol.substring(1);
-          //   }
-          // } else if (protocolName.toLowerCase() === 'radiant') {
-          //   // Radiant token mappings
-          //   if (tokenSymbol === 'Radiant USDC') {
-          //     tokenSymbol = 'USDC';
-          //   } else if (tokenSymbol === 'Radiant USDT') {
-          //     tokenSymbol = 'USDT';
-          //   }
-          // }
-
           const tokenData = protocolData[tokenSymbol];
           if (!tokenData) {
             console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
@@ -410,8 +366,6 @@ const MyYieldsPage: React.FC = () => {
           }
 
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-
-          // Convert BigInt values to regular numbers with proper decimals
           const depositsRawString = tokenData.totalDeposit || '0';
           const withdrawalsRawString = tokenData.totalWithdraw || '0';
 
@@ -427,23 +381,12 @@ const MyYieldsPage: React.FC = () => {
           const withdrawalsRemainder = withdrawalsBigInt % divisor;
           const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
 
-          // Find token price for USD conversion - use the underlying asset price
-          // const tokenInfo = tokens.find(t =>
-          //   t.chainId === chainId &&
-          //   !t.yieldBearingToken &&
-          //   (t.token.toUpperCase() === tokenSymbol.toUpperCase())
-          // );
-
           const tokenPrice = asset.usd;
           depositsUsd += depositsFormatted * tokenPrice;
           withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
-
-        // Calculate earnings for this token: current_balance - deposits + withdrawals
         const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
-        // const tokenEarnings = depositsUsd - withdrawalsUsd;
         totalEarnings += tokenEarnings;
-
         console.log(`Earnings for ${asset.token} on ${asset.chain} (${protocolName}):`, { currentBalanceUsd, depositsUsd, withdrawalsUsd, tokenEarnings });
 
       });
