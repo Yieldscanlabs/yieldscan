@@ -23,6 +23,7 @@ export interface Asset {
   usd: number;
   currentBalanceInProtocol?: number;
   currentBalanceInProtocolUsd?: string;
+  apyValue?:any
 }
 
 export interface YieldOption {

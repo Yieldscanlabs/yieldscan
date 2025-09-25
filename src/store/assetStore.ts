@@ -93,7 +93,6 @@ export const useAssetStore = create<AssetStore>()(
           const supportedChainIds = [
             ...new Set(tokens.map((t: any) => t.chain.chainId)),
           ];
-          console.log({ tokens });
           // Fetch token balances for each supported chain
           const balancePromises = supportedChainIds.map(async (chainId) => {
             const moralisChain =
@@ -183,6 +182,7 @@ export const useAssetStore = create<AssetStore>()(
                   usd: token.usdPrice,
                   currentBalanceInProtocol: Number(balanceY),
                   currentBalanceInProtocolUsd: balanceUsdY,
+                  apyValue: def.apyValue.apy
                 });
               }
               // }
@@ -238,6 +238,7 @@ export const useAssetStore = create<AssetStore>()(
                   usd: token.usdPrice,
                   currentBalanceInProtocol: Number(balanceY),
                   currentBalanceInProtocolUsd: balanceUsdY,
+                  apyValue: def.apyValue.apy
                 });
               }
               // }

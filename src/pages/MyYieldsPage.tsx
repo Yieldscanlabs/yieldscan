@@ -334,96 +334,96 @@ const MyYieldsPage: React.FC = () => {
       return 18; // Default to 18 decimals for other tokens
     };
 
-    // const calculateSupportedEarnings = (): number => {
-    //   let totalEarnings = 0;
-
-    //   const supportedAssets = filteredYieldAssets.filter(asset => {
-    //     return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
-    //   });
-
-    //   supportedAssets.forEach(asset => {
-    //     const currentBalanceUsd = parseFloat(asset.currentBalanceInProtocolUsd || '0');
-    //     let depositsUsd = 0;
-    //     let withdrawalsUsd = 0;
-    //     let protocolName = "";
-
-    //     Object.entries(userData).forEach(([chainIdStr, chainData]) => {
-    //       const chainId = parseInt(chainIdStr, 10);
-    //       if (chainId !== asset.chainId) return;
-    //       protocolName = asset.protocol || "";
-
-    //       if (!protocolName) return;
-
-    //       const protocolData = (chainData as Record<string, any>)[protocolName];
-    //       if (!protocolData) return;
-
-    //       // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
-    //       let tokenSymbol = asset.token;
-    //       const tokenData = protocolData[tokenSymbol];
-    //       if (!tokenData) {
-    //         console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
-    //         return;
-    //       }
-
-    //       const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-    //       const depositsRawString = tokenData.totalDeposit || '0';
-    //       const withdrawalsRawString = tokenData.totalWithdraw || '0';
-
-    //       const depositsBigInt = BigInt(depositsRawString);
-    //       const withdrawalsBigInt = BigInt(withdrawalsRawString);
-    //       const divisor = BigInt('1' + '0'.repeat(decimals));
-
-    //       const depositsWhole = depositsBigInt / divisor;
-    //       const depositsRemainder = depositsBigInt % divisor;
-    //       const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
-
-    //       const withdrawalsWhole = withdrawalsBigInt / divisor;
-    //       const withdrawalsRemainder = withdrawalsBigInt % divisor;
-    //       const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
-
-    //       const tokenPrice = asset.usd;
-    //       depositsUsd += depositsFormatted * tokenPrice;
-    //       withdrawalsUsd += withdrawalsFormatted * tokenPrice;
-    //     });
-    //     const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
-    //     totalEarnings += tokenEarnings;
-    //     console.log(`Earnings for ${asset.token} on ${asset.chain} (${protocolName}):`, { currentBalanceUsd, depositsUsd, withdrawalsUsd, tokenEarnings });
-
-    //   });
-
-    //   return totalEarnings;
-    // };
-
-    const calculateSupportedEarnings = () => {
-      const days = 1;
-      const compoundsPerYear = 365;
+    const calculateSupportedEarnings = (): number => {
       let totalEarnings = 0;
 
       const supportedAssets = filteredYieldAssets.filter(asset => {
-        return ['aave', 'radiant', 'compound', 'yearn v3'].includes(asset?.protocol?.toLowerCase() || '');
+        return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
       });
 
-      supportedAssets.forEach((asset: any) => {
-        const principal = parseFloat(asset.currentBalanceInProtocolUsd || '0');
-        const apy = parseFloat(asset.apy || '0') / 100;
+      supportedAssets.forEach(asset => {
+        const currentBalanceUsd = parseFloat(asset.currentBalanceInProtocolUsd || '0');
+        let depositsUsd = 0;
+        let withdrawalsUsd = 0;
+        let protocolName = "";
 
-        // Compound interest formula: A = P * (1 + r/n)^(n*t)
-        const t = days / 365;
-        const A = principal * Math.pow(1 + apy / compoundsPerYear, compoundsPerYear * t);
-        const estimatedEarnings = A - principal;
+        Object.entries(userData).forEach(([chainIdStr, chainData]) => {
+          const chainId = parseInt(chainIdStr, 10);
+          if (chainId !== asset.chainId) return;
+          protocolName = asset.protocol || "";
 
-        totalEarnings += estimatedEarnings;
+          if (!protocolName) return;
 
-        console.log(`Compound earnings for ${asset.token} on ${asset.chain} (${asset.protocol}):`, {
-          principal,
-          apy: apy * 100,
-          days,
-          estimatedEarnings
+          const protocolData = (chainData as Record<string, any>)[protocolName];
+          if (!protocolData) return;
+
+          // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
+          let tokenSymbol = asset.token;
+          const tokenData = protocolData[tokenSymbol];
+          if (!tokenData) {
+            console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
+            return;
+          }
+
+          const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
+          const depositsRawString = tokenData.totalDeposit || '0';
+          const withdrawalsRawString = tokenData.totalWithdraw || '0';
+
+          const depositsBigInt = BigInt(depositsRawString);
+          const withdrawalsBigInt = BigInt(withdrawalsRawString);
+          const divisor = BigInt('1' + '0'.repeat(decimals));
+
+          const depositsWhole = depositsBigInt / divisor;
+          const depositsRemainder = depositsBigInt % divisor;
+          const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
+
+          const withdrawalsWhole = withdrawalsBigInt / divisor;
+          const withdrawalsRemainder = withdrawalsBigInt % divisor;
+          const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
+
+          const tokenPrice = asset.usd;
+          depositsUsd += depositsFormatted * tokenPrice;
+          withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
+        const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
+        totalEarnings += tokenEarnings;
+        console.log(`Earnings for ${asset.token} on ${asset.chain} (${protocolName}):`, { currentBalanceUsd, depositsUsd, withdrawalsUsd, tokenEarnings });
+
       });
 
       return totalEarnings;
     };
+
+    // const calculateSupportedEarnings = () => {
+    //   const days = 1;
+    //   const compoundsPerYear = 365;
+    //   let totalEarnings = 0;
+
+    //   const supportedAssets = filteredYieldAssets.filter(asset => {
+    //     return ['aave', 'radiant', 'compound', 'yearn v3'].includes(asset?.protocol?.toLowerCase() || '');
+    //   });
+
+    //   supportedAssets.forEach((asset: any) => {
+        
+    //     const principal = parseFloat(asset.currentBalanceInProtocolUsd || '0');
+    //     const apy = parseFloat(asset.apy || '0') / 100;
+    //     // Compound interest formula: A = P * (1 + r/n)^(n*t)
+    //     const t = days / 365;
+    //     const A = principal * Math.pow(1 + apy / compoundsPerYear, compoundsPerYear * t);
+    //     const estimatedEarnings = A - principal;
+
+    //     totalEarnings += estimatedEarnings;
+
+    //     console.log(`Compound earnings for ${asset.token} on ${asset.chain} (${asset.protocol}):`, {
+    //       principal,
+    //       apy: apy * 100,
+    //       days,
+    //       estimatedEarnings
+    //     });
+    //   });
+
+    //   return totalEarnings;
+    // };
 
     // Process deposits and withdrawals for each chain and protocol (Aave and Radiant)
     Object.entries(userData).forEach(([chainIdStr, chainData]) => {
