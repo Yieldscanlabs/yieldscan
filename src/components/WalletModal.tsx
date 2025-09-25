@@ -1,49 +1,50 @@
 import React, { useState } from 'react';
-import { useChainId, useChains, useConnect } from 'wagmi';
+import { useConnect } from 'wagmi';
 import { getWalletIcon } from './WalletIcons';
 import styles from './WalletModal.module.css';
-// import { fetchAllTransactions } from '../store/assetStore';
+import { fetchNewTransactions } from '../store/assetStore';
 
 interface WalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onManualAddress?: (address: string) => void; // 👈 add callback
 }
 
-const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, onManualAddress }) => {
+const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => {
   const { connectors, connect, status, error } = useConnect();
-  const id = useChainId()
   const [connectingConnector, setConnectingConnector] = useState<string | null>(null);
-  const [manualAddress, setManualAddress] = useState('');
-
   if (!isOpen) return null;
 
   const handleConnectWallet = (connector: any) => {
     setConnectingConnector(connector.id);
-    connect({ connector });
-  };
-  const handleFetchTransactions = async (walletAddress: string) => {
-    if (!id) return;
-    try {
-      // const txs = await fetchAllTransactions(walletAddress, id.toString(), 50);
-      // console.log('Fetched transactions:', txs);
-    } catch (err) {
-      console.error('Error fetching transactions:', err);
-    }
-  };
-  const handleManualSubmit = () => {
-    if (manualAddress && /^0x[a-fA-F0-9]{40}$/.test(manualAddress)) {
-      onManualAddress?.(manualAddress); // 👈 pass address up
-      handleFetchTransactions(manualAddress); // fetch transactions for manual input
 
-      onClose();
-    } else {
-      alert('Please enter a valid Ethereum address');
-    }
-  };
+    // Bypass the readiness check and try to connect anyway
+    connect({ connector }, {
+      onSuccess: (data) => {
+        fetchNewTransactions(data.accounts[0] as string, data.chainId as number)
+      }
+    });
 
+  };
   const isConnecting = status === 'pending';
-  if (status === 'success') onClose();
+
+  // If connection was successful, close the modal
+  if (status === 'success') {
+    onClose();
+  }
+
+  // Filter out connectors or sort them to prioritize available ones
+  const sortedConnectors = [...connectors].sort((a, b) => {
+    // Prioritize certain wallet types regardless of ready status
+    const order = ['metaMask', 'coinbaseWallet', 'walletConnect', 'injected'];
+    const aIndex = order.indexOf(a.id);
+    const bIndex = order.indexOf(b.id);
+
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    return 0;
+  });
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -54,15 +55,16 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, onManualAddr
         </div>
         <div className={styles.modalContent}>
           <p className={styles.modalDescription}>
-            Connect your wallet or enter an address manually
+            Connect your wallet to access Yieldscan features
           </p>
 
           <div className={styles.walletList}>
-            {connectors.map((connector) => (
+            {sortedConnectors.map((connector) => (
               <button
                 key={connector.id}
                 className={`${styles.walletButton} ${connectingConnector === connector.id ? styles.connecting : ''}`}
                 onClick={() => handleConnectWallet(connector)}
+                // Remove the disabled check - we'll try to connect regardless
                 disabled={isConnecting}
               >
                 <div className={styles.walletIcon}>
@@ -76,17 +78,6 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, onManualAddr
                 )}
               </button>
             ))}
-          </div>
-
-          {/* 👇 Manual input section */}
-          <div className={styles.manualInput}>
-            <input
-              type="text"
-              placeholder="Enter Ethereum address"
-              value={manualAddress}
-              onChange={(e) => setManualAddress(e.target.value)}
-            />
-            <button onClick={handleManualSubmit}>Use Address</button>
           </div>
 
           {error && (
@@ -106,12 +97,18 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, onManualAddr
 
 export default WalletModal;
 
+// Helper functions to get wallet names and icons
 function getWalletName(id: string): string {
   switch (id) {
-    case 'io.metamask': return 'MetaMask'
-    case 'app.phantom': return 'Phantom Wallet'
-    case 'network.pontem': return 'Pontem Wallet'
-    case 'injected': return 'Browser Wallet'
-    default: return id
+    case 'io.metamask':
+      return 'MetaMask'
+    case 'app.phantom':
+      return 'Phantom Wallet'
+    case 'network.pontem':
+      return 'Pontem Wallet'
+    case 'injected':
+      return 'Browser Wallet'
+    default:
+      return id
   }
 }

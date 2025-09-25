@@ -6,8 +6,6 @@ import Moralis from "moralis";
 import type { Asset } from "../types";
 import { API_BASE_URL } from "../utils/constants";
 import { ethers } from "ethers";
-import { useDepositsAndWithdrawalsStore } from "./depositsAndWithdrawalsStore";
-
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
 
@@ -47,78 +45,6 @@ async function fetchTokens() {
   return data.assets;
 }
 
-// export async function fetchAllTransactions(
-//   walletAddress: string,
-//   chainId: string,
-//   limitPerPage = 100
-// ): Promise<any[]> {
-//   let allTxs: any[] = [];
-//   let cursor: string | undefined = undefined;
-
-//   try {
-//     do {
-//       const response = await Moralis.EvmApi.transaction.getWalletTransactions({
-//         address: walletAddress,
-//         chain: chainId,
-//         limit: limitPerPage,
-//         cursor,
-//         order: "DESC",
-//       });
-
-//       const txs = response.toJSON();
-//       if (txs && txs.result) {
-//         allTxs = allTxs.concat(txs.result);
-//       }
-
-//       cursor = txs.cursor; // Moralis returns cursor for next page
-//     } while (cursor); // loop until no cursor (all pages fetched)
-
-//     return allTxs;
-//   } catch (err) {
-//     console.error("Error fetching transactions recursively:", err);
-//     return allTxs;
-//   }
-// }
-function getLastTxCheckpoint(walletAddress: string) {
-  return localStorage.getItem(`tx-checkpoint-${walletAddress}`);
-}
-
-function setLastTxCheckpoint(walletAddress: string, blockNumber: string) {
-  localStorage.setItem(`tx-checkpoint-${walletAddress}`, blockNumber);
-}
-export async function fetchNewTransactions(walletAddress: string, chainId: string, limit = 100) {
-  const lastBlock = getLastTxCheckpoint(walletAddress);
-  let allNewTxs: any[] = [];
-  let cursor: string | undefined = undefined;
-
-  do {
-    const response = await Moralis.EvmApi.transaction.getWalletTransactions({
-      address: walletAddress,
-      chain: chainId,
-      limit,
-      cursor,
-      fromBlock: lastBlock ? parseInt(lastBlock) + 1 : undefined, // only after last known tx
-      order: 'ASC'
-    });
-
-    const txs = response.toJSON()?.result || [];
-
-    if (txs.length === 0) break; // no new transactions
-
-    allNewTxs = allNewTxs.concat(txs);
-    cursor = response.toJSON()?.cursor;
-
-  } while (cursor);
-
-  if (allNewTxs.length > 0) {
-    // Update checkpoint to the latest transaction block number
-    const latestBlock = allNewTxs[allNewTxs.length - 1].block_number;
-    setLastTxCheckpoint(walletAddress, latestBlock.toString());
-  }
-
-  return allNewTxs;
-}
-
 interface AssetStore {
   // State
   assets: Asset[];
@@ -129,7 +55,7 @@ interface AssetStore {
 
   // Actions
   fetchAssets: (address: string, showLoading?: boolean) => Promise<void>;
-  fetchTransactions: (address: string, chainId: number) => Promise<void>; // 👈 new
+  // fetchTransactions: (address: string, chainId: number) => Promise<void>;
   clearErrors: () => void;
   setAutoRefresh: (enabled: boolean) => void;
   getAssetByAddress: (address: string, chainId: number) => Asset | undefined;
@@ -334,27 +260,27 @@ export const useAssetStore = create<AssetStore>()(
           });
         }
       },
-      fetchTransactions: async (walletAddress: string, chainId: number) => {
-        set({ isLoading: true, error: null });
-        try {
-          const txs = await fetchTransactions(walletAddress, chainId);
-          set((state) => ({
-            transactions: {
-              ...state.transactions,
-              [chainId]: txs,
-            },
-            isLoading: false,
-          }));
-        } catch (err) {
-          set({
-            error:
-              err instanceof Error
-                ? err.message
-                : "Failed to fetch transactions",
-            isLoading: false,
-          });
-        }
-      },
+      // fetchTransactions: async (walletAddress: string, chainId: number) => {
+      //   set({ isLoading: true, error: null });
+      //   try {
+      //     const txs = await fetchTransactions(walletAddress, chainId);
+      //     set((state) => ({
+      //       transactions: {
+      //         ...state.transactions,
+      //         [chainId]: txs,
+      //       },
+      //       isLoading: false,
+      //     }));
+      //   } catch (err) {
+      //     set({
+      //       error:
+      //         err instanceof Error
+      //           ? err.message
+      //           : "Failed to fetch transactions",
+      //       isLoading: false,
+      //     });
+      //   }
+      // },
 
       // Clear any error messages
       clearErrors: () => set({ error: null }),
@@ -437,4 +363,110 @@ export function useAssetAutoRefresh(address: string) {
       autoRefreshInitialized = false;
     };
   }, [address, fetchAssets, autoRefreshEnabled]);
+}
+
+export async function saveCheckpoint(
+  address: string,
+  chainId: number,
+  block: number
+) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/user-checkpoint`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        walletAddress: address,
+        chainId,
+        lastBlock: block,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to save checkpoint: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error saving checkpoint:", err);
+  }
+}
+
+// Get checkpoint from backend
+export async function getCheckpoint(
+  address: string,
+  chainId: number
+): Promise<number> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/user-checkpoint/wallet-address?walletAddress=${address}&chainId=${chainId}`
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch checkpoint: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    // assuming your API returns an array of checkpoints
+    if (data && data.length > 0) {
+      return data[0].lastBlock ?? 0;
+    }
+
+    return 0;
+  } catch (err) {
+    console.error("Error fetching checkpoint:", err);
+    return 0;
+  }
+}
+
+// ✅ Get current block for now
+async function getCurrentBlock(chainId: number): Promise<number> {
+  const moralisChain =
+    chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
+  if (!moralisChain) throw new Error(`Unsupported chain: ${chainId}`);
+
+  const now = new Date(); // <-- Date object
+  const resp = await Moralis.EvmApi.block.getDateToBlock({
+    chain: moralisChain,
+    date: now.toISOString(), // <-- ISO string
+  });
+
+  return resp.toJSON().block;
+}
+
+// ✅ Fetch new transactions since last checkpoint
+export async function fetchNewTransactions(
+  address: string,
+  chainId: number
+): Promise<any[]> {
+  const lastCheckpoint = await getCheckpoint(address, chainId);
+  const currentBlock = await getCurrentBlock(chainId);
+  console.log(`Checkpoint: ${lastCheckpoint}, Current: ${currentBlock}`);
+  if (currentBlock <= lastCheckpoint) {
+    console.log("⏩ No new blocks since last fetch, skipping.");
+    return [];
+  }
+  saveCheckpoint(address, chainId, currentBlock);
+  const moralisChain =
+    chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
+  let cursor: string | undefined = undefined;
+  let txs: any[] = [];
+
+  do {
+    const response = await Moralis.EvmApi.transaction.getWalletTransactions({
+      address,
+      chain: moralisChain,
+      order: "DESC",
+      fromBlock: lastCheckpoint + 1,
+      cursor,
+    });
+
+    const page = response.toJSON();
+    txs = txs.concat(page.result);
+    cursor = page.cursor;
+  } while (cursor);
+
+  console.log(`✅ Found ${txs.length} new tx(s)`);
+  return txs;
 }
