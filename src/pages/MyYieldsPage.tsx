@@ -34,6 +34,8 @@ const MyYieldsPage: React.FC = () => {
   const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
+  const [currentDeposit, setCurrentDeposit] = useState<number>(0);
 
   // Use userPreferencesStore for view toggle state
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
@@ -336,7 +338,8 @@ const MyYieldsPage: React.FC = () => {
 
     // Calculate Aave and Radiant earnings using: current_balance - deposits + withdrawals
     const calculateSupportedEarnings = (): number => {
-      let totalEarnings = 0;
+      // let currentDepositAmount = 0
+      let totalEarnings = 0, currentTotalBalance = 0;
 
       // Get Aave and Radiant assets from current balances
       const supportedAssets = filteredYieldAssets.filter(asset => {
@@ -345,18 +348,18 @@ const MyYieldsPage: React.FC = () => {
         // );
         return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
       });
-
       supportedAssets.forEach(asset => {
         // Current balance in USD
         const currentBalanceUsd = parseFloat(asset.currentBalanceInProtocolUsd || '0');
 
+        currentTotalBalance += currentBalanceUsd
         // Find corresponding deposits and withdrawals for this token
         let depositsUsd = 0;
         let withdrawalsUsd = 0;
         let protocolName = "";
-
         Object.entries(userData).forEach(([chainIdStr, chainData]) => {
           const chainId = parseInt(chainIdStr, 10);
+
           if (chainId !== asset.chainId) return;
 
           // Get the protocol data (Aave or Radiant)
@@ -369,46 +372,15 @@ const MyYieldsPage: React.FC = () => {
 
           const protocolData = (chainData as Record<string, any>)[protocolName];
           if (!protocolData) return;
-
           // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
           let tokenSymbol = asset.token;
-
-          // // Handle specific token mappings
-          // if (protocolName.toLowerCase() === 'aave') {
-          //   // Aave token mappings
-          //   if (tokenSymbol === 'aUSDC' || tokenSymbol === 'AUSDC') {
-          //     tokenSymbol = 'USDC';
-          //   } else if (tokenSymbol === 'AUSDT') {
-          //     tokenSymbol = 'USDT';
-          //   } else if (tokenSymbol === 'AWETH') {
-          //     tokenSymbol = 'ETH'; // WETH is usually referred to as ETH in deposits
-          //   } else if (tokenSymbol === 'aBnbUSDC') {
-          //     tokenSymbol = 'USDC';
-          //   } else if (tokenSymbol === 'aBnbUSDT') {
-          //     tokenSymbol = 'USDT';
-          //   } else if (tokenSymbol === 'aBnbWBNB') {
-          //     tokenSymbol = 'wBNB'; // BNB Wrapped BNB
-          //   } else if (tokenSymbol === 'aArbUSDT') {
-          //     tokenSymbol = 'USDT';
-          //   } else if (tokenSymbol.startsWith('a') || tokenSymbol.startsWith('A')) {
-          //     // Generic handling for other aTokens - remove 'a' prefix
-          //     tokenSymbol = tokenSymbol.substring(1);
-          //   }
-          // } else if (protocolName.toLowerCase() === 'radiant') {
-          //   // Radiant token mappings
-          //   if (tokenSymbol === 'Radiant USDC') {
-          //     tokenSymbol = 'USDC';
-          //   } else if (tokenSymbol === 'Radiant USDT') {
-          //     tokenSymbol = 'USDT';
-          //   }
-          // }
 
           const tokenData = protocolData[tokenSymbol];
           if (!tokenData) {
             console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
             return;
           }
-
+          // debugger
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
 
           // Convert BigInt values to regular numbers with proper decimals
@@ -439,15 +411,17 @@ const MyYieldsPage: React.FC = () => {
           withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
 
+        console.log("currentTotalBalance ", currentTotalBalance)
         // Calculate earnings for this token: current_balance - deposits + withdrawals
         const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
         // const tokenEarnings = depositsUsd - withdrawalsUsd;
         totalEarnings += tokenEarnings;
 
-        console.log(`Earnings for ${asset.token} on ${asset.chain} (${protocolName}):`, { currentBalanceUsd, depositsUsd, withdrawalsUsd, tokenEarnings });
+        // console.log(`Earnings for ${asset.token} on ${asset.chain} (${protocolName}):`, { currentBalanceUsd, depositsUsd, withdrawalsUsd, tokenEarnings });
 
       });
-
+      setCurrentBalance(currentTotalBalance)
+      // setCurrentDeposit(currentDepositAmount)
       return totalEarnings;
     };
 
@@ -490,8 +464,9 @@ const MyYieldsPage: React.FC = () => {
           );
 
           const tokenPrice = tokenInfo?.usd || 1; // Default to $1 if no price found
-
-          // Add to totals in USD
+          // const totalDep = depositsFormatted * tokenPrice
+          // const totalWith = withdrawalsFormatted * tokenPrice
+          if (selectedNetwork !== 'all' && selectedNetwork !== chainId) return;
           totalDepositsUsd += depositsFormatted * tokenPrice;
           totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
@@ -507,13 +482,14 @@ const MyYieldsPage: React.FC = () => {
     const totalEarnedUsd = supportedEarnings; // Only Aave and Radiant earnings for now, as requested
 
     // Update state with real data
-    console.log({ totalDepositsUsd, totalWithdrawalsUsd, totalEarnedUsd });
-
-    setTotalDeposited(totalDepositsUsd - totalWithdrawalsUsd);
+    // console.log({ totalDepositsUsd, totalWithdrawalsUsd, totalEarnedUsd });
+    setTotalDeposited(totalDepositsUsd)
+    // setTotalDeposited(totalDepositsUsd - totalWithdrawalsUsd);
+    setCurrentDeposit(totalDepositsUsd - totalWithdrawalsUsd) 
     setTotalWithdrawn(totalWithdrawalsUsd);
     setTotalEarned(totalEarnedUsd);
     setLiveTotalEarned(totalEarnedUsd);
-  }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets]);
+  }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets, selectedNetwork]);
 
   // Live ticker effect - update earnings every 100ms based on Aave APY
   useEffect(() => {
@@ -542,7 +518,7 @@ const MyYieldsPage: React.FC = () => {
 
     // Cleanup timer on unmount or when dependencies change
     return () => clearInterval(timer);
-  }, [totalEarned, wallet.address, allYieldAssets, apyData]);
+  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
 
   // Format value with proper comma separators and more decimal places for precision
   const formatLiveValue = (value: number): string => {
@@ -598,7 +574,6 @@ const MyYieldsPage: React.FC = () => {
       </div>
     );
   }
-
   // Render the content
   return (
     <div className={styles.container}>
@@ -670,6 +645,27 @@ const MyYieldsPage: React.FC = () => {
           </div>
           <div className={styles.summarySubtext}>
             Total withdrawn from protocols
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.summaryCards}>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Current Deposit</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(currentDeposit, 4)}
+          </div>
+          <div className={styles.summarySubtext}>
+            Current deposit to protocols
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Current Earned</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(currentBalance - currentDeposit, 20)}
+          </div>
+          <div className={styles.summarySubtext}>
+            Current Earning from protocols
           </div>
         </div>
       </div>
