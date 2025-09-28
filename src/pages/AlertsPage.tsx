@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './AlertsPage.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import WalletModal from '../components/WalletModal';
+import SendMessageModal from '../components/SendMessageModal';
+import axios from 'axios';
 
 const AlertsPage: React.FC = () => {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
@@ -10,21 +12,40 @@ const AlertsPage: React.FC = () => {
     window.open('https://t.me/yieldscan_bot', '_blank');
   };
 
+  const [isSendModalOpen, setSendModalOpen] = React.useState(false);
+
+  const handleSendMessageClick = () => {
+    setSendModalOpen(true);
+  };
+
+  const handleCloseSendModal = () => {
+    setSendModalOpen(false);
+  };
+
+  const handleSend = async (message: string) => {
+    try {
+      await axios.post('/api/broadcast', { message }); // your backend API
+      alert('Message sent successfully!');
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      alert('Failed to send message');
+    }
+  };
   return (
     <div className={styles.container}>
       <div className={styles.hero}>
-        
+
         {/* Left Content */}
         <div className={styles.heroLeft}>
           <h1 className={styles.heroTitle}>
             <span className={styles.highlight}>Money-Making Alerts</span>, Every Time
           </h1>
-          
+
           <p className={styles.heroDescription}>
-            Get instant Telegram notifications when better APY opportunities become available 
+            Get instant Telegram notifications when better APY opportunities become available
             or when security risks are detected in your DeFi protocols.
           </p>
-          
+
           <div className={styles.features}>
             <div className={styles.featureItem}>
               <div className={styles.featureIcon}>🎯</div>
@@ -41,7 +62,7 @@ const AlertsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className={styles.ctaSection}>
             {wallet.isConnected ? (
               <>
@@ -61,7 +82,7 @@ const AlertsPage: React.FC = () => {
             )}
           </div>
         </div>
-        
+
         {/* Right Visual */}
         <div className={styles.heroRight}>
           <div className={styles.visualContainer}>
@@ -78,12 +99,12 @@ const AlertsPage: React.FC = () => {
                   <div className={styles.notifContent}>
                     <div className={styles.alertBadge}>🎯 APY Alert</div>
                     <div className={styles.notifText}>
-                      Better yield found! Move from Compound (4.2% APY) to Aave (6.8% APY) 
+                      Better yield found! Move from Compound (4.2% APY) to Aave (6.8% APY)
                       for +2.6% improvement
                     </div>
                   </div>
                 </div>
-                
+
                 <div className={styles.notificationCard}>
                   <div className={styles.notifHeader}>
                     <div className={styles.botAvatar}>🤖</div>
@@ -103,14 +124,24 @@ const AlertsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
       </div>
-      
+      {wallet.isConnected && (
+        <button onClick={handleSendMessageClick}>
+          Send Message
+        </button>
+      )}
       {/* Wallet Modal */}
-      <WalletModal 
+      <WalletModal
         isOpen={isModalOpen}
         onClose={closeConnectModal}
       />
+      <SendMessageModal
+        isOpen={isSendModalOpen}
+        onClose={handleCloseSendModal}
+        onSend={handleSend}
+      />
+
     </div>
   );
 };
