@@ -2,34 +2,38 @@ import React from 'react';
 import styles from './AlertsPage.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import WalletModal from '../components/WalletModal';
-import SendMessageModal from '../components/SendMessageModal';
-import axios from 'axios';
+import { injected, useAccount, useConnect, useSignMessage } from 'wagmi'
+// import SendMessageModal from '../components/SendMessageModal';
+// import axios from 'axios';
 
 const AlertsPage: React.FC = () => {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
-
+  const { signMessage } = useSignMessage();
+  const { connect } = useConnect()
+  const { isConnected } = useAccount()
   const handleJoinBot = () => {
-    window.open('https://t.me/yieldscan_bot', '_blank');
-  };
-
-  const [isSendModalOpen, setSendModalOpen] = React.useState(false);
-
-  const handleSendMessageClick = () => {
-    setSendModalOpen(true);
-  };
-
-  const handleCloseSendModal = () => {
-    setSendModalOpen(false);
-  };
-
-  const handleSend = async (message: string) => {
-    try {
-      await axios.post('/api/broadcast', { message }); // your backend API
-      alert('Message sent successfully!');
-    } catch (err) {
-      console.error('Failed to send message:', err);
-      alert('Failed to send message');
+    if (!isConnected) {
+      connect({ connector: injected() })
     }
+    signMessage({ message: 'Connect To Telegram Bot' }, {
+      async onSuccess(data) {
+        console.log('Success', data);
+        const response = await fetch(`http://localhost:4023/api/telegram/signature?signature=${data}`,{
+          method: 'GET',
+        });
+        const jsonRep =  await response.json();
+        console.log('JSON Response', jsonRep);
+        if(jsonRep){
+           window.open(`https://t.me/yieldscan_bot?start=${jsonRep.signature}`, '_blank');
+        }
+      },
+      onError(error) {
+        console.log('Error', error);
+      },
+      onSettled(data, error) {
+        console.log('Settled', { data, error });
+      }
+    });
   };
   return (
     <div className={styles.container}>
@@ -126,22 +130,11 @@ const AlertsPage: React.FC = () => {
         </div>
 
       </div>
-      {wallet.isConnected && (
-        <button onClick={handleSendMessageClick}>
-          Send Message
-        </button>
-      )}
       {/* Wallet Modal */}
       <WalletModal
         isOpen={isModalOpen}
         onClose={closeConnectModal}
       />
-      <SendMessageModal
-        isOpen={isSendModalOpen}
-        onClose={handleCloseSendModal}
-        onSend={handleSend}
-      />
-
     </div>
   );
 };
