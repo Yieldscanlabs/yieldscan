@@ -5,34 +5,32 @@ import type { WalletInfo } from '../types';
 
 export default function useWalletConnection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
   // Use wagmi hooks for wallet connection
   const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
-
+  
   // Create a wallet info object to match your existing implementation
   const wallet: WalletInfo = {
-    // address: address || '',
-    // address: "0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6",
-    address:'0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6',
+    address: address || '',
     isConnected: isConnected || false,
     chainId: chainId || 0
   };
-
+  
   const openConnectModal = useCallback(() => {
     setIsModalOpen(true);
   }, []);
-
+  
   const closeConnectModal = useCallback(() => {
     setIsModalOpen(false);
   }, []);
-
+  
   const connectWallet = useCallback(() => {
     connect({ connector: injected() });
     closeConnectModal();
   }, [connect, closeConnectModal]);
-
+  
   const disconnectWallet = useCallback(() => {
     disconnect();
   }, [disconnect]);

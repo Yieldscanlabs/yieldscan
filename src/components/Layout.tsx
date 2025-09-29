@@ -20,31 +20,31 @@ import { useTheme } from '../hooks/useTheme';
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
   const { fetchAssets } = useAssetStore();
-  const {
-    fetchEarnings,
+  const { 
+    fetchEarnings, 
     lastUpdated: earningsLastUpdated
   } = useEarnStore();
-  const {
-    fetchUserActivity,
+  const { 
+    fetchUserActivity, 
     lastUpdated: activityLastUpdated
   } = useDepositsAndWithdrawalsStore();
-
+  
   // Initialize theme on app startup
   useTheme();
-
+  
   // Initialize auto-refresh for APY, Assets, and Earnings (no auto-refresh for deposits/withdrawals due to long fetch time)
   useApyAutoRefresh();
-  useEarningsAutoRefresh("0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6");
-
+  useEarningsAutoRefresh(wallet.address);
+  
   // Fetch assets, earnings, and user activity when wallet connection changes
   useEffect(() => {
-    if (true) {
-      fetchEarnings("0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6", true);
-      fetchAssets("0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6", true);
-      fetchUserActivity("0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6", true);
+    if (wallet.address) {
+      fetchEarnings(wallet.address, true);
+      fetchAssets(wallet.address, true);
+      fetchUserActivity(wallet.address, true);
     }
-  }, ["0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6"]);
-
+  }, [wallet.address]);
+  
 
   useEffect(() => {
     if (earningsLastUpdated && wallet.isConnected) {
@@ -60,9 +60,9 @@ const Layout = () => {
 
   return (
     <div className={styles.layout}>
-      <Header
+      <Header 
         isConnected={wallet.isConnected}
-        address={"0x5fbc2F7B45155CbE713EAa9133Dd0e88D74126f6"}
+        address={wallet.address}
         disconnectWallet={disconnectWallet}
       />
       <main className={styles.main}>
