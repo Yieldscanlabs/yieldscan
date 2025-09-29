@@ -288,7 +288,6 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                   sortedTokens.map(token => {
                     const tokenData = apyData[token.chainId]?.[token.address.toLowerCase()];
                     const { protocol: bestProtocol } = getBestApyForToken(token);
-                    
                     return (
                       <tr key={`token-${token.chainId}-${token.address}`}>
                         {protocols.map(protocol => {
@@ -297,7 +296,6 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                           
                           const apy = protocolKey && tokenData ? tokenData[protocolKey as keyof typeof tokenData] : undefined;
                           const isBest = bestProtocol === protocol;
-                          
                           return (
                             <td 
                               key={protocol} 

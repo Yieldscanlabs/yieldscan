@@ -36,6 +36,7 @@ const MyYieldsPage: React.FC = () => {
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
   const [currentBalance, setCurrentBalance] = useState<number>(0);
   const [currentDeposit, setCurrentDeposit] = useState<number>(0);
+  const [currentEarned, setCurrentEarned] = useState<number>(0);
 
   // Use userPreferencesStore for view toggle state
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
@@ -485,7 +486,8 @@ const MyYieldsPage: React.FC = () => {
     // console.log({ totalDepositsUsd, totalWithdrawalsUsd, totalEarnedUsd });
     setTotalDeposited(totalDepositsUsd)
     // setTotalDeposited(totalDepositsUsd - totalWithdrawalsUsd);
-    setCurrentDeposit(totalDepositsUsd - totalWithdrawalsUsd) 
+    setCurrentDeposit(totalDepositsUsd - totalWithdrawalsUsd)
+    setCurrentEarned(currentBalance - (totalDepositsUsd - totalWithdrawalsUsd))
     setTotalWithdrawn(totalWithdrawalsUsd);
     setTotalEarned(totalEarnedUsd);
     setLiveTotalEarned(totalEarnedUsd);
@@ -514,6 +516,11 @@ const MyYieldsPage: React.FC = () => {
         const newValue = prevValue * growthRate;
         return newValue;
       });
+      // setCurrentEarned(prevCurrent => {
+      //   const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+      //   const updatedValue = prevCurrent * growthRate;
+      //   return updatedValue;
+      // });
     }, 100);
 
     // Cleanup timer on unmount or when dependencies change
@@ -662,7 +669,8 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Current Earned</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(currentBalance - currentDeposit, 20)}
+            {/* ${formatNumber(currentBalance - currentDeposit, 20)} */}
+            ${formatNumber(currentEarned, 20)} 
           </div>
           <div className={styles.summarySubtext}>
             Current Earning from protocols
