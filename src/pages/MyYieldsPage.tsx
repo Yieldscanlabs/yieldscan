@@ -647,13 +647,12 @@ const MyYieldsPage: React.FC = () => {
           </div>
         </div> */}
         <div className={styles.summaryCard}>
-          <div className={styles.summaryTitle}>Total Withdrawn</div>
+          <div className={styles.summaryTitle}>Current Deposit</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(totalWithdrawn, 4)}
+            ${formatNumber(currentDeposit, 4)}
           </div>
           <div className={styles.summarySubtext}>
-            Total withdrawn 
-            {/* ${formatNumber(totalWithdrawn, 4)} */}
+            Total Deposit  ${formatNumber(totalDeposited, 4)}
           </div>
         </div>
         <div className={styles.summaryCard}>
@@ -667,12 +666,13 @@ const MyYieldsPage: React.FC = () => {
           </div>
         </div>
         <div className={styles.summaryCard}>
-          <div className={styles.summaryTitle}>Current Deposit</div>
+          <div className={styles.summaryTitle}>Total Withdrawn</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(currentDeposit, 4)}
+            ${formatNumber(totalWithdrawn, 4)}
           </div>
           <div className={styles.summarySubtext}>
-            Total Deposit  ${formatNumber(totalDeposited, 4)}
+            {/* Total withdrawn  */}
+            {/* ${formatNumber(totalWithdrawn, 4)} */}
           </div>
         </div>
       </div>
