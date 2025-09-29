@@ -494,7 +494,6 @@ const MyYieldsPage: React.FC = () => {
     setTotalEarned(totalEarnedUsd);
     setLiveTotalEarned(totalEarnedUsd);
   }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets, selectedNetwork, currentBalance]);
-  console.log('currentBalance ',currentBalance)
   // Live ticker effect - update earnings every 100ms based on Aave APY
   useEffect(() => {
     if (!wallet.address || totalEarned <= 0) return;
@@ -518,11 +517,11 @@ const MyYieldsPage: React.FC = () => {
         const newValue = prevValue * growthRate;
         return newValue;
       });
-      // setCurrentEarned(prevCurrent => {
-      //   const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-      //   const updatedValue = prevCurrent * growthRate;
-      //   return updatedValue;
-      // });
+      setCurrentEarned(prevCurrent => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        const updatedValue = prevCurrent * growthRate;
+        return updatedValue;
+      });
     }, 100);
 
     // Cleanup timer on unmount or when dependencies change
@@ -629,7 +628,7 @@ const MyYieldsPage: React.FC = () => {
 
       {/* Summary section - real data from stores */}
       <div className={styles.summaryCards}>
-        <div className={styles.summaryCard}>
+        {/* <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Deposited</div>
           <div className={styles.summaryAmount}>
             ${formatNumber(totalDeposited, 4)}
@@ -637,8 +636,8 @@ const MyYieldsPage: React.FC = () => {
           <div className={styles.summarySubtext}>
             Total deposited to protocols
           </div>
-        </div>
-        <div className={styles.summaryCard}>
+        </div> */}
+        {/* <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Earned</div>
           <div className={styles.summaryAmount}>
             ${formatLiveValue(liveTotalEarned)}
@@ -646,7 +645,7 @@ const MyYieldsPage: React.FC = () => {
           <div className={styles.summarySubtext}>
             balance - (deposits - withdrawals)
           </div>
-        </div>
+        </div> */}
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Withdrawn</div>
           <div className={styles.summaryAmount}>
@@ -656,9 +655,6 @@ const MyYieldsPage: React.FC = () => {
             Total withdrawn from protocols
           </div>
         </div>
-      </div>
-
-      <div className={styles.summaryCards}>
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Current Deposit</div>
           <div className={styles.summaryAmount}>
@@ -679,6 +675,27 @@ const MyYieldsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* <div className={styles.summaryCards}>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Current Deposit</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(currentDeposit, 4)}
+          </div>
+          <div className={styles.summarySubtext}>
+            Current deposit to protocols
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTitle}>Current Earned</div>
+          <div className={styles.summaryAmount}>
+            ${formatNumber(currentEarned, 20)}
+          </div>
+          <div className={styles.summarySubtext}>
+            Current Earning from protocols
+          </div>
+        </div>
+      </div> */}
 
       {/* Current Yields Section - Uses filteredYieldAssets for display */}
       <div className={styles.section}>
