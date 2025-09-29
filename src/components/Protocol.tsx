@@ -11,6 +11,11 @@ import pendle from '../assets/protocols/pendle.svg'
 import fluid from '../assets/protocols/fluid.png'
 import rocketpool from '../assets/protocols/rocketpool.webp'
 import eigenlayer from '../assets/protocols/eigenlayer.svg'
+import uniswap from '../assets/protocols/uniswap.png'
+import curvefinance from '../assets/protocols/curvefinance.png'
+import synthetix from '../assets/protocols/synthetix.png'
+import pancake from '../assets/protocols/pancake.png'
+import markerdao from '../assets/protocols/marker_dao.png'
 
 interface ProtocolProps {
   name: string | null;
@@ -35,6 +40,11 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Fluid': fluid,
   'Rocket Pool': rocketpool,
   'EigenLayer': eigenlayer,
+  'Uniswap': uniswap,
+  'Curve Finance': curvefinance,
+  'PancakeSwap':pancake,
+  'Synthetix':synthetix,
+  'MakerDAO':markerdao
   // Add more protocols as needed
 };
 
@@ -50,9 +60,9 @@ const PROTOCOL_TOOLTIPS: Record<string, string> = {
   // Add more protocol descriptions as needed
 };
 
-const Protocol: React.FC<ProtocolProps> = ({ 
-  name, 
-  showLogo = true, 
+const Protocol: React.FC<ProtocolProps> = ({
+  name,
+  showLogo = true,
   showName = true,
   className = '',
   size = 'medium',
@@ -63,21 +73,22 @@ const Protocol: React.FC<ProtocolProps> = ({
   const tooltipId = name ? `protocol-tooltip-${name.toLowerCase()}` : 'protocol-tooltip';
   return (
     <>
-      <div 
+      <div
         className={`${styles.protocol} ${styles[size]} ${className} ${styles[name?.toLowerCase() || '']}`}
         data-tooltip-id={showTooltip ? tooltipId : undefined}
         data-tooltip-content={tooltipText || ''}
       >
         {showLogo && logoUrl && (
-          <img 
-            src={logoUrl} 
-            alt={`${name} logo`} 
-            className={styles.protocolLogo} 
+          <img
+            src={logoUrl}
+            alt={`${name} logo`}
+            className={styles.protocolLogo}
+            referrerPolicy="no-referrer"
           />
         )}
         <span className={styles.protocolName}>{showName ? name : ''}</span>
       </div>
-      
+
     </>
   );
 };

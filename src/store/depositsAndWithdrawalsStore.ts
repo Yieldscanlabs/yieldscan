@@ -110,7 +110,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           Object.entries(data).forEach(([address, userData]) => {
             normalizedData[address.toLowerCase()] = userData;
           });
-          
           set(state => ({
             activityData: {
               ...state.activityData,
