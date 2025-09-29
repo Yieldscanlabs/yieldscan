@@ -353,7 +353,6 @@ const MyYieldsPage: React.FC = () => {
         // Current balance in USD
         const currentBalanceUsd = parseFloat(asset.currentBalanceInProtocolUsd || '0');
 
-        currentTotalBalance += currentBalanceUsd
         // Find corresponding deposits and withdrawals for this token
         let depositsUsd = 0;
         let withdrawalsUsd = 0;
@@ -395,6 +394,9 @@ const MyYieldsPage: React.FC = () => {
           const depositsWhole = depositsBigInt / divisor;
           const depositsRemainder = depositsBigInt % divisor;
           const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
+          if (selectedNetwork == 'all' || chainId === asset.chainId) {
+            currentTotalBalance += currentBalanceUsd;
+          }
 
           const withdrawalsWhole = withdrawalsBigInt / divisor;
           const withdrawalsRemainder = withdrawalsBigInt % divisor;
@@ -412,7 +414,6 @@ const MyYieldsPage: React.FC = () => {
           withdrawalsUsd += withdrawalsFormatted * tokenPrice;
         });
 
-        console.log("currentTotalBalance ", currentTotalBalance)
         // Calculate earnings for this token: current_balance - deposits + withdrawals
         const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
         // const tokenEarnings = depositsUsd - withdrawalsUsd;
@@ -487,12 +488,13 @@ const MyYieldsPage: React.FC = () => {
     setTotalDeposited(totalDepositsUsd)
     // setTotalDeposited(totalDepositsUsd - totalWithdrawalsUsd);
     setCurrentDeposit(totalDepositsUsd - totalWithdrawalsUsd)
+
     setCurrentEarned(currentBalance - (totalDepositsUsd - totalWithdrawalsUsd))
     setTotalWithdrawn(totalWithdrawalsUsd);
     setTotalEarned(totalEarnedUsd);
     setLiveTotalEarned(totalEarnedUsd);
-  }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets, selectedNetwork]);
-
+  }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets, selectedNetwork, currentBalance]);
+  console.log('currentBalance ',currentBalance)
   // Live ticker effect - update earnings every 100ms based on Aave APY
   useEffect(() => {
     if (!wallet.address || totalEarned <= 0) return;
@@ -670,7 +672,7 @@ const MyYieldsPage: React.FC = () => {
           <div className={styles.summaryTitle}>Current Earned</div>
           <div className={styles.summaryAmount}>
             {/* ${formatNumber(currentBalance - currentDeposit, 20)} */}
-            ${formatNumber(currentEarned, 20)} 
+            ${formatNumber(currentEarned, 20)}
           </div>
           <div className={styles.summarySubtext}>
             Current Earning from protocols
