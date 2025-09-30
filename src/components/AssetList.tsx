@@ -75,21 +75,23 @@ const AssetList: React.FC<AssetListProps> = ({
   return (
     <div className={styles['asset-list']}>
       <div className={styles['asset-grid']}>
-        {assets.map((asset) => {
-          const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
-          const yieldInfo = assetYields[assetKey];
-          const price = getPrice(asset.token.toLowerCase());
-          return (
-            <AssetComponent
-              key={assetKey}
-              asset={asset}
-              price={price ? price : undefined}
-              yieldInfo={yieldInfo}
-              isSelected={selectedAsset === asset}
-              onSelect={handleSelectAsset}
-            />
-          );
-        })}
+        {assets
+          .filter(asset => Number(asset.balance) > 0)
+          .map((asset) => {
+            const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
+            const yieldInfo = assetYields[assetKey];
+            const price = getPrice(asset.token.toLowerCase());
+            return (
+              <AssetComponent
+                key={assetKey}
+                asset={asset}
+                price={price ? price : undefined}
+                yieldInfo={yieldInfo}
+                isSelected={selectedAsset === asset}
+                onSelect={handleSelectAsset}
+              />
+            );
+          })}
       </div>
     </div>
   );

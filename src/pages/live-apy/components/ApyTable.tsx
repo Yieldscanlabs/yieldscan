@@ -35,14 +35,14 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
             <h3>Connect to track your yields</h3>
             <p>See which protocols offer the best rates for your assets</p>
           </div>
-          <button 
+          <button
             className={styles.ctaButton}
             onClick={openConnectModal}
           >
             <span className={styles.buttonText}>Connect Wallet</span>
             <div className={styles.buttonIcon}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1L15 8L8 15M15 8H1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 1L15 8L8 15M15 8H1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </button>
@@ -60,16 +60,16 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
   // Filter tokens by selected chain
   const filteredTokens = React.useMemo(() => {
     let result = tokens;
-    
+
     // Filter by chain if not 'all'
     if (selectedChain !== 'all') {
       result = result.filter(token => token.chainId === selectedChain);
     }
-    
+
     // Filter out duplicate underlying assets
     // Only keep regular tokens (non-yield-bearing)
     result = result.filter(token => !token.yieldBearingToken);
-    
+
     return result;
   }, [tokens, selectedChain]);
 
@@ -84,15 +84,14 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         // Sort by highest APY
         const aTokenData = apyData[a.chainId]?.[a.address.toLowerCase()];
         const bTokenData = apyData[b.chainId]?.[b.address.toLowerCase()];
-        
+
         const aHighestApy = aTokenData ? Math.max(...Object.values(aTokenData).filter(v => v !== undefined) as number[]) : 0;
         const bHighestApy = bTokenData ? Math.max(...Object.values(bTokenData).filter(v => v !== undefined) as number[]) : 0;
-        
+
         return sortDirection === 'asc' ? aHighestApy - bHighestApy : bHighestApy - aHighestApy;
       }
     });
   }, [filteredTokens, sortBy, sortDirection, apyData]);
-
   // Toggle sort direction when clicking a column header
   const toggleSort = (column: 'token' | 'highestApy') => {
     if (sortBy === column) {
@@ -105,15 +104,15 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
 
   // Get known protocol names
   const protocols = Object.values(PROTOCOL_NAMES);
-
+  
   // Helper to find best APY for a token
   const getBestApyForToken = (token: typeof tokens[0]) => {
     const tokenData = apyData[token.chainId]?.[token.address.toLowerCase()];
     if (!tokenData) return { apy: null, protocol: null };
-    
+
     let bestApy = 0;
     let bestProtocol = '';
-    
+
     Object.entries(tokenData).forEach(([protocol, apy]) => {
       // Ensure apy is a number and greater than current best
       if (typeof apy === 'number' && apy > bestApy) {
@@ -121,9 +120,9 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         bestProtocol = protocol;
       }
     });
-    
-    return { 
-      apy: bestApy || null, 
+
+    return {
+      apy: bestApy || null,
       protocol: bestProtocol ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] || bestProtocol : null
     };
   };
@@ -132,18 +131,18 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
   const leftTableRef = useRef<HTMLDivElement>(null);
   const middleTableRef = useRef<HTMLDivElement>(null);
   const rightTableRef = useRef<HTMLDivElement>(null);
-  
+
   // Synchronize vertical scrolling
   useEffect(() => {
     const leftTable = leftTableRef.current;
     const middleTable = middleTableRef.current;
     const rightTable = rightTableRef.current;
-    
+
     if (!leftTable || !middleTable || !rightTable) return;
-    
+
     const syncScroll = (e: Event) => {
       const scrollTop = (e.target as HTMLElement).scrollTop;
-      
+
       if (e.target === middleTable) {
         if (leftTable.scrollTop !== scrollTop) leftTable.scrollTop = scrollTop;
         if (rightTable.scrollTop !== scrollTop) rightTable.scrollTop = scrollTop;
@@ -155,12 +154,12 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         if (middleTable.scrollTop !== scrollTop) middleTable.scrollTop = scrollTop;
       }
     };
-    
+
     // Add scroll event listeners
     leftTable.addEventListener('scroll', syncScroll);
     middleTable.addEventListener('scroll', syncScroll);
     rightTable.addEventListener('scroll', syncScroll);
-    
+
     return () => {
       // Clean up event listeners
       leftTable.removeEventListener('scroll', syncScroll);
@@ -183,7 +182,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
 
       <div className={styles.filterToolbar}>
         <div className={styles.filterControls}>
-          <NetworkSelector 
+          <NetworkSelector
             selectedNetwork={selectedChain}
             networks={chainOptions}
             //@ts-ignore
@@ -200,7 +199,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
           </div>
         </div>
       </div>
-      
+
       <div className={styles.tableCard}>
         <div className={styles.tableLayout}>
           {/* Fixed left columns */}
@@ -238,16 +237,16 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                   sortedTokens.map(token => (
                     <tr key={`token-${token.chainId}-${token.address}`}>
                       <td className={styles.tokenCell}>
-                        <img 
-                          src={token.icon} 
-                          alt={token.token} 
-                          className={styles.tokenIcon} 
+                        <img
+                          src={token.icon}
+                          alt={token.token}
+                          className={styles.tokenIcon}
                         />
                         <span className={styles.tokenName}>{token.token}</span>
                       </td>
                       <td className={styles.networkCell}>
                         <div className={`${styles.networkBadge} ${styles[`network-${token.chainId}`]}`}>
-                         {getNetworkName(token.chainId)}
+                          {getNetworkName(token.chainId)}
                         </div>
                       </td>
                     </tr>
@@ -256,7 +255,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Scrollable middle (protocols) */}
           <div className={styles.scrollableMiddle} ref={middleTableRef}>
             <table className={styles.apyTable}>
@@ -264,7 +263,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                 <tr>
                   {protocols.map(protocol => (
                     <th key={protocol} className={styles.protocolHeader}>
-                      <Protocol name={protocol} showLogo={true}/>
+                      <Protocol name={protocol} showLogo={true} />
                     </th>
                   ))}
                 </tr>
@@ -293,12 +292,12 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                         {protocols.map(protocol => {
                           const protocolKey = Object.entries(PROTOCOL_NAMES)
                             .find(([_, value]) => value === protocol)?.[0]?.toLowerCase();
-                          
+
                           const apy = protocolKey && tokenData ? tokenData[protocolKey as keyof typeof tokenData] : undefined;
                           const isBest = bestProtocol === protocol;
                           return (
-                            <td 
-                              key={protocol} 
+                            <td
+                              key={protocol}
                               className={isBest ? styles.bestApyCell : styles.apyCell}
                             >
                               {apy !== undefined ? (
@@ -316,9 +315,9 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Fixed right column (best yield) */}
-          <div className={styles.fixedRight} ref={rightTableRef}>
+          {/* <div className={styles.fixedRight} ref={rightTableRef}>
             <table className={styles.apyTable}>
               <thead>
                 <tr>
@@ -350,7 +349,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                 ) : (
                   sortedTokens.map(token => {
                     const { apy: bestApy, protocol: bestProtocol } = getBestApyForToken(token);
-                    
+
                     return (
                       <tr key={`token-${token.chainId}-${token.address}`}>
                         <td className={styles.bestApyColumn}>
@@ -373,7 +372,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                 )}
               </tbody>
             </table>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -381,7 +380,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         <ApyTableCTA />
       )}
 
-      <WalletModal 
+      <WalletModal
         isOpen={isModalOpen}
         onClose={closeConnectModal}
       />
