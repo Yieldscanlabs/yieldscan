@@ -1,30 +1,55 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './AlertsPage.module.css';
 import useWalletConnection from '../hooks/useWalletConnection';
 import WalletModal from '../components/WalletModal';
+import { injected, useAccount, useConnect, useSignMessage } from 'wagmi'
+// import SendMessageModal from '../components/SendMessageModal';
+// import axios from 'axios';
 
 const AlertsPage: React.FC = () => {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
-
+  const { signMessage } = useSignMessage();
+  const { connect } = useConnect()
+  const { isConnected } = useAccount()
   const handleJoinBot = () => {
-    window.open('https://t.me/yieldscan_bot', '_blank');
+    if (!isConnected) {
+      connect({ connector: injected() })
+    }
+    signMessage({ message: 'Connect To Telegram Bot' }, {
+      async onSuccess(data) {
+        console.log('Success', data);
+        const response = await fetch(`http://localhost:4023/api/telegram/signature?signature=${data}`,{
+          method: 'GET',
+        });
+        const jsonRep =  await response.json();
+        console.log('JSON Response', jsonRep);
+        if(jsonRep){
+           window.open(`https://t.me/yieldscan_bot?start=${jsonRep.signature}`, '_blank');
+        }
+      },
+      onError(error) {
+        console.log('Error', error);
+      },
+      onSettled(data, error) {
+        console.log('Settled', { data, error });
+      }
+    });
   };
-
   return (
     <div className={styles.container}>
       <div className={styles.hero}>
-        
+
         {/* Left Content */}
         <div className={styles.heroLeft}>
           <h1 className={styles.heroTitle}>
             <span className={styles.highlight}>Money-Making Alerts</span>, Every Time
           </h1>
-          
+
           <p className={styles.heroDescription}>
-            Get instant Telegram notifications when better APY opportunities become available 
+            Get instant Telegram notifications when better APY opportunities become available
             or when security risks are detected in your DeFi protocols.
           </p>
-          
+
           <div className={styles.features}>
             <div className={styles.featureItem}>
               <div className={styles.featureIcon}>🎯</div>
@@ -41,7 +66,7 @@ const AlertsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className={styles.ctaSection}>
             {wallet.isConnected ? (
               <>
@@ -61,7 +86,7 @@ const AlertsPage: React.FC = () => {
             )}
           </div>
         </div>
-        
+
         {/* Right Visual */}
         <div className={styles.heroRight}>
           <div className={styles.visualContainer}>
@@ -78,12 +103,12 @@ const AlertsPage: React.FC = () => {
                   <div className={styles.notifContent}>
                     <div className={styles.alertBadge}>🎯 APY Alert</div>
                     <div className={styles.notifText}>
-                      Better yield found! Move from Compound (4.2% APY) to Aave (6.8% APY) 
+                      Better yield found! Move from Compound (4.2% APY) to Aave (6.8% APY)
                       for +2.6% improvement
                     </div>
                   </div>
                 </div>
-                
+
                 <div className={styles.notificationCard}>
                   <div className={styles.notifHeader}>
                     <div className={styles.botAvatar}>🤖</div>
@@ -103,11 +128,10 @@ const AlertsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
       </div>
-      
       {/* Wallet Modal */}
-      <WalletModal 
+      <WalletModal
         isOpen={isModalOpen}
         onClose={closeConnectModal}
       />
