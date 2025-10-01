@@ -16,6 +16,15 @@ import curvefinance from '../assets/protocols/curvefinance.png'
 import synthetix from '../assets/protocols/synthetix.png'
 import pancake from '../assets/protocols/pancake.png'
 import markerdao from '../assets/protocols/marker_dao.png'
+import dolomite from '../assets/protocols/dolomite.jpg'
+import euler from '../assets/protocols/euler.jpg'
+import fluxFinance from '../assets/protocols/fluxFinance.jpg'
+import sparklend from '../assets/protocols/sparklend.jpg'
+import zerolend from '../assets/protocols/zerolend.jpg'
+import ethena from '../assets/protocols/ethena.jpg'
+import creamFinance from '../assets/protocols/creamFinance.jpg'
+import maple from '../assets/protocols/maple.jpg'
+import kinza_finance from '../assets/protocols/kinza_finance.jpg'
 
 interface ProtocolProps {
   name: string | null;
@@ -42,9 +51,18 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'EigenLayer': eigenlayer,
   'Uniswap': uniswap,
   'Curve Finance': curvefinance,
-  'PancakeSwap':pancake,
-  'Synthetix':synthetix,
-  'MakerDAO':markerdao
+  'PancakeSwap': pancake,
+  'Synthetix': synthetix,
+  'MakerDAO': markerdao,
+  'Dolomite': dolomite,
+  'Euler': euler,
+  'fluxfinance': fluxFinance,
+  'Sparklend': sparklend,
+  'Zerolend': zerolend,
+  'kinzafinance': kinza_finance,
+  'Ethena': ethena,
+  'creamfinance': creamFinance,
+  'Maple': maple,
   // Add more protocols as needed
 };
 
@@ -71,6 +89,20 @@ const Protocol: React.FC<ProtocolProps> = ({
   const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name}` : null;
   const tooltipId = name ? `protocol-tooltip-${name.toLowerCase()}` : 'protocol-tooltip';
+  const formatProtocolName = (name: string) => {
+    console.log('name name', name)
+    switch (name) {
+      case 'fluxfinance':
+        return 'Flux Finance';
+      case 'kinzafinance':
+        return 'Kinza Finance';
+      case 'creamfinance':
+        return 'Cream Finance';
+      default:
+        return name;
+    }
+  };
+
   return (
     <>
       <div
@@ -86,7 +118,11 @@ const Protocol: React.FC<ProtocolProps> = ({
             referrerPolicy="no-referrer"
           />
         )}
-        <span className={styles.protocolName}>{showName ? name : ''}</span>
+        <span className={styles.protocolName}>
+          {showName ? formatProtocolName(name || '') : ''}
+        </span>
+
+        {/* <span className={styles.protocolName}>{showName ? name : ''}</span> */}
       </div>
 
     </>

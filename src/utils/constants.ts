@@ -14,6 +14,20 @@ export const TOKEN_NAMES = {
   ETH: 'Ethereum'
 };
 
+// export const PROTOCOL_NAMES = {
+//   AAVE: 'Aave',
+//   COMPOUND: 'Compound',
+//   // VENUS: 'Venus',
+//   RADIANT: 'Radiant',
+//   // LIDO: 'Lido',
+//   // SPARK: 'Spark',
+//   // MORPHO_BLUE: 'Morpho Blue',
+//   // FLUID: 'Fluid',
+//   // EIGENLAYER: 'EigenLayer',
+//   // ROCKET_POOL: 'Rocket Pool',
+//   // YEARN: 'Yearn V3',
+// };
+
 export const PROTOCOL_NAMES = {
   AAVE: 'Aave',
   COMPOUND: 'Compound',
@@ -26,4 +40,14 @@ export const PROTOCOL_NAMES = {
   // EIGENLAYER: 'EigenLayer',
   // ROCKET_POOL: 'Rocket Pool',
   // YEARN: 'Yearn V3',
+
+  dolomite: 'Dolomite',
+  euler: 'Euler',
+  fluxFinance: 'fluxfinance',
+  sparklend: 'Sparklend',
+  zerolend: 'Zerolend',
+  kinzaFinance: 'kinzafinance',
+  ethena: 'Ethena',
+  creamFinance: 'creamfinance',
+  maple: 'Maple',
 };

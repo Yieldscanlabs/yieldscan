@@ -72,7 +72,6 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
 
     return result;
   }, [tokens, selectedChain]);
-
   // Sort tokens
   const sortedTokens = React.useMemo(() => {
     return [...filteredTokens].sort((a, b) => {
@@ -92,6 +91,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
       }
     });
   }, [filteredTokens, sortBy, sortDirection, apyData]);
+
   // Toggle sort direction when clicking a column header
   const toggleSort = (column: 'token' | 'highestApy') => {
     if (sortBy === column) {
@@ -104,7 +104,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
 
   // Get known protocol names
   const protocols = Object.values(PROTOCOL_NAMES);
-  
+
   // Helper to find best APY for a token
   const getBestApyForToken = (token: typeof tokens[0]) => {
     const tokenData = apyData[token.chainId]?.[token.address.toLowerCase()];
@@ -120,7 +120,6 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
         bestProtocol = protocol;
       }
     });
-
     return {
       apy: bestApy || null,
       protocol: bestProtocol ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] || bestProtocol : null
@@ -294,7 +293,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                             .find(([_, value]) => value === protocol)?.[0]?.toLowerCase();
 
                           const apy = protocolKey && tokenData ? tokenData[protocolKey as keyof typeof tokenData] : undefined;
-                          const isBest = bestProtocol === protocol;
+                          const isBest = bestProtocol?.toUpperCase() === protocol?.toUpperCase();
                           return (
                             <td
                               key={protocol}

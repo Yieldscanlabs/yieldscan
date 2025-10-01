@@ -380,7 +380,6 @@ const MyYieldsPage: React.FC = () => {
             console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
             return;
           }
-          // debugger
           const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
 
           // Convert BigInt values to regular numbers with proper decimals
@@ -668,7 +667,7 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.summaryCard}>
           <div className={styles.summaryTitle}>Total Withdrawn</div>
           <div className={styles.summaryAmount}>
-            ${formatNumber(totalWithdrawn, 4)}
+          ${formatNumber(totalWithdrawn, 4)}
           </div>
           <div className={styles.summarySubtext}>
             {/* Total withdrawn  */}
