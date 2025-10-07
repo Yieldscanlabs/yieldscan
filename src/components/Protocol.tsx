@@ -54,15 +54,15 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'PancakeSwap': pancake,
   'Synthetix': synthetix,
   'MakerDAO': markerdao,
-  'Dolomite': dolomite,
+  'dolomite': dolomite,
   'Euler': euler,
   'fluxfinance': fluxFinance,
-  'Sparklend': sparklend,
-  'Zerolend': zerolend,
+  'sparklend': sparklend,
+  'zerolend': zerolend,
   'kinzafinance': kinza_finance,
-  'Ethena': ethena,
+  'ethena': ethena,
   'creamfinance': creamFinance,
-  'Maple': maple,
+  'maple': maple,
   // Add more protocols as needed
 };
 
@@ -90,7 +90,6 @@ const Protocol: React.FC<ProtocolProps> = ({
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name}` : null;
   const tooltipId = name ? `protocol-tooltip-${name.toLowerCase()}` : 'protocol-tooltip';
   const formatProtocolName = (name: string) => {
-    console.log('name name', name)
     switch (name) {
       case 'fluxfinance':
         return 'Flux Finance';
@@ -102,7 +101,6 @@ const Protocol: React.FC<ProtocolProps> = ({
         return name;
     }
   };
-
   return (
     <>
       <div
