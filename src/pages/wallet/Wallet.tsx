@@ -18,6 +18,7 @@ import { useAssetStore } from '../../store/assetStore';
 import { AVAILABLE_NETWORKS } from '../../utils/markets';
 import WalletWelcome from './WalletWelcome';
 import PageHeader from '../../components/PageHeader';
+import { useManualWalletStore } from '../../store/manualWalletStore';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -37,7 +38,7 @@ function Wallet() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-
+  const {manualAddress} = useManualWalletStore();
   // Use userPreferencesStore for view toggle state
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
 
@@ -213,7 +214,7 @@ function Wallet() {
   };
 
   const renderContent = () => {
-    if (!wallet.isConnected) {
+    if (!wallet.isConnected && !manualAddress) {
       return <WalletWelcome onConnect={openConnectModal} />;
     }
 
@@ -265,16 +266,11 @@ function Wallet() {
     );
   };
 
-  // Add keyboard shortcut to focus search
+  // Keep "/" to focus search; leave Ctrl/Cmd+K to global manual wallet modal
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Focus search on Ctrl/Cmd + K or just "/" key
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        searchInputRef.current?.focus();
-      } else if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        // Only focus if not typing in an input already
-        const activeElement = document.activeElement;
+      if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const activeElement = document.activeElement as HTMLElement | null;
         if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
           event.preventDefault();
           searchInputRef.current?.focus();
