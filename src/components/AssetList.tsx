@@ -24,7 +24,7 @@ const AssetList: React.FC<AssetListProps> = ({
     yearlyYieldUsd: string;
   }>>({});
   const { getPrice } = usePriceStore();
-
+  console.log('Assets in AssetList:', assets);
   // Handler for asset selection that passes along the bestApy data
   const handleSelectAsset = (asset: Asset, bestApyData?: any) => {
     onSelectAsset(asset, bestApyData);
@@ -54,7 +54,6 @@ const AssetList: React.FC<AssetListProps> = ({
     // Fetch yield options
 
   }, [assets]);
-
   if (loading) {
     return (
       <div className={styles.loading}>

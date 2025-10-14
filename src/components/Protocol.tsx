@@ -78,6 +78,9 @@ const PROTOCOL_TOOLTIPS: Record<string, string> = {
   // Add more protocol descriptions as needed
 };
 
+
+
+
 const Protocol: React.FC<ProtocolProps> = ({
   name,
   showLogo = true,
@@ -86,9 +89,42 @@ const Protocol: React.FC<ProtocolProps> = ({
   size = 'medium',
   showTooltip = false
 }) => {
-  const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
-  const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name}` : null;
-  const tooltipId = name ? `protocol-tooltip-${name.toLowerCase()}` : 'protocol-tooltip';
+  function formatProtocolNameForImage(name: string) {
+    switch (name) {
+      case 'Dolomite':
+        return 'dolomite';
+      case 'Flux Finance':
+        return 'fluxfinance';
+      case 'Kinza Finance':
+        return 'kinzafinance';
+      case 'Cream Finance':
+        return 'creamfinance';
+      case 'Ethena':
+        return 'ethena';
+      case 'Maple':
+        return 'maple';
+      case 'Sparklend':
+        return 'sparklend';
+      case 'Zerolend':
+        return 'zerolend';
+
+      default:
+        return name;
+    }
+  }
+  const asdf = formatProtocolNameForImage('Dolomite')
+  // const logoUrl = name ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null : null;
+  const logoUrl = name
+    ? name === 'Yearn V3'
+      ? 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png'
+      : PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null
+    : null;
+
+
+  // const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
+  console.log('logoUrl ', logoUrl)
+  const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name} ` : null;
+  const tooltipId = name ? `protocol - tooltip - ${name.toLowerCase()} ` : 'protocol-tooltip';
   const formatProtocolName = (name: string) => {
     switch (name) {
       case 'fluxfinance':
@@ -97,6 +133,8 @@ const Protocol: React.FC<ProtocolProps> = ({
         return 'Kinza Finance';
       case 'creamfinance':
         return 'Cream Finance';
+      case 'Dolomite':
+        return 'dolomite';
       default:
         return name;
     }
@@ -104,7 +142,7 @@ const Protocol: React.FC<ProtocolProps> = ({
   return (
     <>
       <div
-        className={`${styles.protocol} ${styles[size]} ${className} ${styles[name?.toLowerCase() || '']}`}
+        className={`${styles.protocol} ${styles[size]} ${className} ${styles[name?.toLowerCase() || '']} `}
         data-tooltip-id={showTooltip ? tooltipId : undefined}
         data-tooltip-content={tooltipText || ''}
       >
@@ -114,8 +152,11 @@ const Protocol: React.FC<ProtocolProps> = ({
             alt={`${name} logo`}
             className={styles.protocolLogo}
             referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            loading="lazy"
           />
         )}
+
         <span className={styles.protocolName}>
           {showName ? formatProtocolName(name || '') : ''}
         </span>

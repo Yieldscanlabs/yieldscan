@@ -34,8 +34,17 @@ const Header: React.FC<HeaderProps> = ({
   const [lastScrollY, setLastScrollY] = useState(0);
 
   // Calculate total yield-bearing holdings (with fallback to 0)
-  const totalHoldings = assets
-    .filter(asset => asset.yieldBearingToken)
+  const totalHoldings1 = assets
+    .filter(asset =>
+      asset.yieldBearingToken &&
+      (
+        asset?.protocol?.toLowerCase() === 'aave' ||
+        asset?.protocol?.toLowerCase() === 'radiant' ||
+        asset?.protocol?.toLowerCase() === 'compound' ||
+        asset?.protocol?.toLowerCase() === 'yearn v3'
+      )
+    );
+  const totalHoldings = totalHoldings1
     .reduce((sum, asset) => {
       const balanceValue = parseFloat(asset.currentBalanceInProtocolUsd || '0');
       return isNaN(balanceValue) ? sum : sum + balanceValue;
@@ -46,8 +55,9 @@ const Header: React.FC<HeaderProps> = ({
     let totalWeightedApy = 0;
     let totalValue = 0;
 
-    assets.filter(asset => asset.yieldBearingToken).forEach(asset => {
+    assets.filter(asset => asset.yieldBearingToken).forEach((asset, index) => {
       const balanceValue = parseFloat(asset.balanceUsd || '0');
+
       if (isNaN(balanceValue) || balanceValue === 0) return;
 
       // Get APY for this asset from apyStore if available
@@ -59,17 +69,18 @@ const Header: React.FC<HeaderProps> = ({
 
       // If no APY found, use a default of 3%
       if (assetApy === 0) assetApy = 3;
-
       totalWeightedApy += assetApy * balanceValue;
-      totalValue += balanceValue;
-    });
 
+      totalValue += balanceValue;
+      // console.log('balanceUsd ', balanceValue, index, totalValue, totalWeightedApy)
+    });
     // Return weighted average APY (default to 4% if no yield-bearing assets)
     return totalValue > 0 ? (totalWeightedApy / totalValue) : 4;
   };
-
   // Use state for the live value
-  const [totalValue, setTotalValue] = useState(totalHoldings || 1000);
+
+  // console.log('totalValue ',  totalHoldings)
+  const [totalValue, setTotalValue] = useState(totalHoldings || 0);
   const [, setApy] = useState(calculateWeightedApy());
 
   // Format value with proper comma separators and 18 decimal places
@@ -122,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({
     if (!isConnected) return;
 
     // Set initial values based on current holdings and APY
-    const initialValue = totalHoldings > 0 ? totalHoldings : 1000;
+    const initialValue = totalHoldings > 0 ? totalHoldings : 0;
     const weightedApy = calculateWeightedApy();
 
     setTotalValue(initialValue);

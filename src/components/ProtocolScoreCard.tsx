@@ -67,7 +67,6 @@ export const protocolScores: ProtocolScore[] = [
     trustScore: 60,
     liquidity: 245 // $245M
   },
-
   {
     name: 'Uniswap',
     trustScore: 96,
@@ -89,10 +88,137 @@ export const protocolScores: ProtocolScore[] = [
     liquidity: 10000
   },
   {
-    name: 'Synthetix', trustScore: 90, liquidity: 1500
-  }
+    name: 'Synthetix',
+    trustScore: 90,
+    liquidity: 1500
+  },
 
+  // Newly added protocols
+  {
+    name: 'Kinza Finance',
+    trustScore: 80,
+    liquidity: 300 // $300M
+  },
+  {
+    name: 'Cream Finance',
+    trustScore: 70,
+    liquidity: 150 // $150M
+  },
+  {
+    name: 'Euler',
+    trustScore: 75,
+    liquidity: 200 // $200M
+  },
+  {
+    name: 'Dolomite',
+    trustScore: 78,
+    liquidity: 250 // $250M
+  },
+  {
+    name: 'Zerolend',
+    trustScore: 82,
+    liquidity: 400 // $400M
+  },
+  {
+    name: 'Flux Finance',
+    trustScore: 77,
+    liquidity: 180 // $180M
+  },
+  {
+    name: 'Yearn V3',
+    trustScore: 90,
+    liquidity: 1200 // $1.2B
+  },
+  {
+    name: 'Maple',
+    trustScore: 88,
+    liquidity: 500 // $500M
+  }
 ];
+
+
+// export const protocolScores: ProtocolScore[] = [
+//   {
+//     name: 'Aave',
+//     trustScore: 98,
+//     liquidity: 40000 // $5.4B
+//   },
+//   {
+//     name: 'Lido',
+//     trustScore: 95,
+//     liquidity: 18700 // $18.7B
+//   },
+//   {
+//     name: 'EigenLayer',
+//     trustScore: 95,
+//     liquidity: 11700 // $11.7B
+//   },
+//   {
+//     name: 'Morpho Blue',
+//     trustScore: 94,
+//     liquidity: 5200 // $5.2B
+//   },
+//   {
+//     name: 'Pendle',
+//     trustScore: 94,
+//     liquidity: 4584 // $4.58B
+//   },
+//   {
+//     name: 'Spark',
+//     trustScore: 94,
+//     liquidity: 3200 // $3.2B
+//   },
+//   {
+//     name: 'Compound',
+//     trustScore: 91,
+//     liquidity: 2488 // $2.3B
+//   },
+//   {
+//     name: 'Venus',
+//     trustScore: 90,
+//     liquidity: 2313 // $850M
+//   },
+//   {
+//     name: 'Rocket Pool',
+//     trustScore: 89,
+//     liquidity: 1700 // $1.7B
+//   },
+//   {
+//     name: 'Fluid',
+//     trustScore: 85,
+//     liquidity: 1500 // $1.5B
+//   },
+//   {
+//     name: 'Radiant',
+//     trustScore: 60,
+//     liquidity: 245 // $245M
+//   },
+
+//   {
+//     name: 'Uniswap',
+//     trustScore: 96,
+//     liquidity: 5057
+//   },
+//   {
+//     name: 'Curve Finance',
+//     trustScore: 92,
+//     liquidity: 2275
+//   },
+//   {
+//     name: 'PancakeSwap',
+//     trustScore: 88,
+//     liquidity: 1837
+//   },
+//   {
+//     name: 'MakerDAO',
+//     trustScore: 94,
+//     liquidity: 10000
+//   },
+//   {
+//     name: 'Synthetix', trustScore: 90, liquidity: 1500
+//   }
+
+// ];
 
 // Format liquidity with appropriate suffix
 const formatLiquidity = (value: number): string => {
@@ -110,7 +236,7 @@ const ProtocolScoreCard: React.FC = () => {
 
   // Custom CTA component for protocol scoring
   const ProtocolScoreCTA = () => (
-    <div className={styles.protocolScoreCta}>
+    <div className={styles.protocolScoreCpta}>
       <div className={styles.ctaContent}>
         <div className={styles.ctaHeader}>
           <div className={styles.ctaIcon}>
@@ -137,7 +263,7 @@ const ProtocolScoreCard: React.FC = () => {
       </div>
     </div>
   );
-
+  console.log('ass ', assets)
   // Calculate protocol exposure percentages
   const calculateProtocolExposure = () => {
     const yieldBearingAssets = assets.filter(asset => asset.yieldBearingToken);
@@ -219,7 +345,7 @@ const ProtocolScoreCard: React.FC = () => {
     return b.trustScore - a.trustScore;
   });
   console.log('exposures ', exposures)
-  console.log('all ', allProtocols, sortedProtocols)
+  console.log('all ', allProtocols, sortedProtocols,)
   return (
     <div className={styles.container}>
       {wallet.isConnected && totalValue > 0 && (
