@@ -96,16 +96,11 @@ const MyYieldsPage: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [viewType, setViewType]);
 
-  // Add keyboard shortcut to focus search
+  // Keep "/" to focus search; leave Ctrl/Cmd+K to global manual wallet modal
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Focus search on Ctrl/Cmd + K or just "/" key
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        searchInputRef.current?.focus();
-      } else if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        // Only focus if not typing in an input already
-        const activeElement = document.activeElement;
+      if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const activeElement = document.activeElement as HTMLElement | null;
         if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
           event.preventDefault();
           searchInputRef.current?.focus();
