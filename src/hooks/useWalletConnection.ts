@@ -6,7 +6,7 @@ import { useManualWalletStore } from '../store/manualWalletStore';
 
 export default function useWalletConnection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { manualAddress, manualChainId, clearManualAddress } = useManualWalletStore();
+  const { manualAddress, clearManualAddress } = useManualWalletStore();
   
   // Use wagmi hooks for wallet connection
   const { address, isConnected, chainId } = useAccount();
@@ -18,7 +18,7 @@ export default function useWalletConnection() {
   const wallet: WalletInfo = {
     address: effectiveAddress,
     isConnected: Boolean(isConnected || manualAddress),
-    chainId: manualAddress ? (manualChainId ?? 0) : (chainId || 0)
+    chainId: chainId || 0
   };
 
   // If a manual address is active while a wallet is connected, proactively disconnect the wallet

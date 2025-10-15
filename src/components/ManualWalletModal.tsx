@@ -2,8 +2,6 @@ import React, { useMemo, useState } from 'react';
 import styles from './WalletModal.module.css';
 import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount, useDisconnect } from 'wagmi';
-import NetworkSelector from './NetworkSelector';
-import { AVAILABLE_NETWORKS } from '../utils/markets';
 
 interface ManualWalletModalProps {
   isOpen: boolean;
@@ -15,9 +13,8 @@ function isValidAddress(address: string): boolean {
 }
 
 const ManualWalletModal: React.FC<ManualWalletModalProps> = ({ isOpen, onClose }) => {
-  const { manualAddress, manualChainId, setManualAddress, setManualChainId } = useManualWalletStore();
+  const { manualAddress, setManualAddress } = useManualWalletStore();
   const [input, setInput] = useState<string>(manualAddress || '');
-  const [selectedChainId, setSelectedChainId] = useState<number | 'all'>(manualChainId ?? 'all');
   const { isConnected } = useAccount();
   const { disconnect } = useDisconnect();
 
@@ -29,12 +26,6 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({ isOpen, onClose }
     if (!valid) return;
     // Set manual address first so UI remains in a connected state
     setManualAddress(input.trim());
-    // Persist selected manual chain (or null if 'all')
-    if (selectedChainId === 'all') {
-      setManualChainId(null);
-    } else {
-      setManualChainId(selectedChainId);
-    }
     if (isConnected) {
       try { disconnect(); } catch {}
     }
@@ -74,20 +65,7 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({ isOpen, onClose }
           ) : !valid ? (
             <p className={styles.errorText}>Enter a valid EVM address.</p>
           ) : null}
-          <div style={{ marginTop: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px' }}>Preferred network</label>
-            <NetworkSelector
-              selectedNetwork={selectedChainId}
-              onChange={(value) => {
-                if (value === 'all') {
-                  setSelectedChainId('all');
-                } else if (typeof value === 'number' && AVAILABLE_NETWORKS.includes(value)) {
-                  setSelectedChainId(value);
-                }
-              }}
-            />
-            <p className={styles.helperText}>Choose a specific chain context or "All Networks".</p>
-          </div>
+          
         </div>
 
         <div className={styles.footer}>
