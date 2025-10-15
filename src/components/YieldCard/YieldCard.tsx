@@ -105,7 +105,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     openWithdrawModalGlobal({
       asset,
       protocol,
-      balance: asset.totalDeposited || balanceNum,
+      balance: asset.currentBalanceInProtocol || 0,
       maxDecimals: asset.maxDecimalsShow || 6,
       isNativeToken,
       onWithdraw: handleWithdraw,

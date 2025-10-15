@@ -502,20 +502,14 @@ const MyYieldsPage: React.FC = () => {
     // const otherProtocolEarnings = getTotalEarnings().lifetime; // You can uncomment this if needed
 
     const totalEarnedUsd = supportedEarnings; // Only Aave and Radiant earnings for now, as requested
-    console.log('totalEarnedUsd ', totalEarnedUsd, currentBalance, totalDepositsUsd, totalWithdrawalsUsd, totalEarned)
-    // Update state with real data
-    // console.log({ totalDepositsUsd, totalWithdrawalsUsd, totalEarnedUsd });
     setTotalDeposited(totalDepositsUsd)
-    // setTotalDeposited(totalDepositsUsd - totalWithdrawalsUsd);
-    // setCurrentDeposit(totalDepositsUsd - totalWithdrawalsUsd)
     const currentDepositValue = Math.max(0, totalDepositsUsd - totalWithdrawalsUsd)
     // const ClaimableEarnings = Math.max(0, CurrentBalance - (TotalDeposit - TotalWithdraw) - (TotalWithdraw - TotalDeposit > 0 ? TotalWithdraw - TotalDeposit : 0));
     const claimableEarnings = Math.max(0, currentBalance - (totalDepositsUsd - totalWithdrawalsUsd) - (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0));
     setCurrentEarned(claimableEarnings)
     setCurrentDeposit(currentDepositValue);
 
-
-    // TD=2, TE=0.5, TW = 1, TB =2.5
+ 
 
     // const excessWithdrawal = totalWithdrawalsUsd - totalDepositsUsd
 
