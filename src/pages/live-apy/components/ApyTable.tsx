@@ -215,6 +215,14 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                     )}
                   </th>
                   <th>Network</th>
+                  <th onClick={() => toggleSort('highestApy')} className={styles.sortableHeader}>
+                    Best APY
+                    {sortBy === 'highestApy' && (
+                      <span className={styles.sortIndicator}>
+                        {sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -236,17 +244,19 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                   sortedTokens.map(token => (
                     <tr key={`token-${token.chainId}-${token.address}`}>
                       <td className={styles.tokenCell}>
-                        <img
-                          src={token.icon}
-                          alt={token.token}
-                          className={styles.tokenIcon}
-                        />
+                        <img src={token.icon} alt={token.token} className={styles.tokenIcon} />
                         <span className={styles.tokenName}>{token.token}</span>
                       </td>
                       <td className={styles.networkCell}>
                         <div className={`${styles.networkBadge} ${styles[`network-${token.chainId}`]}`}>
                           {getNetworkName(token.chainId)}
                         </div>
+                      </td>
+                      <td className={styles.apySummaryCell}>
+                        {(() => {
+                          const { apy } = getBestApyForToken(token);
+                          return apy ? `${formatNumber(apy, 2)}%` : '-';
+                        })()}
                       </td>
                     </tr>
                   ))
@@ -315,63 +325,6 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
             </table>
           </div>
 
-          {/* Fixed right column (best yield) */}
-          {/* <div className={styles.fixedRight} ref={rightTableRef}>
-            <table className={styles.apyTable}>
-              <thead>
-                <tr>
-                  <th onClick={() => toggleSort('highestApy')} className={`${styles.sortableHeader} ${styles.bestApyHeader}`}>
-                    Best Yield
-                    {sortBy === 'highestApy' && (
-                      <span className={styles.sortIndicator}>
-                        {sortDirection === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && sortedTokens.length === 0 ? (
-                  <tr>
-                    <td className={styles.loadingRow}>
-                      <div className={styles.loadingSpinner}></div>
-                      <div>Loading...</div>
-                    </td>
-                  </tr>
-                ) : sortedTokens.length === 0 ? (
-                  <tr>
-                    <td className={styles.emptyRow}>
-                      <div className={styles.emptyStateIcon}>🔍</div>
-                      <div className={styles.emptyStateText}>No data</div>
-                    </td>
-                  </tr>
-                ) : (
-                  sortedTokens.map(token => {
-                    const { apy: bestApy, protocol: bestProtocol } = getBestApyForToken(token);
-
-                    return (
-                      <tr key={`token-${token.chainId}-${token.address}`}>
-                        <td className={styles.bestApyColumn}>
-                          {bestApy !== null ? (
-                            <div className={styles.bestApyWrapper}>
-                              <span className={styles.bestApyValue}>
-                                {formatNumber(bestApy, 2)}%
-                              </span>
-                              <span className={styles.bestProtocol}>
-                                {bestProtocol}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className={styles.notAvailable}>Not available</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div> */}
         </div>
       </div>
 
