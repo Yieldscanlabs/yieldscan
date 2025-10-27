@@ -13,6 +13,7 @@ import type { OptimizationData } from '../components/YieldCard/types';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
+import AssetSelector from '../components/AssetSelector';
 import ViewToggle from '../components/ViewToggle';
 import SearchBar from '../components/SearchBar';
 import { useUserPreferencesStore } from '../store/userPreferencesStore';
@@ -26,6 +27,7 @@ const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading } = useAssetStore();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
+  const [selectedAsset, setSelectedAsset] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,12 +72,30 @@ const MyYieldsPage: React.FC = () => {
     )),
     []
   );
+
   console.log('assets ', assets)
   // Get all yield-bearing assets without filtering by protocol
   const allYieldAssets = useMemo(() =>
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
+
+  // Get unique assets from yield-bearing assets with their data
+  const uniqueAssets = useMemo(() => {
+    const assetMap = new Map<string, { token: string; icon?: string; chainId: number }>();
+
+    allYieldAssets.forEach(asset => {
+      if (!assetMap.has(asset.token)) {
+        assetMap.set(asset.token, {
+          token: asset.token,
+          icon: asset.icon,
+          chainId: asset.chainId
+        });
+      }
+    });
+
+    return Array.from(assetMap.values());
+  }, [allYieldAssets]);
   const handleNavigate = () => {
     navigate("/explore")
   }
@@ -121,6 +141,7 @@ const MyYieldsPage: React.FC = () => {
       .filter(asset => {
         if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
         if (selectedProtocol !== 'all' && asset.protocol?.toLowerCase() !== selectedProtocol.toLowerCase()) return false;
+        if (selectedAsset !== 'all' && asset.token.toLowerCase() !== selectedAsset.toLowerCase()) return false;
         if (searchQuery) {
           const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
           const matchesProtocol = asset.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -183,7 +204,7 @@ const MyYieldsPage: React.FC = () => {
           totalDepositedUsd
         };
       });
-  }, [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, wallet.address, getUserActivity]);
+  }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity]);
   console.log('filteredYieldAssets ', filteredYieldAssets)
   // Get unique chain IDs from assets for the network selector
   const uniqueChainIds = useMemo(() =>
@@ -371,7 +392,7 @@ const MyYieldsPage: React.FC = () => {
           asset?.protocol?.toLowerCase() !== 'compound' &&
           asset?.protocol?.toLowerCase() !== 'yearn v3'
         ) {
-          return; 
+          return;
         }
         const currentBalanceUsd = Number(asset.currentBalanceInProtocolUsd as any || '0');
         // Find corresponding deposits and withdrawals for this token
@@ -509,7 +530,7 @@ const MyYieldsPage: React.FC = () => {
     setCurrentEarned(claimableEarnings)
     setCurrentDeposit(currentDepositValue);
 
- 
+
 
     // const excessWithdrawal = totalWithdrawalsUsd - totalDepositsUsd
 
@@ -654,7 +675,7 @@ const MyYieldsPage: React.FC = () => {
           />
         </div>
 
-        {/* Protocol, Search and View Toggle Group */}
+        {/* Protocol, Asset, Search and View Toggle Group */}
         <div className={styles.protocolSearchViewGroup}>
           <ViewToggle
             currentView={viewType}
@@ -673,6 +694,12 @@ const MyYieldsPage: React.FC = () => {
             protocols={uniqueProtocols}
             onChange={setSelectedProtocol}
             className={styles.protocolSelector}
+          />
+          <AssetSelector
+            selectedAsset={selectedAsset}
+            assets={uniqueAssets}
+            onChange={setSelectedAsset}
+            className={styles.assetSelector}
           />
         </div>
       </div>
@@ -798,6 +825,7 @@ const MyYieldsPage: React.FC = () => {
                 onClick={() => {
                   setSelectedNetwork('all');
                   setSelectedProtocol('all');
+                  setSelectedAsset('all');
                 }}
               >
                 Reset Filters
