@@ -42,7 +42,7 @@ export const PROTOCOL_NAMES = {
   // YEARN: 'Yearn V3',
 
   dolomite: 'Dolomite',
-  euler: 'Euler',
+  EULER: 'Euler',
   fluxFinance: 'fluxfinance',
   sparklend: 'Sparklend',
   zerolend: 'Zerolend',
