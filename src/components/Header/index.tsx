@@ -49,7 +49,10 @@ const Header: React.FC<HeaderProps> = ({
       const balanceValue = parseFloat(asset.currentBalanceInProtocolUsd || '0');
       return isNaN(balanceValue) ? sum : sum + balanceValue;
     }, 0);
-
+  const dormantCapital = assets.reduce((sum, asset) => {
+    const balanceValue = parseFloat(asset.balanceUsd || '0');
+    return isNaN(balanceValue) ? sum : sum + balanceValue;
+  }, 0);
   // Calculate weighted average APY across all yield-bearing assets
   const calculateWeightedApy = () => {
     let totalWeightedApy = 0;
@@ -234,6 +237,7 @@ const Header: React.FC<HeaderProps> = ({
         location={location}
         totalValue={totalValue}
         formatValue={formatValue}
+        dormantCapital={dormantCapital}
         isDropdownOpen={isDropdownOpen}
         toggleDropdown={toggleDropdown}
         toggleMobileMenu={toggleMobileMenu}
@@ -249,6 +253,7 @@ const Header: React.FC<HeaderProps> = ({
         isOpen={isMobileMenuOpen}
         setIsOpen={setIsMobileMenuOpen}
         mobileMenuRef={mobileMenuRef}
+        dormantCapital={dormantCapital}
         isConnected={isConnected}
         location={location}
         totalValue={totalValue}

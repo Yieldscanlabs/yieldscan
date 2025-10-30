@@ -22,7 +22,8 @@
 .headerHidden {
   transform: translateY(-100%);
 }
-.headerContent{
+
+.headerContent {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -30,6 +31,7 @@
   width: 100%;
   padding-left: 2rem;
 }
+
 /* Remove the global body padding since we've added it to the Layout component */
 
 .headerLeft {
@@ -43,12 +45,14 @@
   display: flex;
   align-items: centers;
 }
+
 .titleLink img {
   width: auto;
   height: 30px;
   margin-right: 4px;
   margin-top: -2px;
 }
+
 .title {
   font-size: 22px;
   font-weight: 800;
@@ -62,10 +66,12 @@
   margin: 0;
   letter-spacing: 1.5px;
 }
+
 .title span {
   font-weight: 300;
 
 }
+
 .navigation {
   display: flex;
   gap: 1.5rem;
@@ -107,6 +113,7 @@
   from {
     transform: scaleX(0);
   }
+
   to {
     transform: scaleX(1);
   }
@@ -229,6 +236,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -240,10 +248,13 @@
   display: flex;
   align-items: center;
   margin-right: 16px;
+  gap: 10px;
 }
 
 /* Earnings badges */
-.earningsBadge, .earningsBadgeDaily, .earningsBadgeTotal {
+.earningsBadge,
+.earningsBadgeDaily,
+.earningsBadgeTotal {
   display: flex;
   align-items: center;
   border-radius: 12px;
@@ -272,9 +283,9 @@
 .earningsBadgeTotal {
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, 
-    rgba(var(--success-rgb), 0.08) 0%, 
-    rgba(var(--success-rgb), 0.12) 100%);
+  background: linear-gradient(135deg,
+      rgba(var(--success-rgb), 0.08) 0%,
+      rgba(var(--success-rgb), 0.12) 100%);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(var(--success-rgb), 0.25);
   border-radius: var(--radius-md);
@@ -288,9 +299,9 @@
 }
 
 .earningsBadgeTotal:hover {
-  background: linear-gradient(135deg, 
-    rgba(var(--success-rgb), 0.12) 0%, 
-    rgba(var(--success-rgb), 0.18) 100%);
+  background: linear-gradient(135deg,
+      rgba(var(--success-rgb), 0.12) 0%,
+      rgba(var(--success-rgb), 0.18) 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(var(--success-rgb), 0.2);
   border-color: rgba(var(--success-rgb), 0.35);
@@ -329,19 +340,23 @@
     gap: 4px;
     align-items: flex-start;
   }
-  
+
   .earningsLabel {
-    display: none; /* Hide label on small screens */
+    display: none;
+    /* Hide label on small screens */
   }
-  
-  .earningsBadge, .earningsBadgeDaily, .earningsBadgeTotal {
+
+  .earningsBadge,
+  .earningsBadgeDaily,
+  .earningsBadgeTotal {
     padding: 4px 8px;
   }
 }
 
 @media (max-width: 480px) {
   .earningsContainer {
-    display: none; /* Hide completely on very small screens */
+    display: none;
+    /* Hide completely on very small screens */
   }
 }
 
@@ -362,26 +377,36 @@
 /* Make the badge responsive */
 @media (max-width: 768px) {
   .earningsLabel {
-    display: none; /* Hide label on small screens */
+    display: none;
+    /* Hide label on small screens */
   }
-  
-  .earningsBadge, .earningsBadgeDaily, .earningsBadgeTotal {
+
+  .earningsBadge,
+  .earningsBadgeDaily,
+  .earningsBadgeTotal {
     padding: 4px 8px;
   }
 }
 
 @media (max-width: 480px) {
-  .earningsBadge, .earningsBadgeDaily, .earningsBadgeTotal {
-    display: none; /* Hide completely on very small screens */
+
+  .earningsBadge,
+  .earningsBadgeDaily,
+  .earningsBadgeTotal {
+    display: none;
+    /* Hide completely on very small screens */
   }
 }
 
 @media (max-width: 1200px) {
-  .earningsBadge, .earningsBadgeDaily, .earningsBadgeTotal {
+
+  .earningsBadge,
+  .earningsBadgeDaily,
+  .earningsBadgeTotal {
     min-width: 120px;
   }
-  
-  .earningsBadge .earningsAmount, 
+
+  .earningsBadge .earningsAmount,
   .earningsBadgeDaily .earningsAmount,
   .earningsBadgeTotal .earningsAmount {
     max-width: 110px;
@@ -397,27 +422,27 @@
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .headerLeft {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .navigation {
     gap: 1rem;
   }
-  
+
   .headerRight {
     width: 100%;
     justify-content: flex-end;
     gap: 0.75rem;
   }
-  
+
   .walletInfo {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .walletDropdown {
     width: 100%;
   }
@@ -427,12 +452,15 @@
     gap: 4px;
     align-items: flex-start;
   }
-  
+
   .earningsLabel {
-    display: none; /* Hide label on small screens */
+    display: none;
+    /* Hide label on small screens */
   }
-  
-  .earningsBadge, .earningsBadgeDaily, .earningsBadgeTotal {
+
+  .earningsBadge,
+  .earningsBadgeDaily,
+  .earningsBadgeTotal {
     padding: 4px 8px;
     min-width: 110px;
   }
@@ -440,7 +468,8 @@
 
 @media (max-width: 480px) {
   .earningsContainer {
-    display: none; /* Hide completely on very small screens */
+    display: none;
+    /* Hide completely on very small screens */
   }
 }
 
@@ -450,12 +479,12 @@
     padding: 0.45rem 0.75rem;
     height: 38px;
   }
-  
+
   .earningsLabel {
     font-size: 0.7rem;
     margin-right: 0.4rem;
   }
-  
+
   .earningsBadgeTotal .earningsAmount {
     font-size: 0.85rem;
   }
@@ -465,9 +494,11 @@
   .earningsContainer {
     display: none;
   }
+
   .dropdownThemeToggle {
     display: none;
   }
+
   .dropdownDivider {
     display: none;
   }
@@ -479,12 +510,12 @@
     padding: 0.4rem 0.625rem;
     height: 36px;
   }
-  
+
   .earningsLabel {
     font-size: 0.65rem;
     margin-right: 0.35rem;
   }
-  
+
   .earningsBadgeTotal .earningsAmount {
     font-size: 0.8rem;
   }
@@ -652,13 +683,13 @@
 
 .mobileEarningsContainer {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .mobileEarningsBadge {
-  background: linear-gradient(135deg, 
-    rgba(var(--success-rgb), 0.08) 0%, 
-    rgba(var(--success-rgb), 0.12) 100%);
+  background: linear-gradient(135deg,
+      rgba(var(--success-rgb), 0.08) 0%,
+      rgba(var(--success-rgb), 0.12) 100%);
   border: 1px solid rgba(var(--success-rgb), 0.25);
   border-radius: var(--radius-md);
   padding: 0.5rem 0.75rem;
@@ -748,8 +779,8 @@
   }
 }
 
-@media   (max-width: 900px) {
-  .headerContent{
+@media (max-width: 900px) {
+  .headerContent {
     padding-left: 1rem;
     padding-right: 1rem;
   }

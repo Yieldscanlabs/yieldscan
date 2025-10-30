@@ -12,6 +12,7 @@ interface MobileMenuProps {
   isConnected: boolean;
   location: Location;
   totalValue: number;
+  dormantCapital: number; // Add this line
   formatValue: (value: number) => string;
 }
 
@@ -23,6 +24,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   location,
   totalValue,
   formatValue,
+  dormantCapital
 }) => {
   const closeMobileMenu = () => setIsOpen(false);
 
@@ -93,9 +95,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         {isConnected && (
           <div className={styles.mobileWalletSection}>
             <div className={styles.mobileWalletInfo}>
-
               {/* Display total value on mobile */}
               <div className={styles.mobileEarningsContainer}>
+                <div className={styles.mobileEarningsBadge}>
+                  <span className={styles.mobileEarningsLabel}>Dormant Capital:</span>
+                  <span className={styles.mobileEarningsAmount}>
+                    ~${formatValue(dormantCapital)}
+                  </span>
+                </div>
                 <div className={styles.mobileEarningsBadge}>
                   <span className={styles.mobileEarningsLabel}>Working Capital:</span>
                   <span className={styles.mobileEarningsAmount}>

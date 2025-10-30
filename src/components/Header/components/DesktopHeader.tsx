@@ -15,6 +15,7 @@ interface DesktopHeaderProps {
   address?: string;
   location: Location;
   totalValue: number;
+  dormantCapital: number;
   formatValue: (value: number) => string;
   isDropdownOpen: boolean;
   toggleDropdown: () => void;
@@ -43,6 +44,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   handleCopyAddress,
   handleOpenExplorer,
   disconnectWallet,
+  dormantCapital
 }) => {
   return (
     <header className={`${styles.header} ${isVisible ? styles.headerVisible : styles.headerHidden}`}>
@@ -64,6 +66,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
             isConnected={isConnected}
             totalValue={totalValue}
             formatValue={formatValue}
+            dormantCapital={dormantCapital}
           />
 
           <WalletSection
