@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApyStore } from '../../store/apyStore';
+import { useAssetStore } from '../../store/assetStore';
 import styles from './styles/LiveApy.module.css';
 import useWalletConnection from '../../hooks/useWalletConnection';
 import WalletCtaCard from '../../components/WalletCtaCard';
@@ -13,6 +14,24 @@ const LiveApyPage: React.FC = () => {
   const { wallet } = useWalletConnection();
   const [activeTab, setActiveTab] = useState<string>('best-apy');
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
+  const [selectedAsset, setSelectedAsset] = useState<string | 'all'>('all');
+  const { assets } = useAssetStore();
+
+  const filteredAssetList = React.useMemo(() => {
+    let working = assets;
+    if (selectedChain !== 'all') {
+      working = working.filter(asset => asset.chainId === selectedChain);
+    }
+    // Deduplicate by token (first found)
+    const map = new Map();
+    for (const asset of working) {
+      if (!map.has(asset.token)) {
+        map.set(asset.token, { ...asset, label: asset.token });
+      }
+    }
+    return Array.from(map.values());
+  }, [assets, selectedChain]);
 
   // Format timestamp for last updated
   const formattedLastUpdate = new Intl.DateTimeFormat('en-US', {
@@ -51,6 +70,11 @@ const LiveApyPage: React.FC = () => {
             apyData={apyData}
             isLoading={isLoading}
             error={error}
+            selectedAsset={selectedAsset}
+            onAssetChange={setSelectedAsset}
+            selectedChain={selectedChain}
+            onChainChange={setSelectedChain}
+            filteredAssetList={filteredAssetList}
           />
         )}
 

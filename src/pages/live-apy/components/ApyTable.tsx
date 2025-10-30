@@ -8,15 +8,20 @@ import Protocol from '../../../components/Protocol';
 import useWalletConnection from '../../../hooks/useWalletConnection';
 import WalletModal from '../../../components/WalletModal';
 import { getNetworkName } from '../../../utils/networkIcons';
+import AssetSelector from '../../../components/AssetSelector';
 
 interface ApyTableProps {
   apyData: any;
   isLoading: boolean;
   error: string | null;
+  selectedAsset: string | 'all';
+  onAssetChange: (asset: string | 'all') => void;
+  selectedChain: number | 'all';
+  onChainChange: (c: number | 'all') => void;
+  filteredAssetList: any[];
 }
 
-const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
-  const [selectedChain, setSelectedChain] = useState<number | 'all'>('all');
+const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error, selectedAsset, onAssetChange, selectedChain, onChainChange, filteredAssetList }) => {
   const [sortBy, setSortBy] = useState<'token' | 'highestApy'>('highestApy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
@@ -57,7 +62,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
     return Array.from(uniqueChains).sort((a, b) => a - b);
   }, []);
 
-  // Filter tokens by selected chain
+  // Improved token filtering for the table according to the rules:
   const filteredTokens = React.useMemo(() => {
     let result = tokens;
 
@@ -66,12 +71,14 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
       result = result.filter(token => token.chainId === selectedChain);
     }
 
-    // Filter out duplicate underlying assets
+    if (selectedAsset !== 'all') {
+      result = result.filter(token => token.token === selectedAsset);
+    }
     // Only keep regular tokens (non-yield-bearing)
     result = result.filter(token => !token.yieldBearingToken);
 
     return result;
-  }, [tokens, selectedChain]);
+  }, [tokens, selectedChain, selectedAsset]);
   // Sort tokens
   const sortedTokens = React.useMemo(() => {
     return [...filteredTokens].sort((a, b) => {
@@ -185,8 +192,14 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
             selectedNetwork={selectedChain}
             networks={chainOptions}
             //@ts-ignore
-            onChange={setSelectedChain}
+            onChange={onChainChange}
             className={styles.compactNetworkSelector}
+          />
+          <AssetSelector
+            selectedAsset={selectedAsset}
+            assets={filteredAssetList}
+            onChange={onAssetChange}
+            className={styles.compactAssetSelector}
           />
         </div>
         <div className={styles.filterStats}>
@@ -255,7 +268,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error }) => {
                       <td className={styles.apySummaryCell}>
                         {(() => {
                           const { apy } = getBestApyForToken(token);
-                          return apy ? `${formatNumber(apy, 2)}%` : '-';
+                          return apy ? `${formatNumber(apy, 2)}%` : '—';
                         })()}
                       </td>
                     </tr>

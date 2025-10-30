@@ -6,6 +6,7 @@ interface AssetData {
   token: string;
   icon?: string;
   chainId: number;
+  label?: string; // Added label property
 }
 
 interface AssetSelectorProps {
