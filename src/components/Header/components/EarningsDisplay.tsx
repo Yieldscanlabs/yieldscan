@@ -17,7 +17,7 @@ const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
   return (
     <div className={styles.earningsContainer}>
       <div className={styles.earningsBadgeTotal}>
-        <span className={styles.earningsLabel}>Yield Capital:</span>
+        <span className={styles.earningsLabel}>Working Capital:</span>
         <span className={styles.earningsAmount}>
           ~${formatValue(totalValue)}
         </span>

@@ -97,7 +97,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               {/* Display total value on mobile */}
               <div className={styles.mobileEarningsContainer}>
                 <div className={styles.mobileEarningsBadge}>
-                  <span className={styles.mobileEarningsLabel}>Yield Capital:</span>
+                  <span className={styles.mobileEarningsLabel}>Working Capital:</span>
                   <span className={styles.mobileEarningsAmount}>
                     ~${formatValue(totalValue)}
                   </span>

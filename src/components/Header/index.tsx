@@ -87,18 +87,18 @@ const Header: React.FC<HeaderProps> = ({
   const formatValue = (value: number): string => {
     // Ensure the value is a valid number
     if (typeof value !== 'number' || isNaN(value)) {
-      return '1000.000000000000000000';
+      return '1000.0000';
     }
 
     try {
       if (value >= 1000) {
-        return value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 });
+        return value.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
       } else {
-        return value.toFixed(18);
+        return value.toFixed(4);
       }
     } catch (error) {
       console.error('Error formatting value:', error);
-      return '1000.000000000000000000';
+      return '1000.0000';
     }
   };
 
