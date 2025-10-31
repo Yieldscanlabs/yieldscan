@@ -69,9 +69,9 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
       originalIndex: number;
       [key: string]: any; // Allow other properties from the original steps
     }
-    
+
     const combined: CombinedStep[] = [];
-    
+
     // Add withdrawal steps with "Withdraw" prefix
     withdrawSteps.steps.forEach((step, index) => {
       combined.push({
@@ -81,7 +81,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
         originalIndex: index
       });
     });
-    
+
     // Add deposit steps with "Deposit" prefix
     depositSteps.steps.forEach((step, index) => {
       combined.push({
@@ -91,7 +91,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
         originalIndex: index
       });
     });
-    
+
     return combined;
   }, [withdrawSteps.steps, depositSteps.steps]);
 
@@ -117,7 +117,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
       } else {
         setError(`Failed to execute ${currentStep.title}`);
       }
-      
+
       setIsExecuting(false);
       return success;
     } catch (err) {
@@ -136,13 +136,14 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
       setCompletedSteps(new Set());
       setError(null);
       executeStep(0);
-    } else if (!isOpen) {
-      setHasStarted(false);
-      setCurrentStepIndex(0);
-      setCompletedSteps(new Set());
-      setError(null);
-      setIsExecuting(false);
     }
+    //  else if (!isOpen) {
+    //   // setHasStarted(false);
+    //   setCurrentStepIndex(0);
+    //   setCompletedSteps(new Set());
+    //   setError(null);
+    //   setIsExecuting(false);
+    // }
   }, [isOpen, allSteps.length, hasStarted, executeStep]);
 
   // Handle step progression
@@ -183,7 +184,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
           <h3>Optimize {asset.token} Yield</h3>
           <button className={styles.closeButton} onClick={onClose}>×</button>
         </div>
-        
+
         <div className={styles.modalContent}>
           <div className={styles.depositDetails}>
             <div className={styles.detailRow}>
@@ -209,7 +210,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>To</span>
               <span className={styles.detailValue}>
-                <Protocol name={betterProtocol}/> <span className={styles.subDetail}>({betterApy.toFixed(2)}% APY)</span>
+                <Protocol name={betterProtocol} /> <span className={styles.subDetail}>({betterApy.toFixed(2)}% APY)</span>
               </span>
             </div>
             <div className={styles.detailRow}>
@@ -246,15 +247,15 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
                 <h4>Optimization Progress</h4>
                 <span className={styles.stepCounter}>{completedSteps.size} of {allSteps.length} completed</span>
               </div>
-              
+
               <div className={styles.stepsList}>
                 {allSteps.map((step, index) => {
                   const isCompleted = completedSteps.has(index);
                   const isCurrent = currentStepIndex === index;
                   const isPending = index > currentStepIndex;
-                  
+
                   return (
-                    <div 
+                    <div
                       key={`${step.type}-${step.originalIndex}`}
                       className={`${styles.stepItem} ${isCompleted ? styles.completed : ''} ${isCurrent ? styles.active : ''} ${isPending ? styles.pending : ''}`}
                     >

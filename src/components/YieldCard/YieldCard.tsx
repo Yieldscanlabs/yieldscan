@@ -19,12 +19,12 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     onOptimize,
     onLockAPY
   } = props;
-  console.log('asset ',asset)
+
   const { openModal } = useOptimizationStore();
   const { openInformationModal } = useOptimizeInformationStore();
   const { openLockAPYInformationModal } = useLockAPYInformationStore();
   const { openModal: openWithdrawModalGlobal } = useWithdrawModalStore();
-  
+
   const {
     // Token and protocol info
     protocol,

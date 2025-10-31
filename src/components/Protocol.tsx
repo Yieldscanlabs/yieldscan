@@ -122,7 +122,6 @@ const Protocol: React.FC<ProtocolProps> = ({
 
 
   // const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
-  console.log('logoUrl ', logoUrl)
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name} ` : null;
   const tooltipId = name ? `protocol - tooltip - ${name.toLowerCase()} ` : 'protocol-tooltip';
   const formatProtocolName = (name: string) => {

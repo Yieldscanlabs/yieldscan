@@ -73,7 +73,6 @@ const MyYieldsPage: React.FC = () => {
     []
   );
 
-  console.log('assets ', assets)
   // Get all yield-bearing assets without filtering by protocol
   const allYieldAssets = useMemo(() =>
     assets.filter(asset => asset.yieldBearingToken),
@@ -205,7 +204,6 @@ const MyYieldsPage: React.FC = () => {
         };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity]);
-  console.log('filteredYieldAssets ', filteredYieldAssets)
   // Get unique chain IDs from assets for the network selector
   const uniqueChainIds = useMemo(() =>
     Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
@@ -222,28 +220,28 @@ const MyYieldsPage: React.FC = () => {
     if (!token) return undefined;
 
     // Determine which protocol this yield-bearing token belongs to
-    const currentProtocol = token.protocol;
+    const currentProtocol = asset.protocol;
     if (!currentProtocol) return undefined;
 
     // Find the underlying asset for this yield token
-    const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
-    const underlyingToken = tokens.find(
-      t => t.token === underlyingTokenSymbol && t.chainId === token.chainId && !t.yieldBearingToken
-    );
+    // const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
+    // const underlyingToken = tokens.find(
+    //   t => t.token === underlyingTokenSymbol && t.chainId === token.chainId && !t.yieldBearingToken
+    // );
 
-    if (!underlyingToken) return undefined;
+    // if (!underlyingToken) return undefined;
 
     // Get best APY from the store
     const { bestApy, bestProtocol } = getBestApy(
-      underlyingToken.chainId,
-      underlyingToken.address.toLowerCase()
+      token.chainId,
+      token.address.toLowerCase()
     );
 
     // If no best APY found, skip this asset
     if (bestApy === null || !bestProtocol) return undefined;
 
     //@ts-ignore
-    const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
+    const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[token.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
 
     // Check if there's a better APY available
     if (bestProtocol !== currentProtocol && bestApy > currentApyEstimate) {
