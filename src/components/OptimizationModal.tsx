@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import styles from './DepositModal.module.css'; // Reuse the deposit modal styles
 import { formatNumber } from '../utils/helpers';
 import type { Asset } from '../types';
@@ -38,6 +38,8 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const stepsRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const stepsContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Get withdrawal steps
   const withdrawSteps = useWithdrawSteps({
@@ -76,7 +78,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     withdrawSteps.steps.forEach((step, index) => {
       combined.push({
         ...step,
-        title: `Withdraw: ${step.title}`,
+        title: `${step.title}`,
         type: 'withdraw' as const,
         originalIndex: index
       });
@@ -86,7 +88,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     depositSteps.steps.forEach((step, index) => {
       combined.push({
         ...step,
-        title: `Deposit: ${step.title}`,
+        title: `${step.title}`,
         type: 'deposit' as const,
         originalIndex: index
       });
@@ -167,6 +169,14 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
     }
   }, [currentStepIndex, isExecuting, error, hasStarted, allSteps.length, executeStep, onComplete, address, fetchAssets]);
 
+  // Auto-scroll the current step into view for long step lists
+  useEffect(() => {
+    const currentEl = stepsRefs.current[currentStepIndex];
+    if (currentEl && stepsContainerRef.current) {
+      currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [currentStepIndex]);
+
   const retryCurrentStep = () => {
     setError(null);
     executeStep(currentStepIndex);
@@ -176,6 +186,7 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
 
   const isLoading = withdrawSteps.isLoading || depositSteps.isLoading;
   const allCompleted = currentStepIndex >= allSteps.length && allSteps.length > 0;
+  const progressPercent = allSteps.length === 0 ? 0 : Math.min(100, Math.round((completedSteps.size / allSteps.length) * 100));
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -184,6 +195,28 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
           <h3>Optimize {asset.token} Yield</h3>
           <button className={styles.closeButton} onClick={onClose}>×</button>
         </div>
+
+        {/* Top inline progress bar */}
+        {allSteps.length > 0 && (
+          <div
+            style={{
+              width: '100%',
+              height: 6,
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: 6,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                width: `${progressPercent}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, #36d1dc, #5b86e5)',
+                transition: 'width 400ms ease',
+              }}
+            />
+          </div>
+        )}
 
         <div className={styles.modalContent}>
           <div className={styles.depositDetails}>
@@ -245,35 +278,124 @@ const OptimizationModal: React.FC<OptimizationModalProps> = ({
             <div className={styles.stepsContainer}>
               <div className={styles.stepsHeader}>
                 <h4>Optimization Progress</h4>
-                <span className={styles.stepCounter}>{completedSteps.size} of {allSteps.length} completed</span>
+                <span
+                  className={styles.stepCounter}
+                  style={{
+                    position: 'relative',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '4px 12px',
+                    borderRadius: 999,
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    background: 'rgba(11,18,32,0.6)'
+                  }}
+                >
+                  <div
+                    aria-hidden
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(90deg, rgba(86,224,145,0.18), rgba(91,134,229,0.18))',
+                      width: `${progressPercent}%`,
+                      transition: 'width 300ms ease',
+                    }}
+                  />
+                  <span style={{ position: 'relative', fontSize: 12, color: 'rgba(255,255,255,0.9)' }}>
+                    <span style={{ fontWeight: 700 }}>{completedSteps.size}</span>
+                    <span style={{ opacity: 0.7 }}> / {allSteps.length}</span>
+                    <span style={{ opacity: 0.6 }}> completed</span>
+                  </span>
+                </span>
               </div>
 
-              <div className={styles.stepsList}>
+              {/* Horizontal Stepper */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 16px 0' }}>
                 {allSteps.map((step, index) => {
                   const isCompleted = completedSteps.has(index);
                   const isCurrent = currentStepIndex === index;
                   const isPending = index > currentStepIndex;
 
+                  const nodeBorder = isPending ? '1px solid rgba(255,255,255,0.2)' : 'none';
+                  const nodeBg = isCompleted
+                    ? 'linear-gradient(135deg, #2AF598 0%, #00C6FF 100%)'
+                    : isCurrent
+                      ? 'linear-gradient(135deg, #5e8bff 0%, #7b61ff 100%)'
+                      : 'rgba(255,255,255,0.08)';
+                  const nodeColor = isPending ? 'rgba(255,255,255,0.6)' : '#0b1220';
+                  const connectorColor = isCompleted
+                    ? 'rgba(42,245,152,0.8)'
+                    : isCurrent
+                      ? 'rgba(94,139,255,0.8)'
+                      : 'rgba(255,255,255,0.15)';
+
                   return (
-                    <div
-                      key={`${step.type}-${step.originalIndex}`}
-                      className={`${styles.stepItem} ${isCompleted ? styles.completed : ''} ${isCurrent ? styles.active : ''} ${isPending ? styles.pending : ''}`}
-                    >
-                      <div className={styles.stepNumber}>
-                        {isCompleted ? '✓' : index + 1}
-                      </div>
-                      <div className={styles.stepContent}>
-                        <div className={styles.stepTitle}>{step.title}</div>
-                        <div className={styles.stepDescription}>
-                          {step.description}
+                    <React.Fragment key={`${step.type}-${step.originalIndex}-h`}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 56 }}>
+                        <div
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            background: nodeBg,
+                            border: nodeBorder,
+                            color: nodeColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            boxShadow: isCurrent ? '0 0 0 3px rgba(123,97,255,0.25)' : 'none'
+                          }}
+                        >
+                          {isCompleted ? '✓' : index + 1}
                         </div>
-                        {isCurrent && isExecuting && (
-                          <div className={styles.stepSpinner}></div>
-                        )}
+                        <div style={{ marginTop: 6, fontSize: 11, color: isPending ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.9)', textAlign: 'center', maxWidth: 80 }}>
+                          {step.type.charAt(0).toUpperCase() + step.type.slice(1)}
+                        </div>
                       </div>
-                    </div>
+                      {index < allSteps.length - 1 && (
+                        <div style={{ flex: 1, height: 4, minWidth: 40, background: connectorColor, borderRadius: 4 }} />
+                      )}
+                    </React.Fragment>
                   );
                 })}
+              </div>
+
+              {/* Current Step Details */}
+              <div style={{
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(255,255,255,0.04)',
+                borderRadius: 12,
+                padding: "8px 14px 8px 8px"
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
+                  <div style={{ fontWeight: 600 }}>{allSteps[currentStepIndex]?.title}</div>
+                  {error ? (
+                    <span style={{ fontSize: 11, color: '#ff8a8a', padding: '2px 8px', background: 'rgba(255,138,138,0.12)', borderRadius: 6 }}>Failed</span>
+                  ) : isExecuting ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#99e1ff', padding: '2px 8px', background: 'rgba(153,225,255,0.12)', borderRadius: 6 }}>
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: 6,
+                          border: '2px solid rgba(153,225,255,0.35)',
+                          borderTopColor: '#99e1ff',
+                          animation: 'spin 0.8s linear infinite'
+                        }}
+                      />
+                      Executing
+                    </span>
+                  ) : completedSteps.has(currentStepIndex) ? (
+                    <span style={{ fontSize: 11, color: '#7af7ba', padding: '2px 6px', background: 'rgba(122,247,186,0.12)', borderRadius: 6 }}>Completed</span>
+                  ) : null}
+                </div>
+                <div style={{ opacity: 0.8, fontSize: 13 }}>
+                  {allSteps[currentStepIndex]?.description}
+                </div>
+                {/* {isExecuting && <div className={styles.stepSpinner} />} */}
               </div>
 
               {error && (
