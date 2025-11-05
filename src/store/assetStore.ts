@@ -233,6 +233,8 @@ export const useAssetStore = create<AssetStore>()(
             }
           }
 
+          dormantCapital += assets.reduce((acc, val) => acc + Number(val?.currentBalanceInProtocolUsd || 0), 0)
+
           set({
             assets,
             dormantCapital,
