@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
   const [copySuccess, setCopySuccess] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const { assets } = useAssetStore();
+  const { assets, dormantCapital } = useAssetStore();
   const { apyData } = useApyStore();
   const { chainId } = useAccount();
 
@@ -49,10 +49,10 @@ const Header: React.FC<HeaderProps> = ({
       const balanceValue = parseFloat(asset.currentBalanceInProtocolUsd || '0');
       return isNaN(balanceValue) ? sum : sum + balanceValue;
     }, 0);
-  const dormantCapital = assets.reduce((sum, asset) => {
-    const balanceValue = parseFloat(asset.balanceUsd || '0');
-    return isNaN(balanceValue) ? sum : sum + balanceValue;
-  }, 0);
+  // const dormantCapital = assets.reduce((sum, asset) => {
+  //   const balanceValue = parseFloat(asset.balanceUsd || '0');
+  //   return isNaN(balanceValue) ? sum : sum + balanceValue;
+  // }, 0);
   // Calculate weighted average APY across all yield-bearing assets
   const calculateWeightedApy = () => {
     let totalWeightedApy = 0;

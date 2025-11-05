@@ -25,6 +25,13 @@ export interface Asset {
   currentBalanceInProtocolUsd?: string;
 }
 
+export interface Chain {
+  name: string;
+  chainId: number;
+  usdPrice: number;
+  image: string;
+}
+
 export interface YieldOption {
   id: string;
   protocol: string;
