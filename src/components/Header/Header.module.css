@@ -231,6 +231,123 @@
   min-width: 200px;
 }
 
+/* Wallet List Styles */
+.walletSectionLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.walletListItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.walletListItem:hover {
+  background-color: var(--surface-medium);
+}
+
+.walletIcon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.walletAddressText {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono, monospace);
+}
+
+.activeBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--success-color);
+  background-color: rgba(var(--success-rgb), 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.walletListItemActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.switchButton {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.switchButton:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.removeButton {
+  background-color: transparent;
+  color: var(--text-tertiary);
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeButton:hover {
+  color: var(--error-color);
+  background-color: rgba(var(--error-rgb, 255, 0, 0), 0.1);
+}
+
+.consolidateToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.consolidateToggle:hover {
+  background-color: var(--surface-medium);
+}
+
+.consolidateToggle input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+}
+
+.consolidateToggle span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

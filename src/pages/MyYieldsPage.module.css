@@ -1968,3 +1968,36 @@
   font-weight: 500;
   color: var(--text-secondary);
 }
+
+/* Wallet Section Styles for Consolidated View */
+.walletSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.walletSectionHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+}
+
+.metamaskBadge {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  padding: 0.25rem 0.75rem;
+  background-color: var(--surface-light);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.noYieldsText {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  padding: 0.75rem 0.25rem;
+}

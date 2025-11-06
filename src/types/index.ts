@@ -23,6 +23,7 @@ export interface Asset {
   usd: number;
   currentBalanceInProtocol?: number;
   currentBalanceInProtocolUsd?: string;
+  walletAddress?: string;  // Source wallet address (for consolidated view)
 }
 
 export interface Chain {

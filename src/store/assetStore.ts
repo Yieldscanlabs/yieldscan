@@ -61,15 +61,21 @@ async function fetchChains(): Promise<Chain[]> {
 
 interface AssetStore {
   // State
-  assets: Asset[];
+  assets: Asset[];  // Current view (active wallet or consolidated)
+  assetsByAddress: Record<string, Asset[]>;  // Per-address asset storage
+  dormantCapital: number;
+  dormantCapitalByAddress: Record<string, number>;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
   autoRefreshEnabled: boolean;
-  dormantCapital: number;
 
   // Actions
   fetchAssets: (address: string, showLoading?: boolean) => Promise<void>;
+  fetchAssetsForMultiple: (addresses: string[], showLoading?: boolean) => Promise<void>;
+  getAssetsForAddress: (address: string) => Asset[];
+  getConsolidatedAssets: () => Asset[];
+  updateActiveView: (address: string | null, isConsolidated: boolean, allAddresses?: string[]) => void;
   clearErrors: () => void;
   setAutoRefresh: (enabled: boolean) => void;
   getAssetByAddress: (address: string, chainId: number) => Asset | undefined;
@@ -80,11 +86,13 @@ export const useAssetStore = create<AssetStore>()(
   persist(
     (set, get) => ({
       assets: [],
+      assetsByAddress: {},
+      dormantCapital: 0,
+      dormantCapitalByAddress: {},
       isLoading: false,
       error: null,
       lastUpdated: null,
       autoRefreshEnabled: true,
-      dormantCapital: 0,
       // Fetch assets for a specific wallet address
       fetchAssets: async (walletAddress: string, showLoading = true) => {
         if (!walletAddress || walletAddress === '0x') {
@@ -235,9 +243,22 @@ export const useAssetStore = create<AssetStore>()(
 
           dormantCapital += assets.reduce((acc, val) => acc + Number(val?.currentBalanceInProtocolUsd || 0), 0)
 
+          // Update assetsByAddress and dormantCapitalByAddress
+          const state = get();
+          const newAssetsByAddress = {
+            ...state.assetsByAddress,
+            [walletAddress.toLowerCase()]: assets
+          };
+          const newDormantCapitalByAddress = {
+            ...state.dormantCapitalByAddress,
+            [walletAddress.toLowerCase()]: dormantCapital
+          };
+
           set({
             assets,
+            assetsByAddress: newAssetsByAddress,
             dormantCapital,
+            dormantCapitalByAddress: newDormantCapitalByAddress,
             isLoading: false,
             lastUpdated: Date.now()
           });
@@ -246,6 +267,120 @@ export const useAssetStore = create<AssetStore>()(
           set({
             error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
             isLoading: false
+          });
+        }
+      },
+
+      // Fetch assets for multiple addresses
+      fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
+        if (!addresses || addresses.length === 0) {
+          set({ assets: [], error: null, isLoading: false });
+          return;
+        }
+
+        if (showLoading) {
+          set({ isLoading: true });
+        }
+
+        set({ error: null });
+
+        try {
+          // Fetch assets for all addresses in parallel
+          const fetchPromises = addresses.map(address =>
+            get().fetchAssets(address, false)  // Don't show loading for individual fetches
+          );
+
+          await Promise.all(fetchPromises);
+
+          // Update consolidated view
+          const state = get();
+          const consolidatedAssets: Asset[] = [];
+          let totalDormantCapital = 0;
+
+          addresses.forEach(address => {
+            const addressLower = address.toLowerCase();
+            const assets = state.assetsByAddress[addressLower] || [];
+            // Add walletAddress field to each asset for identification
+            const assetsWithSource = assets.map(asset => ({
+              ...asset,
+              walletAddress: address
+            }));
+            consolidatedAssets.push(...assetsWithSource);
+            totalDormantCapital += state.dormantCapitalByAddress[addressLower] || 0;
+          });
+
+          set({
+            assets: consolidatedAssets,
+            dormantCapital: totalDormantCapital,
+            isLoading: false,
+            lastUpdated: Date.now()
+          });
+        } catch (error) {
+          console.error('Error fetching assets for multiple addresses:', error);
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error fetching assets',
+            isLoading: false
+          });
+        }
+      },
+
+      // Get assets for a specific address
+      getAssetsForAddress: (address: string) => {
+        const state = get();
+        return state.assetsByAddress[address.toLowerCase()] || [];
+      },
+
+      // Get consolidated assets from all addresses
+      getConsolidatedAssets: () => {
+        const state = get();
+        const consolidatedAssets: Asset[] = [];
+        Object.entries(state.assetsByAddress).forEach(([address, assets]) => {
+          const assetsWithSource = assets.map(asset => ({
+            ...asset,
+            walletAddress: address
+          }));
+          consolidatedAssets.push(...assetsWithSource);
+        });
+        return consolidatedAssets;
+      },
+
+      // Update active view based on address and consolidation mode
+      updateActiveView: (address: string | null, isConsolidated: boolean, allAddresses?: string[]) => {
+        const state = get();
+        if (isConsolidated && allAddresses && allAddresses.length > 0) {
+          // Consolidated view
+          const consolidatedAssets: Asset[] = [];
+          let totalDormantCapital = 0;
+
+          allAddresses.forEach(addr => {
+            const addrLower = addr.toLowerCase();
+            const assets = state.assetsByAddress[addrLower] || [];
+            const assetsWithSource = assets.map(asset => ({
+              ...asset,
+              walletAddress: addr
+            }));
+            consolidatedAssets.push(...assetsWithSource);
+            totalDormantCapital += state.dormantCapitalByAddress[addrLower] || 0;
+          });
+
+          set({
+            assets: consolidatedAssets,
+            dormantCapital: totalDormantCapital
+          });
+        } else if (address) {
+          // Single wallet view
+          const addrLower = address.toLowerCase();
+          const assets = state.assetsByAddress[addrLower] || [];
+          const dormantCapital = state.dormantCapitalByAddress[addrLower] || 0;
+          set({
+            assets,
+            dormantCapital
+          });
+        } else {
+          // No wallet
+          set({
+            assets: [],
+            dormantCapital: 0
           });
         }
       },

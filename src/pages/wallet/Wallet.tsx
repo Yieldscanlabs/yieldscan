@@ -19,6 +19,8 @@ import { AVAILABLE_NETWORKS } from '../../utils/markets';
 import WalletWelcome from './WalletWelcome';
 import PageHeader from '../../components/PageHeader';
 import { useManualWalletStore } from '../../store/manualWalletStore';
+import { useAccount } from 'wagmi';
+import { shortenAddress } from '../../utils/helpers';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -36,9 +38,10 @@ interface WalletState {
 
 function Wallet() {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
-  const { assets, isLoading: assetsLoading } = useAssetStore();
+  const { assets, isLoading: assetsLoading, getAssetsForAddress } = useAssetStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const {manualAddress} = useManualWalletStore();
+  const { manualAddresses, isConsolidated } = useManualWalletStore();
+  const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
   // Use userPreferencesStore for view toggle state
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
 
@@ -155,11 +158,8 @@ function Wallet() {
       );
     }
 
-    // Filter assets by selected network and search query
-    const filteredAssets = assets.filter(asset => {
-      // Filter out yield bearing tokens
-      // if (asset.yieldBearingToken) return true;
-
+    // Filter function for assets
+    const filterAsset = (asset: Asset) => {
       // Filter by network
       const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
 
@@ -168,14 +168,90 @@ function Wallet() {
         asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
 
       return matchesNetwork && matchesSearch;
-    });
-    console.log({ filteredAssets })
+    };
+
     const commonProps = {
-      assets: filteredAssets,
       loading: assetsLoading,
       onSelectAsset: handleSelectAsset,
       selectedAsset: state.selectedAsset
     };
+
+    // Consolidated view: group by wallet address
+    if (isConsolidated) {
+      // Get all addresses
+      const allAddresses = [...manualAddresses];
+      if (isMetamaskConnected && metamaskAddress) {
+        allAddresses.push(metamaskAddress);
+      }
+
+      // Group assets by walletAddress
+      const assetsByWallet = new Map<string, Asset[]>();
+      assets.forEach(asset => {
+        const walletAddr = asset.walletAddress?.toLowerCase() || '';
+        if (!assetsByWallet.has(walletAddr)) {
+          assetsByWallet.set(walletAddr, []);
+        }
+        assetsByWallet.get(walletAddr)!.push(asset);
+      });
+
+      return (
+        <div className={styles.assetViewContainer}>
+          <PageHeader
+            title="Wallet"
+            subtitle="Only showing assets that can earn yield with the best APY"
+          />
+          <div className={styles.controlsRow}>
+            <NetworkSelector
+              selectedNetwork={state.selectedNetwork}
+              networks={AVAILABLE_NETWORKS}
+              //@ts-ignore
+              onChange={handleNetworkChange}
+            />
+            <div className={styles.searchAndViewGroup}>
+              <ViewToggle
+                currentView={viewType}
+                onViewChange={handleViewChange}
+              />
+              <SearchBar
+                ref={searchInputRef}
+                placeholder="Search coins..."
+                value={state.searchQuery}
+                onChange={handleSearchChange}
+                showKeybind={true}
+              />
+            </div>
+          </div>
+
+          {/* Render sections for each wallet */}
+          {allAddresses.map((address) => {
+            const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
+            const filteredAssets = walletAssets.filter(filterAsset);
+
+            if (filteredAssets.length === 0) return null;
+
+            const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
+
+            return (
+              <div key={address} className={styles.walletSection}>
+                <div className={styles.walletSectionHeader}>
+                  <h3>Wallet: {shortenAddress(address)}</h3>
+                  {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
+                </div>
+                {viewType === 'cards' ? (
+                  <AssetList {...commonProps} assets={filteredAssets} />
+                ) : (
+                  <AssetTable {...commonProps} assets={filteredAssets} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // Single wallet view
+    const filteredAssets = assets.filter(filterAsset);
+    console.log({ filteredAssets });
 
     return (
       <div className={styles.assetViewContainer}>
@@ -205,16 +281,16 @@ function Wallet() {
           </div>
         </div>
         {viewType === 'cards' ? (
-          <AssetList {...commonProps} />
+          <AssetList {...commonProps} assets={filteredAssets} />
         ) : (
-          <AssetTable {...commonProps} />
+          <AssetTable {...commonProps} assets={filteredAssets} />
         )}
       </div>
     );
   };
 
   const renderContent = () => {
-    if (!wallet.isConnected && !manualAddress) {
+    if (!wallet.isConnected && manualAddresses.length === 0) {
       return <WalletWelcome onConnect={openConnectModal} />;
     }
 
