@@ -631,7 +631,7 @@ const MyYieldsPage: React.FC = () => {
             ${formatNumber(currentEarned, 20)}
           </div>
           <div className={styles.summarySubtext}>
-            Total Earning ${liveTotalEarned}
+            Total Earning ${formatNumber(liveTotalEarned, 4)}
           </div>
         </div>
         <div className={styles.summaryCard}>
