@@ -398,27 +398,55 @@ const MyYieldsPage: React.FC = () => {
         const currentBalanceUsd = Number(asset.currentBalanceInProtocolUsd as any || '0');
         let depositsUsd = 0;
         let withdrawalsUsd = 0;
-        addresses.forEach(addr => {
-          const userData = getUserActivity(addr);
-          if (!userData) return;
-          const chainData = (userData as Record<string, any>)[asset.chainId];
-          if (!chainData) return;
-          const protocolName = asset.protocol || '';
-          if (!protocolName) return;
-          const protocolData = (chainData as Record<string, any>)[protocolName];
-          if (!protocolData) return;
-          const tokenData = protocolData[asset.token];
-          if (!tokenData) return;
-          const decimals = findTokenDecimals(asset.chainId, protocolName, asset.token);
-          const depositsBigInt = BigInt(tokenData.totalDeposit || '0');
-          const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || '0');
-          const divisor = BigInt('1' + '0'.repeat(decimals));
-          const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
-          const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
-          const tokenPrice = asset.usd;
-          depositsUsd += depositsFormatted * tokenPrice;
-          withdrawalsUsd += withdrawalsFormatted * tokenPrice;
-        });
+
+        // In consolidated mode, only use the wallet that owns this asset
+        // Otherwise, use the active wallet
+        const assetWalletAddress = asset.walletAddress || wallet.address || '';
+        if (!assetWalletAddress) {
+          totalEarnings += currentBalanceUsd; // If no wallet, just use balance
+          return;
+        }
+
+        const userData = getUserActivity(assetWalletAddress);
+        if (!userData) {
+          totalEarnings += currentBalanceUsd; // If no activity data, just use balance
+          return;
+        }
+
+        const chainData = (userData as Record<string, any>)[asset.chainId];
+        if (!chainData) {
+          totalEarnings += currentBalanceUsd;
+          return;
+        }
+
+        const protocolName = asset.protocol || '';
+        if (!protocolName) {
+          totalEarnings += currentBalanceUsd;
+          return;
+        }
+
+        const protocolData = (chainData as Record<string, any>)[protocolName];
+        if (!protocolData) {
+          totalEarnings += currentBalanceUsd;
+          return;
+        }
+
+        const tokenData = protocolData[asset.token];
+        if (!tokenData) {
+          totalEarnings += currentBalanceUsd;
+          return;
+        }
+
+        const decimals = findTokenDecimals(asset.chainId, protocolName, asset.token);
+        const depositsBigInt = BigInt(tokenData.totalDeposit || '0');
+        const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || '0');
+        const divisor = BigInt('1' + '0'.repeat(decimals));
+        const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
+        const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
+        const tokenPrice = asset.usd;
+        depositsUsd = depositsFormatted * tokenPrice;
+        withdrawalsUsd = withdrawalsFormatted * tokenPrice;
+
         const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
         totalEarnings += tokenEarnings;
       });
@@ -432,7 +460,9 @@ const MyYieldsPage: React.FC = () => {
     setTotalWithdrawn(totalWithdrawalsUsd);
     setCurrentDeposit(currentDepositValue);
     setCurrentEarned(claimableEarnings);
-    setLiveTotalEarned(supportedEarnings);
+    const nonNegativeEarnings = Math.max(0, supportedEarnings);
+    setTotalEarned(nonNegativeEarnings);
+    setLiveTotalEarned(nonNegativeEarnings);
   }, [
     wallet.address,
     isConsolidated,
@@ -473,11 +503,7 @@ const MyYieldsPage: React.FC = () => {
         const newValue = prevValue * growthRate;
         return newValue;
       });
-      setCurrentEarned(prevCurrent => {
-        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-        const updatedValue = prevCurrent * growthRate;
-        return updatedValue;
-      });
+      // Removed setCurrentEarned to keep it static
     }, 100);
 
     // Cleanup timer on unmount or when dependencies change
