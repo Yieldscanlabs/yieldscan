@@ -25,6 +25,7 @@ import ethena from '../assets/protocols/ethena.jpg'
 import creamFinance from '../assets/protocols/creamFinance.jpg'
 import maple from '../assets/protocols/maple.jpg'
 import kinza_finance from '../assets/protocols/kinza_finance.jpg'
+import yearn from '../assets/protocols/yearn.png'
 
 interface ProtocolProps {
   name: string | null;
@@ -42,7 +43,7 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Morpho Blue': morphoblue,
   'Radiant': radiant,
   'Curve': 'https://cryptologos.cc/logos/curve-dao-token-crv-logo.png',
-  'Yearn': 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png',
+  'Yearn': yearn,
   'Lido': lido,
   'Spark': spark,
   'Pendle': pendle,
@@ -107,6 +108,8 @@ const Protocol: React.FC<ProtocolProps> = ({
         return 'sparklend';
       case 'Zerolend':
         return 'zerolend';
+      case 'Yearn V3':
+        return 'Yearn';
 
       default:
         return name;
@@ -115,11 +118,10 @@ const Protocol: React.FC<ProtocolProps> = ({
   const asdf = formatProtocolNameForImage('Dolomite')
   // const logoUrl = name ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null : null;
   const logoUrl = name
-    ? name === 'Yearn V3'
-      ? 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png'
-      : PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null
+    ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null
     : null;
 
+  console.log({ name, logoUrl })
 
   // const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name} ` : null;
