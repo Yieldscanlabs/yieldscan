@@ -40,7 +40,7 @@ const MyYieldsPage: React.FC = () => {
   const [totalDeposited, setTotalDeposited] = useState<number>(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
-  const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
+  // const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
   const [currentBalance, setCurrentBalance] = useState<number>(0);
   const [currentDeposit, setCurrentDeposit] = useState<number>(0);
   const [currentEarned, setCurrentEarned] = useState<number>(0);
@@ -49,19 +49,14 @@ const MyYieldsPage: React.FC = () => {
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
 
   // Get the getBestApy method from the store
-  const { getBestApy, lastUpdated, apyData } = useApyStore();
+  const { getBestApy, apyData } = useApyStore();
 
   // Get the earnings data from the earnStore
-  const {
-    isLoading: earningsLoading,
-    getTotalEarnings
-  } = useEarnStore();
+  const { isLoading: earningsLoading } = useEarnStore();
 
   // Get deposits and withdrawals data
   const {
     getUserActivity,
-    getTotalDepositsForUser,
-    getTotalWithdrawalsForUser,
     isLoading: activityLoading
   } = useDepositsAndWithdrawalsStore();
 
@@ -100,9 +95,11 @@ const MyYieldsPage: React.FC = () => {
 
     return Array.from(assetMap.values());
   }, [allYieldAssets]);
+
   const handleNavigate = () => {
     navigate("/explore")
   }
+
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
     console.log("ASSETS", assets);
@@ -173,7 +170,6 @@ const MyYieldsPage: React.FC = () => {
 
                 const depositsBigInt = BigInt(tokenData.totalDeposit || "0");
                 const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || "0");
-
                 const depositsFormatted =
                   Number(depositsBigInt / divisor) +
                   Number(depositsBigInt % divisor) / Number(divisor);
@@ -195,10 +191,6 @@ const MyYieldsPage: React.FC = () => {
 
                 // // Now convert to USD after all math is done
                 // const totalDepositedUsd = (totalDeposited * asset.usd).toString();
-
-
-                console.log(`Total deposited for ${asset.token} on ${asset.chain} (${protocolKey}):`, { totalDeposited, totalDepositedUsd });
-
               }
             }
           }
@@ -210,6 +202,7 @@ const MyYieldsPage: React.FC = () => {
         };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity]);
+  // console.log({ filteredYieldAssets })
   // Get unique chain IDs from assets for the network selector
   const uniqueChainIds = useMemo(() =>
     Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
@@ -319,7 +312,7 @@ const MyYieldsPage: React.FC = () => {
       setTotalDeposited(0);
       setTotalWithdrawn(0);
       setTotalEarned(0);
-      setLiveTotalEarned(0);
+      // setLiveTotalEarned(0);
       return;
     }
 
@@ -354,13 +347,24 @@ const MyYieldsPage: React.FC = () => {
       return 18;
     };
 
+    const userCalculatedData: Record<string, {
+      currentDeposit: number,
+      totalDeposit: number,
+      currentEarnings: number,
+      totalEarnings: number,
+      totalWithdrawn: number
+    }> = {
+
+    }
+
     // For calculating APY-based live earnings we rely on filteredYieldAssets/currentBalance computed elsewhere
 
     // Iterate each address' activity and aggregate
     addresses.forEach(addr => {
       const userData = getUserActivity(addr);
       if (!userData) return;
-
+      const totalDepositsUsdBefore = totalDepositsUsd
+      const totalWithdrawlsUsdBefore = totalWithdrawalsUsd
       Object.entries(userData).forEach(([chainIdStr, chainData]) => {
         const chainId = parseInt(chainIdStr, 10);
         Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
@@ -380,89 +384,137 @@ const MyYieldsPage: React.FC = () => {
           });
         });
       });
-      console.log({ addr, totalDepositsUsd, totalWithdrawalsUsd })
-    });
-
-    // Calculate earnings: use supported protocols and current balances
-    const supportedEarnings = (() => {
-      let totalEarnings = 0;
-      const supportedAssets = filteredYieldAssets.filter(asset =>
-        asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3'
-      );
-      const currentTotalBalance = supportedAssets.reduce((sum, asset) => {
-        const balanceValue = Number(asset.currentBalanceInProtocolUsd || '0');
-        return isNaN(balanceValue) ? sum : sum + balanceValue;
+      const userDeposits = totalDepositsUsd - totalDepositsUsdBefore
+      const userWithdrawls = totalWithdrawalsUsd - totalWithdrawlsUsdBefore
+      const userBalance = filteredYieldAssets.reduce((sum, asset) => {
+        if (asset.walletAddress?.toLowerCase() === addr?.toLowerCase()) {
+          const balanceValue = Number(asset.currentBalanceInProtocolUsd || '0');
+          return isNaN(balanceValue) ? sum : sum + balanceValue;
+        }
+        return sum
       }, 0);
-      setCurrentBalance(currentTotalBalance);
-      supportedAssets.forEach(asset => {
-        const currentBalanceUsd = Number(asset.currentBalanceInProtocolUsd as any || '0');
-        let depositsUsd = 0;
-        let withdrawalsUsd = 0;
+      const TotalEarnings = userBalance - (userDeposits - userWithdrawls);
+      const ClaimableEarnings = Math.max(
+        0,
+        userBalance -
+        (userDeposits - userWithdrawls) -
+        (userWithdrawls - userDeposits > 0 ? userWithdrawls - userDeposits : 0)
+      );
+      //   const currentDepositCalculated =  TotalDeposit- TotalWithdraw
+      const currentDepositCalculated = Math.max(userDeposits - userWithdrawls, 0)
+      userCalculatedData[addr] = {
+        currentDeposit: currentDepositCalculated,
+        totalDeposit: userDeposits,
+        currentEarnings: ClaimableEarnings,
+        totalEarnings: TotalEarnings,
+        totalWithdrawn: userWithdrawls
+      }
+    });
+    // Calculate earnings: use supported protocols and current balances
+    // const supportedEarnings = (() => {
+    //   let totalEarnings = 0;
+    //   const supportedAssets = filteredYieldAssets.filter(asset =>
+    //     asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3'
+    //   );
+    //   const currentTotalBalance = filteredYieldAssets.reduce((sum, asset) => {
+    //     const balanceValue = Number(asset.currentBalanceInProtocolUsd || '0');
+    //     return isNaN(balanceValue) ? sum : sum + balanceValue;
+    //   }, 0);
+    //   setCurrentBalance(currentTotalBalance);
+    //   supportedAssets.forEach(asset => {
+    //     const currentBalanceUsd = Number(asset.currentBalanceInProtocolUsd as any || '0');
+    //     let depositsUsd = 0;
+    //     let withdrawalsUsd = 0;
 
-        // In consolidated mode, only use the wallet that owns this asset
-        // Otherwise, use the active wallet
-        const assetWalletAddress = asset.walletAddress || wallet.address || '';
-        if (!assetWalletAddress) {
-          totalEarnings += currentBalanceUsd; // If no wallet, just use balance
-          return;
-        }
+    //     // In consolidated mode, only use the wallet that owns this asset
+    //     // Otherwise, use the active wallet
+    //     const assetWalletAddress = asset.walletAddress || wallet.address || '';
+    //     if (!assetWalletAddress) {
+    //       totalEarnings += currentBalanceUsd; // If no wallet, just use balance
+    //       return;
+    //     }
 
-        const userData = getUserActivity(assetWalletAddress);
-        if (!userData) {
-          totalEarnings += currentBalanceUsd; // If no activity data, just use balance
-          return;
-        }
+    //     const userData = getUserActivity(assetWalletAddress);
+    //     if (!userData) {
+    //       totalEarnings += currentBalanceUsd; // If no activity data, just use balance
+    //       return;
+    //     }
 
-        const chainData = (userData as Record<string, any>)[asset.chainId];
-        if (!chainData) {
-          totalEarnings += currentBalanceUsd;
-          return;
-        }
+    //     const chainData = (userData as Record<string, any>)[asset.chainId];
+    //     if (!chainData) {
+    //       totalEarnings += currentBalanceUsd;
+    //       return;
+    //     }
 
-        const protocolName = asset.protocol || '';
-        if (!protocolName) {
-          totalEarnings += currentBalanceUsd;
-          return;
-        }
+    //     const protocolName = asset.protocol || '';
+    //     if (!protocolName) {
+    //       totalEarnings += currentBalanceUsd;
+    //       return;
+    //     }
 
-        const protocolData = (chainData as Record<string, any>)[protocolName];
-        if (!protocolData) {
-          totalEarnings += currentBalanceUsd;
-          return;
-        }
+    //     const protocolData = (chainData as Record<string, any>)[protocolName];
+    //     if (!protocolData) {
+    //       totalEarnings += currentBalanceUsd;
+    //       return;
+    //     }
 
-        const tokenData = protocolData[asset.token];
-        if (!tokenData) {
-          totalEarnings += currentBalanceUsd;
-          return;
-        }
+    //     const tokenData = protocolData[asset.token];
+    //     if (!tokenData) {
+    //       totalEarnings += currentBalanceUsd;
+    //       return;
+    //     }
 
-        const decimals = findTokenDecimals(asset.chainId, protocolName, asset.token);
-        const depositsBigInt = BigInt(tokenData.totalDeposit || '0');
-        const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || '0');
-        const divisor = BigInt('1' + '0'.repeat(decimals));
-        const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
-        const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
-        const tokenPrice = asset.usd;
-        depositsUsd = depositsFormatted * tokenPrice;
-        withdrawalsUsd = withdrawalsFormatted * tokenPrice;
+    //     const decimals = findTokenDecimals(asset.chainId, protocolName, asset.token);
+    //     const depositsBigInt = BigInt(tokenData.totalDeposit || '0');
+    //     const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || '0');
+    //     const divisor = BigInt('1' + '0'.repeat(decimals));
+    //     const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
+    //     const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
+    //     const tokenPrice = asset.usd;
+    //     depositsUsd = depositsFormatted * tokenPrice;
+    //     withdrawalsUsd = withdrawalsFormatted * tokenPrice;
 
-        const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
-        totalEarnings += tokenEarnings;
-      });
-      return totalEarnings;
-    })();
+    //     const tokenEarnings = currentBalanceUsd - (depositsUsd - withdrawalsUsd);
+    //     totalEarnings += tokenEarnings;
+    //   });
+    //   return totalEarnings;
+    // })();
 
-    const currentDepositValue = Math.max(0, totalDepositsUsd - totalWithdrawalsUsd);
-    const claimableEarnings = Math.max(0, currentBalance - (totalDepositsUsd - totalWithdrawalsUsd) - (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0));
+    let currentDeposits = 0
+    let totalDeposits = 0
+    let currentEarned = 0
+    let totalEarned = 0
+    let totalWithdrawls = 0
+    if (isConsolidated) {
+      Object.values(userCalculatedData).forEach((data) => {
+        currentDeposits += data.currentDeposit
+        totalDeposits += data.totalDeposit
+        currentEarned += data.currentEarnings
+        totalEarned += data.totalEarnings
+        totalWithdrawls += data.totalWithdrawn
+      })
+      setTotalDeposited(totalDeposits);
+      setTotalWithdrawn(totalWithdrawls);
+      setCurrentDeposit(currentDeposits);
+      setCurrentEarned(currentEarned);
+      setTotalEarned(totalEarned);
+    } else {
+      const TotalEarnings = currentBalance - (totalDepositsUsd - totalWithdrawalsUsd);
+      const ClaimableEarnings = Math.max(
+        0,
+        currentBalance -
+        (totalDepositsUsd - totalWithdrawalsUsd) -
+        (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0)
+      );
+      const currentDepositCalculated = Math.max(totalDepositsUsd - totalWithdrawalsUsd, 0)
 
-    setTotalDeposited(totalDepositsUsd);
-    setTotalWithdrawn(totalWithdrawalsUsd);
-    setCurrentDeposit(currentDepositValue);
-    setCurrentEarned(claimableEarnings);
-    const nonNegativeEarnings = Math.max(0, supportedEarnings);
-    setTotalEarned(nonNegativeEarnings);
-    setLiveTotalEarned(nonNegativeEarnings);
+      setTotalDeposited(totalDepositsUsd);
+      setTotalWithdrawn(totalWithdrawalsUsd);
+      setCurrentDeposit(currentDepositCalculated);
+      setCurrentEarned(ClaimableEarnings);
+      setTotalEarned(TotalEarnings);
+
+    }
   }, [
     wallet.address,
     isConsolidated,
@@ -477,58 +529,38 @@ const MyYieldsPage: React.FC = () => {
 
   // console.log('totalEarned, currentEarned ', totalEarned, currentEarned)
   // Live ticker effect - update earnings every 100ms based on Aave APY
-  useEffect(() => {
-    if (!wallet.address || totalEarned <= 0) return;
+  // useEffect(() => {
+  //   if (!wallet.address || totalEarned <= 0) return;
 
-    if (currentEarned <= 0) {
-      return
-    }
-    // Set initial live value
-    setLiveTotalEarned(totalEarned);
+  //   if (currentEarned <= 0) {
+  //     return
+  //   }
+  //   // Set initial live value
+  //   setLiveTotalEarned(totalEarned);
 
-    // Calculate the weighted APY for Aave tokens
-    const weightedApy = calculateWeightedApy();
-    console.log({ weightedApy });
+  //   // Calculate the weighted APY for Aave tokens
+  //   const weightedApy = calculateWeightedApy();
+  //   console.log({ weightedApy });
 
-    // Calculate the per-tick growth rate based on APY
-    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
+  //   // Calculate the per-tick growth rate based on APY
+  //   const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
 
-    const timer = setInterval(() => {
-      setLiveTotalEarned(prevValue => {
-        // Calculate growth for this tick
-        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+  //   const timer = setInterval(() => {
+  //     setLiveTotalEarned(prevValue => {
+  //       // Calculate growth for this tick
+  //       const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
 
-        // Use high precision multiplication to ensure decimal changes are visible
-        const newValue = prevValue * growthRate;
-        return newValue;
-      });
-      // Removed setCurrentEarned to keep it static
-    }, 100);
+  //       // Use high precision multiplication to ensure decimal changes are visible
+  //       const newValue = prevValue * growthRate;
+  //       return newValue;
+  //     });
+  //     // Removed setCurrentEarned to keep it static
+  //   }, 100);
 
-    // Cleanup timer on unmount or when dependencies change
-    return () => clearInterval(timer);
+  //   // Cleanup timer on unmount or when dependencies change
+  //   return () => clearInterval(timer);
 
-  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
-
-  // Format value with proper comma separators and more decimal places for precision
-  const formatLiveValue = (value: number): string => {
-    // Ensure the value is a valid number
-    if (typeof value !== 'number' || isNaN(value)) {
-      return '0.000000000000000000';
-    }
-
-    try {
-      // Use higher precision (18 decimal places) to match the header's live ticker
-      if (value >= 1000) {
-        return value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 });
-      } else {
-        return value.toFixed(18);
-      }
-    } catch (error) {
-      console.error('Error formatting value:', error);
-      return '0.000000000000000000';
-    }
-  };
+  // }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
 
   // Loading state
   if (loading || earningsLoading || activityLoading) {
@@ -651,7 +683,7 @@ const MyYieldsPage: React.FC = () => {
             ${formatNumber(currentEarned, 20)}
           </div>
           <div className={styles.summarySubtext}>
-            Total Earning ${formatNumber(liveTotalEarned, 4)}
+            Total Earning ${formatNumber(totalEarned, 4)}
           </div>
         </div>
         <div className={styles.summaryCard}>

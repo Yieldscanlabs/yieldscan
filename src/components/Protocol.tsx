@@ -115,13 +115,10 @@ const Protocol: React.FC<ProtocolProps> = ({
         return name;
     }
   }
-  const asdf = formatProtocolNameForImage('Dolomite')
   // const logoUrl = name ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null : null;
   const logoUrl = name
     ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null
     : null;
-
-  console.log({ name, logoUrl })
 
   // const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name} ` : null;
