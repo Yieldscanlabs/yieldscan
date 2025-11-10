@@ -72,10 +72,12 @@ const Layout = () => {
       if (allAddresses.length > 0) {
         fetchAssetsForMultiple(allAddresses, true);
         // For earnings and activity, we'll use the active wallet address
-        if (wallet.address) {
-          fetchEarnings(wallet.address, true);
-          fetchUserActivity(wallet.address, true);
-        }
+        // if (wallet.address) {
+        allAddresses.forEach(addr => {
+          fetchEarnings(addr, true);
+          fetchUserActivity(addr, true);
+        })
+        // }
       } else {
         updateActiveView(null, true, []);
       }

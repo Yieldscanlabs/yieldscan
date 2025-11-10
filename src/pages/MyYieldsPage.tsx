@@ -475,7 +475,6 @@ const MyYieldsPage: React.FC = () => {
     currentBalance
   ]);
 
-  console.log('CurrentBalance, TotalDeposit, TotalWithdraw, TotalEarnings ', currentBalance, totalDeposited, totalWithdrawn)
   // console.log('totalEarned, currentEarned ', totalEarned, currentEarned)
   // Live ticker effect - update earnings every 100ms based on Aave APY
   useEffect(() => {
@@ -565,12 +564,7 @@ const MyYieldsPage: React.FC = () => {
       </div>
     );
   }
-  const filteredYieldAssetsBalance = filteredYieldAssets
-    .reduce((sum, asset) => {
-      const balanceValue = parseFloat(asset.currentBalanceInProtocolUsd || '0');
-      return isNaN(balanceValue) ? sum : sum + balanceValue;
-    }, 0);
-  console.log('filteredYieldAssetsBalance ', filteredYieldAssetsBalance)
+
   // Render the content
   return (
     <div className={styles.container}>
