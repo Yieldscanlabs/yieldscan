@@ -270,41 +270,41 @@ const MyYieldsPage: React.FC = () => {
   };
 
   // Calculate weighted average APY for Aave and Radiant tokens
-  const calculateWeightedApy = (): number => {
-    let totalWeightedApy = 0;
-    let totalValue = 0;
+  // const calculateWeightedApy = (): number => {
+  //   let totalWeightedApy = 0;
+  //   let totalValue = 0;
 
-    // Get Aave and Radiant assets from current balances
-    const supportedAssets = filteredYieldAssets.filter(asset => {
-      return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
-    });
+  //   // Get Aave and Radiant assets from current balances
+  //   const supportedAssets = filteredYieldAssets.filter(asset => {
+  //     return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
+  //   });
 
-    supportedAssets.forEach(asset => {
-      const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
-      if (isNaN(balanceValue) || balanceValue === 0) return;
+  //   supportedAssets.forEach(asset => {
+  //     const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
+  //     if (isNaN(balanceValue) || balanceValue === 0) return;
 
-      // Get APY for this asset from apyStore if available
-      let assetApy = 0;
-      if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
-        const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
-        assetApy = apys[asset.protocol.toLowerCase()] || 0;
-      }
+  //     // Get APY for this asset from apyStore if available
+  //     let assetApy = 0;
+  //     if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
+  //       const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
+  //       assetApy = apys[asset.protocol.toLowerCase()] || 0;
+  //     }
 
-      // If no APY found, use defaults: 3% for Aave, 4% for Radiant
-      // if (assetApy === 0) {
-      //   const token = tokens.find(
-      //     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-      //   );
-      //   assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
-      // }
+  //     // If no APY found, use defaults: 3% for Aave, 4% for Radiant
+  //     // if (assetApy === 0) {
+  //     //   const token = tokens.find(
+  //     //     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+  //     //   );
+  //     //   assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
+  //     // }
 
-      totalWeightedApy += assetApy * balanceValue;
-      totalValue += balanceValue;
-    });
+  //     totalWeightedApy += assetApy * balanceValue;
+  //     totalValue += balanceValue;
+  //   });
 
-    // Return weighted average APY (default to 3.5% if no supported assets)
-    return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
-  };
+  //   // Return weighted average APY (default to 3.5% if no supported assets)
+  //   return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
+  // };
 
   // Calculate totals using real data from stores
   useEffect(() => {
