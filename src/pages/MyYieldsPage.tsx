@@ -480,7 +480,7 @@ const MyYieldsPage: React.FC = () => {
     //   return totalEarnings;
     // })();
     // const currentDepositValue = Math.max(0, totalDepositsUsd - totalWithdrawalsUsd);
-    // const claimableEarnings = Math.max(0, currentBalance - (totalDepositsUsd - totalWithdrawalsUsd) - (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0));
+    const claimableEarnings = Math.max(0, currentBalance - (totalDepositsUsd - totalWithdrawalsUsd) - (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0));
     // console.log({ userCalculatedData })
     let currentDeposits = 0
     let totalDeposits = 0
@@ -504,19 +504,19 @@ const MyYieldsPage: React.FC = () => {
       // setLiveTotalEarned(nonNegativeEarnings);
     } else {
       const TotalEarnings = currentBalance - (totalDepositsUsd - totalWithdrawalsUsd);
-      const ClaimableEarnings = Math.max(
-        0,
-        currentBalance -
-        (totalDepositsUsd - totalWithdrawalsUsd) -
-        (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0)
-      );
+      // const ClaimableEarnings = Math.max(
+      //   0,
+      //   currentBalance -
+      //   (totalDepositsUsd - totalWithdrawalsUsd) -
+      //   (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0)
+      // );
       // const currentDepositCalculated =  TotalDeposit- TotalWithdraw
       const currentDepositCalculated = Math.max(totalDepositsUsd - totalWithdrawalsUsd, 0)
 
       setTotalDeposited(totalDepositsUsd);
       setTotalWithdrawn(totalWithdrawalsUsd);
       setCurrentDeposit(currentDepositCalculated);
-      setCurrentEarned(ClaimableEarnings);
+      setCurrentEarned(claimableEarnings);
       // const nonNegativeEarnings = Math.max(0, supportedEarnings);
       setTotalEarned(TotalEarnings);
       // console.log({ totalEarned: TotalEarnings, currentEarned: ClaimableEarnings, currentDeposit: currentDepositCalculated })
