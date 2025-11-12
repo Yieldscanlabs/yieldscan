@@ -11,6 +11,7 @@ import { useYieldCard } from './useYieldCard';
 import MaturityBadge from './MaturityBadge';
 import YieldInfo from './YieldInfo';
 import YieldActions from './YieldActions';
+import { API_BASE_URL } from '../../utils/constants';
 
 const YieldCard: React.FC<YieldCardProps> = (props) => {
   const {
@@ -119,7 +120,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         <div className={styles.cardTopSection}>
           <div className={styles.assetInfoSlim}>
             <AssetIcon
-              assetIcon={asset.icon || ''}
+              assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
               assetName={asset.token}
               chainId={asset.chainId}
               size="medium"

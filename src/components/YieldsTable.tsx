@@ -12,6 +12,7 @@ import type { TokenWithLockYield } from './YieldCard/types';
 import { useWithdrawModalStore } from '../store/withdrawModalStore';
 import LockAPYInformationModal from './LockAPYInformationModal';
 import { useApyStore } from '../store/apyStore';
+import { API_BASE_URL } from '../utils/constants';
 
 interface YieldsTableProps {
   assets: Asset[];
@@ -139,7 +140,7 @@ const YieldsTableRow: React.FC<{
         <td className={styles.assetCell}>
           <div className={styles.assetInfo}>
             <AssetIcon
-              assetIcon={asset.icon || ''}
+              assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
               assetName={asset.token}
               chainId={asset.chainId}
               size="small"
