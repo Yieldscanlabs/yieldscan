@@ -102,12 +102,19 @@ const WalletSection: React.FC<WalletSectionProps> = ({
         <span className={styles.dropdownArrow}>▼</span>
       </div>
       {isDropdownOpen && (
-        <div className={styles.walletDropdown}>
+        <div
+          className={styles.walletDropdown}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           {/* Active Wallet Section */}
           {activeAddress && (
             <>
               <div className={styles.walletSectionLabel}>Active Wallet:</div>
-              <div className={styles.walletListItem}>
+              <div
+                className={styles.walletListItem}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
                 <span className={styles.walletIcon}>
                   {activeManualAddressIndex === null ? '🦊' : '📝'}
                 </span>
@@ -119,14 +126,22 @@ const WalletSection: React.FC<WalletSectionProps> = ({
           )}
 
           <button
-            onClick={handleCopyAddress}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopyAddress();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
             className={styles.dropdownButton}
           >
             {copySuccess ? 'Copied!' : 'Copy Address'}
           </button>
 
           <button
-            onClick={handleOpenExplorer}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenExplorer();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
             className={styles.dropdownButton}
           >
             View on Explorer
@@ -143,21 +158,33 @@ const WalletSection: React.FC<WalletSectionProps> = ({
                 if (isActive) return null; // Already shown in active section
 
                 return (
-                  <div key={wallet.address} className={styles.walletListItem}>
+                  <div
+                    key={wallet.address}
+                    className={styles.walletListItem}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
                     <span className={styles.walletIcon}>
                       {wallet.type === 'metamask' ? '🦊' : '📝'}
                     </span>
                     <span className={styles.walletAddressText}>{shortenAddress(wallet.address)}</span>
                     <div className={styles.walletListItemActions}>
                       <button
-                        onClick={() => handleSwitchWallet(wallet.index)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSwitchWallet(wallet.index);
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
                         className={styles.switchButton}
                       >
                         Switch →
                       </button>
                       {canRemoveWallet(wallet.index) && (
                         <button
-                          onClick={() => handleRemoveWallet(wallet.index!)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveWallet(wallet.index!);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
                           className={styles.removeButton}
                           title="Remove wallet"
                         >
@@ -174,7 +201,11 @@ const WalletSection: React.FC<WalletSectionProps> = ({
 
           {/* Add Wallet Button */}
           <button
-            onClick={openManualModal}
+            onClick={(e) => {
+              e.stopPropagation();
+              openManualModal();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
             className={styles.dropdownButton}
             disabled={manualAddresses.length >= 5}
             style={{
@@ -188,18 +219,28 @@ const WalletSection: React.FC<WalletSectionProps> = ({
           <div className={styles.dropdownDivider}></div>
 
           {/* Consolidate Toggle */}
-          <label className={styles.consolidateToggle}>
+          <label
+            className={styles.consolidateToggle}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <input
               type="checkbox"
               checked={isConsolidated}
-              onChange={toggleConsolidated}
+              onChange={(e) => {
+                e.stopPropagation();
+                toggleConsolidated();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
             />
             <span>Consolidate wallets</span>
           </label>
 
           <div className={styles.dropdownDivider}></div>
 
-          <div className={styles.dropdownThemeToggle}>
+          <div
+            className={styles.dropdownThemeToggle}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <ThemeToggle />
           </div>
 
@@ -207,7 +248,11 @@ const WalletSection: React.FC<WalletSectionProps> = ({
 
           {showDisconnectButton && (
             <button
-              onClick={disconnectWallet}
+              onClick={(e) => {
+                e.stopPropagation();
+                disconnectWallet();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
               className={`${styles.dropdownButton} ${styles.disconnectButton}`}
             >
               Disconnect
