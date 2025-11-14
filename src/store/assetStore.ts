@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 // import { formatUnits } from 'viem';
 import { useEffect } from 'react';
 // import Moralis from 'moralis';
-import type { Asset } from '../types';
+import type { Asset, Protocol } from '../types';
 import { API_BASE_URL } from '../utils/constants';
 // import { ethers } from 'ethers';
 // import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
@@ -15,6 +15,7 @@ const AUTO_REFRESH_INTERVAL = 60000;
 // const ASSETS_API_ENDPOINT = API_BASE_URL + '/api/assets?limit=100&includeDisabled=false';
 // const CHAINS_API_ENDPOINT = API_BASE_URL + '/api/chains?limit=100';
 const WALLET_YIELDS_API_ENDPOINT = API_BASE_URL + '/api/assets/yields';
+const PROTOCOLS_API_ENDPOINT = API_BASE_URL + '/api/protocols';
 
 // // Moralis API configuration
 // const MORALIS_API_KEY = import.meta.env.VITE_MORALIS_API;
@@ -60,6 +61,18 @@ async function getWalletYields(walletAddress: string) {
   return data;
 }
 
+async function getProtocols() {
+  const response = await fetch(`${PROTOCOLS_API_ENDPOINT}?limit=100`);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const data = await response.json();
+  if (!data.protocols || !Array.isArray(data.protocols)) {
+    throw new Error('Invalid response format: expected protocols array');
+  }
+  return data;
+}
+
 // async function fetchChains(): Promise<Chain[]> {
 //   const response = await fetch(CHAINS_API_ENDPOINT);
 //   if (!response.ok) {
@@ -75,6 +88,7 @@ async function getWalletYields(walletAddress: string) {
 interface AssetStore {
   // State
   assets: Asset[];  // Current view (active wallet or consolidated)
+  protocols: Protocol[]
   assetsByAddress: Record<string, Asset[]>;  // Per-address asset storage
   dormantCapital: number;
   workingCapital: number;
@@ -86,6 +100,7 @@ interface AssetStore {
 
   // Actions
   fetchAssets: (address: string, showLoading?: boolean) => Promise<void>;
+  fetchProtocols: () => Promise<void>;
   fetchAssetsForMultiple: (addresses: string[], showLoading?: boolean) => Promise<void>;
   getAssetsForAddress: (address: string) => Asset[];
   getConsolidatedAssets: () => Asset[];
@@ -100,6 +115,7 @@ export const useAssetStore = create<AssetStore>()(
   persist(
     (set, get) => ({
       assets: [],
+      protocols: [],
       assetsByAddress: {},
       dormantCapital: 0,
       workingCapital: 0,
@@ -287,6 +303,11 @@ export const useAssetStore = create<AssetStore>()(
             isLoading: false
           });
         }
+      },
+
+      fetchProtocols: async () => {
+        const { protocols } = await getProtocols();
+        set({ protocols })
       },
 
       // Fetch assets for multiple addresses

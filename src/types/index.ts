@@ -49,3 +49,13 @@ export interface WalletInfo {
   isConnected: boolean;
   chainId: number;
 }
+
+export interface Protocol {
+  id: string;
+
+  name: string;
+
+  website?: string;
+
+  image: string;
+}

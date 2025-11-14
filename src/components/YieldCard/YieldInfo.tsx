@@ -15,10 +15,10 @@ const YieldInfo: React.FC<YieldInfoProps> = ({
       <div className={styles.cardMiddleSection}>
         <div className={styles.balanceColumn}>
           <div className={styles.balanceAmount}>
-            {formatNumber(asset.totalDeposited || balanceNum, asset.maxDecimalsShow)} {asset.token}
+            {formatNumber(asset.currentBalanceInProtocol || balanceNum, asset.maxDecimalsShow)} {asset.token}
           </div>
           <div className={styles.balanceUsd}>
-            ${formatNumber(parseFloat(asset.totalDepositedUsd || "0"), 2)}
+            ${formatNumber(parseFloat(asset.currentBalanceInProtocolUsd || "0"), 2)}
           </div>
         </div>
 

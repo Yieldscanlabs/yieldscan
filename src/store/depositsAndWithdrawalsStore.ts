@@ -38,20 +38,30 @@ export interface ChainActivity {
 //     }
 //   }
 // }
-export type ApiResponseStructure = Record<string, Record<string, ChainActivity>>;
+export type ApiResponseStructure = {
+  totalDeposits: number,
+  currentDeposit: number,
+  totalEarnings: number,
+  currentEarnings: number,
+  totalWithdrawals: number,
+  userBalance: number,
+  transactions: Record<string, Record<string, ChainActivity>>
+};
+
+export type ActivityDataType = Record<string, ApiResponseStructure>;
 
 export interface DepositsAndWithdrawalsStore {
   // Data structure: [walletAddress][chainId][protocol][token] = { totalDeposit, totalWithdraw }
-  activityData: ApiResponseStructure;
+  activityData: ActivityDataType;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
   autoRefreshEnabled: boolean;
-  
+
   // Actions
   fetchUserActivity: (walletAddress: string, showLoading?: boolean) => Promise<void>;
   clearErrors: () => void;
-  getUserActivity: (walletAddress: string) => Record<string, ChainActivity> | null;
+  getUserActivity: (walletAddress: string) => ApiResponseStructure | null;
   getTotalDepositsForUser: (walletAddress: string) => string;
   getTotalWithdrawalsForUser: (walletAddress: string) => string;
   setAutoRefresh: (enabled: boolean) => void;
@@ -87,9 +97,9 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         if (showLoading) {
           set({ isLoading: true });
         }
-        
+
         set({ error: null });
-        
+
         try {
           // Normalize wallet address to lowercase for consistency
           const normalizedAddress = walletAddress.toLowerCase();
@@ -101,15 +111,15 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           if (!response.ok) {
             throw new Error(`API response error: ${response.statusText}`);
           }
-          
+
           // The API returns data in the format we need
           const data: ApiResponseStructure = await response.json();
-          
+
           // Ensure all wallet addresses are lowercase for consistency
-          const normalizedData: ApiResponseStructure = {};
-          Object.entries(data).forEach(([address, userData]) => {
-            normalizedData[address.toLowerCase()] = userData;
-          });
+          let normalizedData: ActivityDataType = {};
+          // Object.entries(data.transactions).forEach(([address, userData]) => {
+          normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
+          // });
           set(state => ({
             activityData: {
               ...state.activityData,
@@ -145,17 +155,17 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
         if (!userData) return '0';
 
-        let totalDeposits = BigInt(0);
+        // let totalDeposits = BigInt(0);
 
-        Object.values(userData).forEach(chainData => {
-          Object.values(chainData).forEach(protocolData => {
-            Object.values(protocolData).forEach(tokenData => {
-              totalDeposits += BigInt(tokenData.totalDeposit || '0');
-            });
-          });
-        });
+        // Object.values(userData).forEach(chainData => {
+        //   Object.values(chainData).forEach(protocolData => {
+        //     Object.values(protocolData).forEach(tokenData => {
+        //       totalDeposits += BigInt(tokenData.totalDeposit || '0');
+        //     });
+        //   });
+        // });
 
-        return totalDeposits.toString();
+        return userData.totalDeposits.toString();
       },
 
       // Calculate total withdrawals across all chains and protocols for a user
@@ -166,17 +176,17 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
         if (!userData) return '0';
 
-        let totalWithdrawals = BigInt(0);
+        // let totalWithdrawals = BigInt(0);
 
-        Object.values(userData).forEach(chainData => {
-          Object.values(chainData).forEach(protocolData => {
-            Object.values(protocolData).forEach(tokenData => {
-              totalWithdrawals += BigInt(tokenData.totalWithdraw || '0');
-            });
-          });
-        });
+        // Object.values(userData).forEach(chainData => {
+        //   Object.values(chainData).forEach(protocolData => {
+        //     Object.values(protocolData).forEach(tokenData => {
+        //       totalWithdrawals += BigInt(tokenData.totalWithdraw || '0');
+        //     });
+        //   });
+        // });
 
-        return totalWithdrawals.toString();
+        return userData.totalWithdrawals.toString();
       },
 
       // Set auto-refresh preference

@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
   const { wallet } = useWalletConnection();
-  const { assets, error, isLoading: loading } = useAssetStore();
+  const { assets, error, isLoading: loading, fetchProtocols, protocols } = useAssetStore();
   const { manualAddresses, isConsolidated } = useManualWalletStore();
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
@@ -65,13 +65,13 @@ const MyYieldsPage: React.FC = () => {
   // Get total earnings for display
 
   // Get unique protocols from tokens
-  const uniqueProtocols = useMemo(() =>
-    Array.from(new Set(tokens
-      .filter(token => token.protocol && token.yieldBearingToken)
-      .map(token => token.protocol)
-    )),
-    []
-  );
+  // const uniqueProtocols = useMemo(() =>
+  //   Array.from(new Set(tokens
+  //     .filter(token => token.protocol && token.yieldBearingToken)
+  //     .map(token => token.protocol)
+  //   )),
+  //   []
+  // );
 
   // Get all yield-bearing assets without filtering by protocol
   const allYieldAssets = useMemo(() =>
@@ -99,6 +99,10 @@ const MyYieldsPage: React.FC = () => {
   const handleNavigate = () => {
     navigate("/explore")
   }
+
+  useEffect(() => {
+    fetchProtocols()
+  }, [])
 
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
@@ -363,51 +367,51 @@ const MyYieldsPage: React.FC = () => {
     addresses.forEach(addr => {
       const userData = getUserActivity(addr);
       if (!userData) return;
-      const totalDepositsUsdBefore = totalDepositsUsd
-      const totalWithdrawlsUsdBefore = totalWithdrawalsUsd
-      Object.entries(userData).forEach(([chainIdStr, chainData]) => {
-        const chainId = parseInt(chainIdStr, 10);
-        Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
-          if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' && protocolName.toLowerCase() !== 'compound' && protocolName.toLowerCase() !== 'yearn v3') return;
-          Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
-            const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-            const depositsBigInt = BigInt((tokenData as any).totalDeposit || '0');
-            const withdrawalsBigInt = BigInt((tokenData as any).totalWithdraw || '0');
-            const divisor = BigInt('1' + '0'.repeat(decimals));
-            const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
-            const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
-            const tokenInfo = allYieldAssets.find(t => t.chainId === chainId && (t.token.toUpperCase() === tokenSymbol.toUpperCase()));
-            const tokenPrice = tokenInfo?.usd || 1;
-            if (selectedNetwork !== 'all' && selectedNetwork !== chainId) return;
-            totalDepositsUsd += depositsFormatted * tokenPrice;
-            totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
-          });
-        });
-      });
-      const userDeposits = totalDepositsUsd - totalDepositsUsdBefore
-      const userWithdrawls = totalWithdrawalsUsd - totalWithdrawlsUsdBefore
-      const userBalance = filteredYieldAssets.reduce((sum, asset) => {
-        if (asset.walletAddress?.toLowerCase() === addr?.toLowerCase()) {
-          const balanceValue = Number(asset.currentBalanceInProtocolUsd || '0');
-          return isNaN(balanceValue) ? sum : sum + balanceValue;
-        }
-        return sum
-      }, 0);
-      const TotalEarnings = userBalance - (userDeposits - userWithdrawls);
-      const ClaimableEarnings = Math.max(
-        0,
-        userBalance -
-        (userDeposits - userWithdrawls) -
-        (userWithdrawls - userDeposits > 0 ? userWithdrawls - userDeposits : 0)
-      );
+      // const totalDepositsUsdBefore = totalDepositsUsd
+      // const totalWithdrawlsUsdBefore = totalWithdrawalsUsd
+      // Object.entries(userData).forEach(([chainIdStr, chainData]) => {
+      //   const chainId = parseInt(chainIdStr, 10);
+      //   Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
+      //     if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' && protocolName.toLowerCase() !== 'compound' && protocolName.toLowerCase() !== 'yearn v3') return;
+      //     Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
+      //       const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
+      //       const depositsBigInt = BigInt((tokenData as any).totalDeposit || '0');
+      //       const withdrawalsBigInt = BigInt((tokenData as any).totalWithdraw || '0');
+      //       const divisor = BigInt('1' + '0'.repeat(decimals));
+      //       const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
+      //       const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
+      //       const tokenInfo = allYieldAssets.find(t => t.chainId === chainId && (t.token.toUpperCase() === tokenSymbol.toUpperCase()));
+      //       const tokenPrice = tokenInfo?.usd || 1;
+      //       if (selectedNetwork !== 'all' && selectedNetwork !== chainId) return;
+      //       totalDepositsUsd += depositsFormatted * tokenPrice;
+      //       totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
+      //     });
+      //   });
+      // });
+      // const userDeposits = totalDepositsUsd - totalDepositsUsdBefore
+      // const userWithdrawls = totalWithdrawalsUsd - totalWithdrawlsUsdBefore
+      // const userBalance = filteredYieldAssets.reduce((sum, asset) => {
+      //   if (asset.walletAddress?.toLowerCase() === addr?.toLowerCase()) {
+      //     const balanceValue = Number(asset.currentBalanceInProtocolUsd || '0');
+      //     return isNaN(balanceValue) ? sum : sum + balanceValue;
+      //   }
+      //   return sum
+      // }, 0);
+      // const TotalEarnings = userBalance - (userDeposits - userWithdrawls);
+      // const ClaimableEarnings = Math.max(
+      //   0,
+      //   userBalance -
+      //   (userDeposits - userWithdrawls) -
+      //   (userWithdrawls - userDeposits > 0 ? userWithdrawls - userDeposits : 0)
+      // );
       //   const currentDepositCalculated =  TotalDeposit- TotalWithdraw
-      const currentDepositCalculated = Math.max(userDeposits - userWithdrawls, 0)
+      // const currentDepositCalculated = Math.max(userDeposits - userWithdrawls, 0)
       userCalculatedData[addr] = {
-        currentDeposit: currentDepositCalculated,
-        totalDeposit: userDeposits,
-        currentEarnings: ClaimableEarnings,
-        totalEarnings: TotalEarnings,
-        totalWithdrawn: userWithdrawls
+        currentDeposit: userData.currentDeposit,
+        totalDeposit: userData.totalDeposits,
+        currentEarnings: userData.currentEarnings,
+        totalEarnings: userData.totalEarnings,
+        totalWithdrawn: userData.totalWithdrawals
       }
     });
     // Calculate earnings: use supported protocols and current balances
@@ -480,48 +484,48 @@ const MyYieldsPage: React.FC = () => {
     //   return totalEarnings;
     // })();
     // const currentDepositValue = Math.max(0, totalDepositsUsd - totalWithdrawalsUsd);
-    const claimableEarnings = Math.max(0, currentBalance - (totalDepositsUsd - totalWithdrawalsUsd) - (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0));
-    // console.log({ userCalculatedData })
+    // const claimableEarnings = Math.max(0, currentBalance - (totalDepositsUsd - totalWithdrawalsUsd) - (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0));
+    // // console.log({ userCalculatedData })
     let currentDeposits = 0
     let totalDeposits = 0
     let currentEarned = 0
     let totalEarned = 0
     let totalWithdrawls = 0
-    if (isConsolidated) {
-      Object.values(userCalculatedData).forEach((data) => {
-        currentDeposits += data.currentDeposit
-        totalDeposits += data.totalDeposit
-        currentEarned += data.currentEarnings
-        totalEarned += data.totalEarnings
-        totalWithdrawls += data.totalWithdrawn
-      })
-      setTotalDeposited(totalDeposits);
-      setTotalWithdrawn(totalWithdrawls);
-      setCurrentDeposit(currentDeposits);
-      setCurrentEarned(currentEarned);
-      // const nonNegativeEarnings = Math.max(0, supportedEarnings);
-      setTotalEarned(totalEarned);
-      // setLiveTotalEarned(nonNegativeEarnings);
-    } else {
-      const TotalEarnings = currentBalance - (totalDepositsUsd - totalWithdrawalsUsd);
-      // const ClaimableEarnings = Math.max(
-      //   0,
-      //   currentBalance -
-      //   (totalDepositsUsd - totalWithdrawalsUsd) -
-      //   (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0)
-      // );
-      // const currentDepositCalculated =  TotalDeposit- TotalWithdraw
-      const currentDepositCalculated = Math.max(totalDepositsUsd - totalWithdrawalsUsd, 0)
+    // if (isConsolidated) {
+    Object.values(userCalculatedData).forEach((data) => {
+      currentDeposits += data.currentDeposit
+      totalDeposits += data.totalDeposit
+      currentEarned += data.currentEarnings
+      totalEarned += data.totalEarnings
+      totalWithdrawls += data.totalWithdrawn
+    })
+    //   setTotalDeposited(totalDeposits);
+    //   setTotalWithdrawn(totalWithdrawls);
+    //   setCurrentDeposit(currentDeposits);
+    //   setCurrentEarned(currentEarned);
+    //   // const nonNegativeEarnings = Math.max(0, supportedEarnings);
+    //   setTotalEarned(totalEarned);
+    //   // setLiveTotalEarned(nonNegativeEarnings);
+    // } else {
+    // const TotalEarnings = currentBalance - (totalDepositsUsd - totalWithdrawalsUsd);
+    // // const ClaimableEarnings = Math.max(
+    // //   0,
+    // //   currentBalance -
+    // //   (totalDepositsUsd - totalWithdrawalsUsd) -
+    // //   (totalWithdrawalsUsd - totalDepositsUsd > 0 ? totalWithdrawalsUsd - totalDepositsUsd : 0)
+    // // );
+    // // const currentDepositCalculated =  TotalDeposit- TotalWithdraw
+    // const currentDepositCalculated = Math.max(totalDepositsUsd - totalWithdrawalsUsd, 0)
 
-      setTotalDeposited(totalDepositsUsd);
-      setTotalWithdrawn(totalWithdrawalsUsd);
-      setCurrentDeposit(currentDepositCalculated);
-      setCurrentEarned(claimableEarnings);
-      // const nonNegativeEarnings = Math.max(0, supportedEarnings);
-      setTotalEarned(TotalEarnings);
-      // console.log({ totalEarned: TotalEarnings, currentEarned: ClaimableEarnings, currentDeposit: currentDepositCalculated })
-      // console.log({ totalDepositsUsd, totalWithdrawalsUsd })
-    }
+    setTotalDeposited(totalDeposits);
+    setTotalWithdrawn(totalWithdrawls);
+    setCurrentDeposit(currentDeposits);
+    setCurrentEarned(currentEarned);
+    // const nonNegativeEarnings = Math.max(0, supportedEarnings);
+    setTotalEarned(totalEarned);
+    // console.log({ totalEarned: TotalEarnings, currentEarned: ClaimableEarnings, currentDeposit: currentDepositCalculated })
+    // console.log({ totalDepositsUsd, totalWithdrawalsUsd })
+    // }
   }, [
     wallet.address,
     isConsolidated,
@@ -641,7 +645,7 @@ const MyYieldsPage: React.FC = () => {
           <ProtocolSelector
             selectedProtocol={selectedProtocol}
             //@ts-ignore
-            protocols={uniqueProtocols}
+            protocols={protocols}
             onChange={setSelectedProtocol}
             className={styles.protocolSelector}
           />

@@ -115,7 +115,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
   };
 
   return (
-    asset.totalDeposited && asset.totalDeposited > 0 ?
+    asset.currentBalanceInProtocolUsd && Number(asset.currentBalanceInProtocolUsd) > 0 ?
       <div className={styles.yieldCardSlim} style={{ position: 'relative' }}>
         <div className={styles.cardTopSection}>
           <div className={styles.assetInfoSlim}>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './AssetSelector.module.css';
 import AssetIcon from './AssetIcon';
+import { API_BASE_URL } from '../utils/constants';
 
 interface AssetData {
   token: string;
@@ -62,7 +63,7 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
         {selectedAssetData && (
           <span className={styles.assetIcon}>
             <AssetIcon
-              assetIcon={selectedAssetData.icon || ''}
+              assetIcon={selectedAssetData.icon ? API_BASE_URL + selectedAssetData.icon : ''}
               assetName={selectedAssetData.token}
               chainId={selectedAssetData.chainId}
               size="small"
@@ -90,7 +91,7 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
             >
               <span className={styles.assetIcon}>
                 <AssetIcon
-                  assetIcon={asset.icon || ''}
+                  assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
                   assetName={asset.token}
                   chainId={asset.chainId}
                   size="small"
