@@ -151,10 +151,10 @@ const YieldsTableRow: React.FC<{
         <td className={styles.balanceCell}>
           <div className={styles.balanceGroup}>
             <span className={styles.balanceAmount}>
-              {formatNumber(asset.totalDeposited || 0, asset.maxDecimalsShow)}
+              {formatNumber(asset.currentBalanceInProtocol || 0, asset.maxDecimalsShow)}
             </span>
             <span className={styles.usdValue}>
-              ${formatNumber(asset.totalDepositedUsd || 0)}
+              ${formatNumber(asset.currentBalanceInProtocolUsd || 0)}
             </span>
           </div>
         </td>
@@ -299,7 +299,7 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
             {assets.map((asset) => {
               const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
               const optimizationData = getOptimizationDataForAsset(asset);
-              if (asset.totalDeposited && asset.totalDeposited > 0) {
+              if (asset.currentBalanceInProtocolUsd && Number(asset.currentBalanceInProtocolUsd) > 0) {
                 return (
                   <YieldsTableRow
                     key={assetKey}
@@ -311,7 +311,7 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
                   />
                 );
               }
-              return <></>
+              // return <></>
             })}
           </tbody>
         </table>
