@@ -40,7 +40,7 @@ const MyYieldsPage: React.FC = () => {
   const [totalDeposited, setTotalDeposited] = useState<number>(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
-  // const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
+  const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
   const [currentBalance, setCurrentBalance] = useState<number>(0);
   const [currentDeposit, setCurrentDeposit] = useState<number>(0);
   const [currentEarned, setCurrentEarned] = useState<number>(0);
@@ -274,41 +274,41 @@ const MyYieldsPage: React.FC = () => {
   };
 
   // Calculate weighted average APY for Aave and Radiant tokens
-  // const calculateWeightedApy = (): number => {
-  //   let totalWeightedApy = 0;
-  //   let totalValue = 0;
+  const calculateWeightedApy = (): number => {
+    let totalWeightedApy = 0;
+    let totalValue = 0;
 
-  //   // Get Aave and Radiant assets from current balances
-  //   const supportedAssets = filteredYieldAssets.filter(asset => {
-  //     return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
-  //   });
+    // Get Aave and Radiant assets from current balances
+    const supportedAssets = filteredYieldAssets.filter(asset => {
+      return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
+    });
 
-  //   supportedAssets.forEach(asset => {
-  //     const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
-  //     if (isNaN(balanceValue) || balanceValue === 0) return;
+    supportedAssets.forEach(asset => {
+      const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
+      if (isNaN(balanceValue) || balanceValue === 0) return;
 
-  //     // Get APY for this asset from apyStore if available
-  //     let assetApy = 0;
-  //     if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
-  //       const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
-  //       assetApy = apys[asset.protocol.toLowerCase()] || 0;
-  //     }
+      // Get APY for this asset from apyStore if available
+      let assetApy = 0;
+      if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
+        const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
+        assetApy = apys[asset.protocol.toLowerCase()] || 0;
+      }
 
-  //     // If no APY found, use defaults: 3% for Aave, 4% for Radiant
-  //     // if (assetApy === 0) {
-  //     //   const token = tokens.find(
-  //     //     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-  //     //   );
-  //     //   assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
-  //     // }
+      // If no APY found, use defaults: 3% for Aave, 4% for Radiant
+      // if (assetApy === 0) {
+      //   const token = tokens.find(
+      //     t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+      //   );
+      //   assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
+      // }
 
-  //     totalWeightedApy += assetApy * balanceValue;
-  //     totalValue += balanceValue;
-  //   });
+      totalWeightedApy += assetApy * balanceValue;
+      totalValue += balanceValue;
+    });
 
-  //   // Return weighted average APY (default to 3.5% if no supported assets)
-  //   return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
-  // };
+    // Return weighted average APY (default to 3.5% if no supported assets)
+    return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
+  };
 
   // Calculate totals using real data from stores
   useEffect(() => {
@@ -316,7 +316,7 @@ const MyYieldsPage: React.FC = () => {
       setTotalDeposited(0);
       setTotalWithdrawn(0);
       setTotalEarned(0);
-      // setLiveTotalEarned(0);
+      setLiveTotalEarned(0);
       return;
     }
 
@@ -332,24 +332,24 @@ const MyYieldsPage: React.FC = () => {
     }
 
     // Aggregate deposits/withdrawals across addresses
-    let totalDepositsUsd = 0;
-    let totalWithdrawalsUsd = 0;
+    // let totalDepositsUsd = 0;
+    // let totalWithdrawalsUsd = 0;
 
-    // Helper function to find token decimals
-    const findTokenDecimals = (chainId: number, protocolName: string, tokenSymbol: string): number => {
-      const token = tokens.find(t =>
-        t.chainId === chainId &&
-        t.protocol?.toLowerCase() === protocolName.toLowerCase() &&
-        (t.token.toUpperCase().includes(tokenSymbol.toUpperCase()) || t.token === tokenSymbol)
-      );
-      if (token) return token.decimals;
-      const underlyingToken = tokens.find(t =>
-        t.chainId === chainId && !t.yieldBearingToken && t.token.toUpperCase() === tokenSymbol.toUpperCase()
-      );
-      if (underlyingToken) return underlyingToken.decimals;
-      if (tokenSymbol.toUpperCase() === 'USDC' || tokenSymbol.toUpperCase() === 'USDT') return 6;
-      return 18;
-    };
+    // // Helper function to find token decimals
+    // const findTokenDecimals = (chainId: number, protocolName: string, tokenSymbol: string): number => {
+    //   const token = tokens.find(t =>
+    //     t.chainId === chainId &&
+    //     t.protocol?.toLowerCase() === protocolName.toLowerCase() &&
+    //     (t.token.toUpperCase().includes(tokenSymbol.toUpperCase()) || t.token === tokenSymbol)
+    //   );
+    //   if (token) return token.decimals;
+    //   const underlyingToken = tokens.find(t =>
+    //     t.chainId === chainId && !t.yieldBearingToken && t.token.toUpperCase() === tokenSymbol.toUpperCase()
+    //   );
+    //   if (underlyingToken) return underlyingToken.decimals;
+    //   if (tokenSymbol.toUpperCase() === 'USDC' || tokenSymbol.toUpperCase() === 'USDT') return 6;
+    //   return 18;
+    // };
 
     const userCalculatedData: Record<string, {
       currentDeposit: number,
@@ -503,9 +503,8 @@ const MyYieldsPage: React.FC = () => {
     //   setTotalWithdrawn(totalWithdrawls);
     //   setCurrentDeposit(currentDeposits);
     //   setCurrentEarned(currentEarned);
-    //   // const nonNegativeEarnings = Math.max(0, supportedEarnings);
     //   setTotalEarned(totalEarned);
-    //   // setLiveTotalEarned(nonNegativeEarnings);
+    setLiveTotalEarned(totalEarned);
     // } else {
     // const TotalEarnings = currentBalance - (totalDepositsUsd - totalWithdrawalsUsd);
     // // const ClaimableEarnings = Math.max(
@@ -540,38 +539,63 @@ const MyYieldsPage: React.FC = () => {
 
   // console.log('totalEarned, currentEarned ', totalEarned, currentEarned)
   // Live ticker effect - update earnings every 100ms based on Aave APY
-  // useEffect(() => {
-  //   if (!wallet.address || totalEarned <= 0) return;
+  useEffect(() => {
+    if (!wallet.address || totalEarned <= 0) return;
 
-  //   if (currentEarned <= 0) {
-  //     return
-  //   }
-  //   // Set initial live value
-  //   setLiveTotalEarned(totalEarned);
+    if (currentEarned <= 0) {
+      return
+    }
+    // Set initial live value
+    setLiveTotalEarned(totalEarned);
 
-  //   // Calculate the weighted APY for Aave tokens
-  //   const weightedApy = calculateWeightedApy();
-  //   console.log({ weightedApy });
+    // Calculate the weighted APY for Aave tokens
+    const weightedApy = calculateWeightedApy();
+    console.log({ weightedApy });
 
-  //   // Calculate the per-tick growth rate based on APY
-  //   const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
+    // Calculate the per-tick growth rate based on APY
+    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
 
-  //   const timer = setInterval(() => {
-  //     setLiveTotalEarned(prevValue => {
-  //       // Calculate growth for this tick
-  //       const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+    const timer = setInterval(() => {
+      setLiveTotalEarned(prevValue => {
+        // Calculate growth for this tick
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
 
-  //       // Use high precision multiplication to ensure decimal changes are visible
-  //       const newValue = prevValue * growthRate;
-  //       return newValue;
-  //     });
-  //     // Removed setCurrentEarned to keep it static
-  //   }, 100);
+        // Use high precision multiplication to ensure decimal changes are visible
+        const newValue = prevValue * growthRate;
+        return newValue;
+      });
+      setCurrentEarned(prevCurrent => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        const updatedValue = prevCurrent * growthRate;
+        return updatedValue;
+      });
+      // Removed setCurrentEarned to keep it static
+    }, 100);
 
-  //   // Cleanup timer on unmount or when dependencies change
-  //   return () => clearInterval(timer);
+    // Cleanup timer on unmount or when dependencies change
+    return () => clearInterval(timer);
 
-  // }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
+  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
+
+  // Format value with proper comma separators and more decimal places for precision
+  const formatLiveValue = (value: number): string => {
+    // Ensure the value is a valid number
+    if (typeof value !== 'number' || isNaN(value)) {
+      return '0.000000000000000000';
+    }
+
+    try {
+      // Use higher precision (18 decimal places) to match the header's live ticker
+      if (value >= 1000) {
+        return value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 });
+      } else {
+        return value.toFixed(18);
+      }
+    } catch (error) {
+      console.error('Error formatting value:', error);
+      return '0.000000000000000000';
+    }
+  };
 
   // Loading state
   if (loading || earningsLoading || activityLoading) {
@@ -691,10 +715,10 @@ const MyYieldsPage: React.FC = () => {
           <div className={styles.summaryTitle}>Current Earned</div>
           <div className={styles.summaryAmount}>
             {/* ${formatNumber(currentBalance - currentDeposit, 20)} */}
-            ${formatNumber(currentEarned, 20)}
+            ${formatLiveValue(currentEarned)}
           </div>
           <div className={styles.summarySubtext}>
-            Total Earning ${formatNumber(totalEarned, 4)}
+            Total Earning ${formatLiveValue(liveTotalEarned)}
           </div>
         </div>
         <div className={styles.summaryCard}>
