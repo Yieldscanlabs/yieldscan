@@ -81,14 +81,24 @@ const MyYieldsPage: React.FC = () => {
 
   // Get unique assets from yield-bearing assets with their data
   const uniqueAssets = useMemo(() => {
-    const assetMap = new Map<string, { token: string; icon?: string; chainId: number }>();
+    type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
+    const assetMap = new Map<string, UniqueAsset>();
 
     allYieldAssets.forEach(asset => {
-      if (!assetMap.has(asset.token)) {
+      const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
+      const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
+      const existing = assetMap.get(asset.token);
+
+      if (existing) {
+        if (hasHoldings && !existing.hasHoldings) {
+          assetMap.set(asset.token, { ...existing, hasHoldings: true });
+        }
+      } else {
         assetMap.set(asset.token, {
           token: asset.token,
           icon: asset.icon,
-          chainId: asset.chainId
+          chainId: asset.chainId,
+          hasHoldings
         });
       }
     });

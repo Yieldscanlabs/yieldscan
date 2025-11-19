@@ -8,6 +8,7 @@ interface AssetData {
   icon?: string;
   chainId: number;
   label?: string; // Added label property
+  hasHoldings?: boolean;
 }
 
 interface AssetSelectorProps {
@@ -40,7 +41,8 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
     };
   }, []);
 
-  const handleSelect = (asset: string | 'all') => {
+  const handleSelect = (asset: string | 'all', disabled = false) => {
+    if (disabled) return;
     onChange(asset);
     setIsOpen(false);
   };
@@ -83,23 +85,32 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
             All Assets
           </div>
 
-          {assets.map((asset) => (
-            <div
-              key={asset.token}
-              className={`${styles.dropdownItem} ${selectedAsset === asset.token ? styles.selected : ''}`}
-              onClick={() => handleSelect(asset.token)}
-            >
-              <span className={styles.assetIcon}>
-                <AssetIcon
-                  assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
-                  assetName={asset.token}
-                  chainId={asset.chainId}
-                  size="small"
-                />
-              </span>
-              <span>{asset.token}</span>
-            </div>
-          ))}
+          {assets.map((asset) => {
+            const itemClasses = [
+              styles.dropdownItem,
+              selectedAsset === asset.token ? styles.selected : '',
+              asset.hasHoldings ? '' : styles.unavailable
+            ].join(' ').trim();
+
+            return (
+              <div
+                key={asset.token}
+                className={itemClasses}
+                onClick={() => handleSelect(asset.token, !asset.hasHoldings)}
+                aria-disabled={!asset.hasHoldings}
+              >
+                <span className={styles.assetIcon}>
+                  <AssetIcon
+                    assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
+                    assetName={asset.token}
+                    chainId={asset.chainId}
+                    size="small"
+                  />
+                </span>
+                <span>{asset.token}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

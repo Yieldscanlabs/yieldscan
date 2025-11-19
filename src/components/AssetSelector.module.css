@@ -60,6 +60,17 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.unavailable {
+  color: var(--text-disabled, rgba(255, 255, 255, 0.4));
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.unavailable:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
 .selected {
   background-color: rgba(108, 92, 231, 0.15);
   font-weight: 500;
