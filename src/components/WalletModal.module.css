@@ -197,3 +197,63 @@
     overflow-y: auto;
   }
 }
+
+/* Additional utility classes used by ManualWalletModal */
+.header {
+  composes: modalHeader;
+}
+
+.content {
+  composes: modalContent;
+}
+
+.footer {
+  composes: modalFooter;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-right: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.primaryButton {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: var(--surface-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+.errorText {
+  color: #ff5e5b;
+  margin-top: 0.5rem;
+}
+
+.helperText {
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+}

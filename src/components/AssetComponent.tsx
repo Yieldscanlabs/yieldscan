@@ -7,6 +7,7 @@ import styles from './AssetList.module.css';
 import { type BestApyResult } from '../hooks/useBestApy';
 import { useApyStore } from '../store/apyStore';
 import { getBestYield } from '../utils/getBestYield';
+import { API_BASE_URL } from '../utils/constants';
 
 interface AssetComponentProps {
   asset: Asset;
@@ -50,7 +51,7 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
         <div className={styles['asset-main']}>
           <div className={styles['asset-info']}>
             <AssetIcon
-              assetIcon={asset.icon || ''}
+              assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
               assetName={asset.token}
               chainId={asset.chainId}
               size="medium"

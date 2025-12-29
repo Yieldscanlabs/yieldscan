@@ -274,6 +274,10 @@
   color: var(--success-color, #00e679);
 }
 
+.errorContainer {
+  padding: 10px 4px;
+}
+
 .errorText {
   color: var(--error-color, #ff5e5b);
 }
@@ -403,22 +407,41 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
 }
 
 @keyframes fadeInUp {
@@ -454,7 +477,8 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.info-icon, .lock-icon {
+.info-icon,
+.lock-icon {
   margin-right: 5px;
   font-size: 0.8rem;
 }

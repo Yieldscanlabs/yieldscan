@@ -12,44 +12,44 @@ interface ProtocolScore {
 }
 
 export const protocolScores: ProtocolScore[] = [
-  { 
-    name: 'Aave', 
+  {
+    name: 'Aave',
     trustScore: 98,
     liquidity: 40000 // $5.4B
   },
-  { 
-    name: 'Lido', 
-    trustScore: 95, 
+  {
+    name: 'Lido',
+    trustScore: 95,
     liquidity: 18700 // $18.7B
   },
-  { 
-    name: 'EigenLayer', 
-    trustScore: 95, 
+  {
+    name: 'EigenLayer',
+    trustScore: 95,
     liquidity: 11700 // $11.7B
   },
-  { 
-    name: 'Morpho Blue', 
-    trustScore: 94, 
+  {
+    name: 'Morpho Blue',
+    trustScore: 94,
     liquidity: 5200 // $5.2B
   },
-  { 
-    name: 'Pendle', 
-    trustScore: 94, 
+  {
+    name: 'Pendle',
+    trustScore: 94,
     liquidity: 4584 // $4.58B
   },
-  { 
-    name: 'Spark', 
-    trustScore: 94, 
+  {
+    name: 'Spark',
+    trustScore: 94,
     liquidity: 3200 // $3.2B
   },
-  { 
-    name: 'Compound', 
-    trustScore: 91, 
+  {
+    name: 'Compound',
+    trustScore: 91,
     liquidity: 2488 // $2.3B
   },
-  { 
-    name: 'Venus', 
-    trustScore: 90, 
+  {
+    name: 'Venus',
+    trustScore: 90,
     liquidity: 2313 // $850M
   },
   {
@@ -57,18 +57,168 @@ export const protocolScores: ProtocolScore[] = [
     trustScore: 89,
     liquidity: 1700 // $1.7B
   },
-  { 
-    name: 'Fluid', 
-    trustScore: 85, 
+  {
+    name: 'Fluid',
+    trustScore: 85,
     liquidity: 1500 // $1.5B
   },
-  { 
-    name: 'Radiant', 
-    trustScore: 60, 
+  {
+    name: 'Radiant',
+    trustScore: 60,
     liquidity: 245 // $245M
   },
+  {
+    name: 'Uniswap',
+    trustScore: 96,
+    liquidity: 5057
+  },
+  {
+    name: 'Curve Finance',
+    trustScore: 92,
+    liquidity: 2275
+  },
+  {
+    name: 'PancakeSwap',
+    trustScore: 88,
+    liquidity: 1837
+  },
+  {
+    name: 'MakerDAO',
+    trustScore: 94,
+    liquidity: 10000
+  },
+  {
+    name: 'Synthetix',
+    trustScore: 90,
+    liquidity: 1500
+  },
 
+  // Newly added protocols
+  {
+    name: 'Kinza Finance',
+    trustScore: 80,
+    liquidity: 300 // $300M
+  },
+  {
+    name: 'Cream Finance',
+    trustScore: 70,
+    liquidity: 150 // $150M
+  },
+  {
+    name: 'Euler',
+    trustScore: 75,
+    liquidity: 200 // $200M
+  },
+  {
+    name: 'Dolomite',
+    trustScore: 78,
+    liquidity: 250 // $250M
+  },
+  {
+    name: 'Zerolend',
+    trustScore: 82,
+    liquidity: 400 // $400M
+  },
+  {
+    name: 'Flux Finance',
+    trustScore: 77,
+    liquidity: 180 // $180M
+  },
+  {
+    name: 'Yearn V3',
+    trustScore: 90,
+    liquidity: 1200 // $1.2B
+  },
+  {
+    name: 'Maple',
+    trustScore: 88,
+    liquidity: 500 // $500M
+  }
 ];
+
+
+// export const protocolScores: ProtocolScore[] = [
+//   {
+//     name: 'Aave',
+//     trustScore: 98,
+//     liquidity: 40000 // $5.4B
+//   },
+//   {
+//     name: 'Lido',
+//     trustScore: 95,
+//     liquidity: 18700 // $18.7B
+//   },
+//   {
+//     name: 'EigenLayer',
+//     trustScore: 95,
+//     liquidity: 11700 // $11.7B
+//   },
+//   {
+//     name: 'Morpho Blue',
+//     trustScore: 94,
+//     liquidity: 5200 // $5.2B
+//   },
+//   {
+//     name: 'Pendle',
+//     trustScore: 94,
+//     liquidity: 4584 // $4.58B
+//   },
+//   {
+//     name: 'Spark',
+//     trustScore: 94,
+//     liquidity: 3200 // $3.2B
+//   },
+//   {
+//     name: 'Compound',
+//     trustScore: 91,
+//     liquidity: 2488 // $2.3B
+//   },
+//   {
+//     name: 'Venus',
+//     trustScore: 90,
+//     liquidity: 2313 // $850M
+//   },
+//   {
+//     name: 'Rocket Pool',
+//     trustScore: 89,
+//     liquidity: 1700 // $1.7B
+//   },
+//   {
+//     name: 'Fluid',
+//     trustScore: 85,
+//     liquidity: 1500 // $1.5B
+//   },
+//   {
+//     name: 'Radiant',
+//     trustScore: 60,
+//     liquidity: 245 // $245M
+//   },
+
+//   {
+//     name: 'Uniswap',
+//     trustScore: 96,
+//     liquidity: 5057
+//   },
+//   {
+//     name: 'Curve Finance',
+//     trustScore: 92,
+//     liquidity: 2275
+//   },
+//   {
+//     name: 'PancakeSwap',
+//     trustScore: 88,
+//     liquidity: 1837
+//   },
+//   {
+//     name: 'MakerDAO',
+//     trustScore: 94,
+//     liquidity: 10000
+//   },
+//   {
+//     name: 'Synthetix', trustScore: 90, liquidity: 1500
+//   }
+
+// ];
 
 // Format liquidity with appropriate suffix
 const formatLiquidity = (value: number): string => {
@@ -86,7 +236,7 @@ const ProtocolScoreCard: React.FC = () => {
 
   // Custom CTA component for protocol scoring
   const ProtocolScoreCTA = () => (
-    <div className={styles.protocolScoreCta}>
+    <div className={styles.protocolScoreCpta}>
       <div className={styles.ctaContent}>
         <div className={styles.ctaHeader}>
           <div className={styles.ctaIcon}>
@@ -98,14 +248,14 @@ const ProtocolScoreCard: React.FC = () => {
             <h3>Connect to see your risk score</h3>
             <p>Get personalized protocol exposure analysis</p>
           </div>
-          <button 
+          <button
             className={styles.ctaButton}
             onClick={openConnectModal}
           >
             <span className={styles.buttonText}>Connect Wallet</span>
             <div className={styles.buttonIcon}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1L15 8L8 15M15 8H1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 1L15 8L8 15M15 8H1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </button>
@@ -113,24 +263,24 @@ const ProtocolScoreCard: React.FC = () => {
       </div>
     </div>
   );
-
+  console.log('ass ', assets)
   // Calculate protocol exposure percentages
   const calculateProtocolExposure = () => {
     const yieldBearingAssets = assets.filter(asset => asset.yieldBearingToken);
     const totalPortfolioValue = yieldBearingAssets.reduce((sum, asset) => sum + parseFloat(asset.balanceUsd), 0);
-    
+
     if (totalPortfolioValue === 0) {
       return { exposures: {}, totalValue: 0, allProtocols: [] };
     }
 
     const protocolExposures: Record<string, number> = {};
-    
+
     yieldBearingAssets.forEach(asset => {
       if (asset.protocol) {
         const protocolName = asset.protocol;
         const assetValue = parseFloat(asset.balanceUsd);
         const exposurePercentage = (assetValue / totalPortfolioValue) * 100;
-        
+
         if (protocolExposures[protocolName]) {
           protocolExposures[protocolName] += exposurePercentage;
         } else {
@@ -139,15 +289,10 @@ const ProtocolScoreCard: React.FC = () => {
       }
     });
 
-    // Debug logging
-    console.log('Yield bearing assets:', yieldBearingAssets);
-    console.log('Total portfolio value:', totalPortfolioValue);
-    console.log('Protocol exposures:', protocolExposures);
-    console.log('Total exposure:', Object.values(protocolExposures).reduce((sum, exp) => sum + exp, 0));
 
     // Create a combined list of all protocols (predefined + user's protocols)
     const allProtocols = [...protocolScores];
-    
+
     // Add any protocols the user has that aren't in our predefined list
     Object.keys(protocolExposures).forEach(protocolName => {
       if (!protocolScores.find(p => p.name === protocolName)) {
@@ -193,13 +338,14 @@ const ProtocolScoreCard: React.FC = () => {
   const sortedProtocols = allProtocols.sort((a, b) => {
     const exposureA = exposures[a.name] || 0;
     const exposureB = exposures[b.name] || 0;
-    
+
     if (exposureA > 0 && exposureB === 0) return -1;
     if (exposureA === 0 && exposureB > 0) return 1;
     if (exposureA > 0 && exposureB > 0) return exposureB - exposureA;
     return b.trustScore - a.trustScore;
   });
-
+  console.log('exposures ', exposures)
+  console.log('all ', allProtocols, sortedProtocols,)
   return (
     <div className={styles.container}>
       {wallet.isConnected && totalValue > 0 && (
@@ -213,7 +359,7 @@ const ProtocolScoreCard: React.FC = () => {
           </p>
         </div>
       )}
-      
+
       <div className={styles.scoreTable}>
         <div className={styles.tableHeader}>
           <div className={styles.protocolColumn}>Protocol</div>
@@ -221,7 +367,7 @@ const ProtocolScoreCard: React.FC = () => {
           <div className={styles.indicatorColumn}>Liquidity</div>
           <div className={styles.riskExposureColumn}>Risk Exposure %</div>
         </div>
-        
+
         <div className={styles.tableBody}>
           {sortedProtocols.map((protocol) => {
             const exposure = exposures[protocol.name] || 0;
@@ -250,11 +396,11 @@ const ProtocolScoreCard: React.FC = () => {
           })}
         </div>
       </div>
-      
+
       {!wallet.isConnected && (
         <ProtocolScoreCTA />
       )}
-      
+
       <div className={styles.infoFooter}>
         <div className={styles.legendItems}>
           <div className={styles.legendItem}>
@@ -279,8 +425,8 @@ const ProtocolScoreCard: React.FC = () => {
           Yieldscan ranks protocols based on TVL, historical performance, and smart contract risk.
         </p>
       </div>
-      
-      <WalletModal 
+
+      <WalletModal
         isOpen={isModalOpen}
         onClose={closeConnectModal}
       />

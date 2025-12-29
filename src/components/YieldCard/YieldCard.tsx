@@ -11,6 +11,7 @@ import { useYieldCard } from './useYieldCard';
 import MaturityBadge from './MaturityBadge';
 import YieldInfo from './YieldInfo';
 import YieldActions from './YieldActions';
+import { API_BASE_URL } from '../../utils/constants';
 
 const YieldCard: React.FC<YieldCardProps> = (props) => {
   const {
@@ -19,11 +20,12 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     onOptimize,
     onLockAPY
   } = props;
+
   const { openModal } = useOptimizationStore();
   const { openInformationModal } = useOptimizeInformationStore();
   const { openLockAPYInformationModal } = useLockAPYInformationStore();
   const { openModal: openWithdrawModalGlobal } = useWithdrawModalStore();
-  
+
   const {
     // Token and protocol info
     protocol,
@@ -104,7 +106,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     openWithdrawModalGlobal({
       asset,
       protocol,
-      balance: asset.totalDeposited || balanceNum,
+      balance: asset.currentBalanceInProtocol || 0,
       maxDecimals: asset.maxDecimalsShow || 6,
       isNativeToken,
       onWithdraw: handleWithdraw,
@@ -113,12 +115,12 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
   };
 
   return (
-    asset.totalDeposited && asset.totalDeposited > 0 ?
+    asset.currentBalanceInProtocolUsd && Number(asset.currentBalanceInProtocolUsd) > 0 ?
       <div className={styles.yieldCardSlim} style={{ position: 'relative' }}>
         <div className={styles.cardTopSection}>
           <div className={styles.assetInfoSlim}>
             <AssetIcon
-              assetIcon={asset.icon || ''}
+              assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
               assetName={asset.token}
               chainId={asset.chainId}
               size="medium"

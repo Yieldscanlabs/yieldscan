@@ -23,6 +23,14 @@ export interface Asset {
   usd: number;
   currentBalanceInProtocol?: number;
   currentBalanceInProtocolUsd?: string;
+  walletAddress?: string;  // Source wallet address (for consolidated view)
+}
+
+export interface Chain {
+  name: string;
+  chainId: number;
+  usdPrice: number;
+  image: string;
 }
 
 export interface YieldOption {
@@ -40,4 +48,14 @@ export interface WalletInfo {
   address: string;
   isConnected: boolean;
   chainId: number;
+}
+
+export interface Protocol {
+  id: string;
+
+  name: string;
+
+  website?: string;
+
+  image: string;
 }

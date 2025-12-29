@@ -32,11 +32,6 @@ const AssetIcon: React.FC<AssetIconProps> = ({
         className={styles.assetIcon}
         onError={handleImageError}
       />
-      <img
-        src={chainIcon}
-        alt="Chain"
-        className={styles.chainIconOverlay}
-      />
     </div>
   );
 };

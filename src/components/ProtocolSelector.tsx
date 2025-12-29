@@ -1,19 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './ProtocolSelector.module.css'; // Create a new CSS module for the dropdown
 import Protocol from './Protocol'; // Import your Protocol component for icons
+import type { Protocol as ProtocolType } from '../types';
 
 interface ProtocolSelectorProps {
   selectedProtocol: string | 'all';
-  protocols: string[];
+  protocols: ProtocolType[];
   onChange: (protocol: string | 'all') => void;
   className?: string;
 }
 
-const ProtocolSelector: React.FC<ProtocolSelectorProps> = ({ 
-  selectedProtocol, 
-  protocols, 
-  onChange, 
-  className 
+const ProtocolSelector: React.FC<ProtocolSelectorProps> = ({
+  selectedProtocol,
+  protocols,
+  onChange,
+  className
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -41,7 +42,7 @@ const ProtocolSelector: React.FC<ProtocolSelectorProps> = ({
 
   return (
     <div className={`${styles.dropdown} ${className || ''}`} ref={dropdownRef}>
-      <button 
+      <button
         className={styles.dropdownToggle}
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="true"
@@ -55,26 +56,26 @@ const ProtocolSelector: React.FC<ProtocolSelectorProps> = ({
         <span>{displayValue}</span>
         <span className={styles.arrow}>▼</span>
       </button>
-      
+
       {isOpen && (
         <div className={styles.dropdownMenu}>
-          <div 
+          <div
             className={`${styles.dropdownItem} ${selectedProtocol === 'all' ? styles.selected : ''}`}
             onClick={() => handleSelect('all')}
           >
             All Protocols
           </div>
-          
+
           {protocols.map((protocol) => (
             <div
-              key={protocol}
-              className={`${styles.dropdownItem} ${selectedProtocol === protocol ? styles.selected : ''}`}
-              onClick={() => handleSelect(protocol)}
+              key={protocol.id}
+              className={`${styles.dropdownItem} ${selectedProtocol === protocol.name ? styles.selected : ''}`}
+              onClick={() => handleSelect(protocol.name)}
             >
               <span className={styles.protocolIcon}>
-                <Protocol name={protocol} showName={false} size="small" />
+                <Protocol name={protocol.name} showName={false} size="small" />
               </span>
-              <span>{protocol}</span>
+              <span>{protocol.name}</span>
             </div>
           ))}
         </div>

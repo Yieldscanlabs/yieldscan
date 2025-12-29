@@ -1,0 +1,108 @@
+.dropdown {
+  position: relative;
+  display: inline-block;
+  /* width: 100%; */
+}
+
+.dropdownToggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 200px;
+  padding: 12px 12px;
+  background-color: var(--surface-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.dropdownToggle:hover {
+  background-color: var(--surface-light);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.arrow {
+  margin-left: auto;
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+  color: var(--text-secondary);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 1002;
+  /* increased */
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: var(--text-primary);
+}
+
+.dropdownItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.unavailable {
+  color: var(--text-disabled, rgba(255, 255, 255, 0.4));
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.unavailable:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.selected {
+  background-color: rgba(108, 92, 231, 0.15);
+  font-weight: 500;
+  color: var(--primary-color);
+  border-left: 3px solid var(--primary-color);
+}
+
+.assetIcon {
+  display: inline-flex;
+  margin-right: 0;
+  /* Remove margin since AssetIcon has its own */
+  width: auto;
+  /* Let AssetIcon determine its own size */
+  height: auto;
+}
+
+.dropdownMenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdownMenu::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, #1a1c23);
+}
+
+.dropdownMenu::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, #4a5568);
+  border-radius: 6px;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .dropdownMenu {
+    max-height: 200px;
+  }
+}

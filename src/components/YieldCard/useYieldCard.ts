@@ -103,8 +103,13 @@ export function useYieldCard({ asset, onOptimize, onLockAPY }: YieldCardProps) {
 
   // Calculate yields
   const balanceNum = parseFloat(asset.totalDeposited?.toString() || "0");
-  const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
-  const dailyYieldUsd = (balanceNum * (apy / 100) / 365) * usdPrice;
+  // const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
+  // const dailyYieldUsd = (balanceNum * (apy / 100) / 365) * usdPrice;
+  // const yearlyYieldUsd = dailyYieldUsd * 365;
+  const balanceTokens = asset.currentBalanceInProtocol ?? 0; // tokens that earn yield
+  const priceUsd = Number(asset.usd ?? 0);                   // unit price from store
+  const dailyYieldTokens = balanceTokens * (apy / 100) / 365;
+  const dailyYieldUsd = dailyYieldTokens * priceUsd;
   const yearlyYieldUsd = dailyYieldUsd * 365;
 
   // Open withdraw modal
