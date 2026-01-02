@@ -121,17 +121,16 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
           // });
 
-          
-          // set(state => ({
-          //   activityData: {
-          //     ...state.activityData,
-          //     ...normalizedData
-          //   },
-          //   isLoading: false,
-          //   lastUpdated: Date.now()
-          // }));
+
+          set(state => ({
+            activityData: {
+              ...state.activityData,
+              ...normalizedData
+            },
+            isLoading: false,
+            lastUpdated: Date.now()
+          }));
         } catch (error) {
-          console.error("USER_DETAILS_API_ENDPOINT data:", error);
 
           set({
             error: error instanceof Error ? error.message : 'Unknown error fetching user activity data',
