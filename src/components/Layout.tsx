@@ -8,7 +8,6 @@ import { useAssetStore } from '../store/assetStore';
 import { useEarnStore, useEarningsAutoRefresh } from '../store/earnStore';
 import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
 import { useEffect } from 'react';
-import GlobalOptimizationModal from './GlobalOptimizationModal';
 import GlobalLockModal from './GlobalLockModal';
 import GlobalOptimizeInformationModal from './GlobalOptimizeInformationModal';
 import GlobalLockAPYInformationModal from './GlobalLockAPYInformationModal';
@@ -47,7 +46,7 @@ const Layout = () => {
   // Global Ctrl/Cmd+K to open manual wallet modal
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      if ((event.ctrlKey || event.metaKey) && event?.key?.toLowerCase() === 'k') {
         event.preventDefault();
         openManualModal();
       }
@@ -55,7 +54,7 @@ const Layout = () => {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [openManualModal]);
-
+  console.warn("CONNECTED WALLET DATA: ", useDepositsAndWithdrawalsStore.getState().getUserActivity(manualAddresses[activeManualAddressIndex ?? 0]));
   // Initialize auto-refresh for APY, Assets, and Earnings (no auto-refresh for deposits/withdrawals due to long fetch time)
   useApyAutoRefresh();
   useEarningsAutoRefresh(wallet.address);
@@ -132,18 +131,22 @@ const Layout = () => {
     }
   }, [activityLastUpdated, wallet.isConnected]);
 
+
+  const handleDisconnectWallet = () => {
+    localStorage.clear();
+    disconnectWallet();
+  }
   return (
     <div className={styles.layout}>
       <Header
         isConnected={wallet.isConnected}
         address={wallet.address}
-        disconnectWallet={disconnectWallet}
+        disconnectWallet={handleDisconnectWallet}
       />
       <main className={styles.main}>
         <Outlet />
       </main>
       <GlobalManualWalletModal />
-      <GlobalOptimizationModal />
       <GlobalLockModal />
       <GlobalOptimizeInformationModal />
       <GlobalLockAPYInformationModal />

@@ -78,8 +78,8 @@ const MyYieldsPage: React.FC = () => {
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
-
-  // Get unique assets from yield-bearing assets with their data
+  
+  // Get unique assets from yield-bearing assets with their data for selectors/filters
   const uniqueAssets = useMemo(() => {
     type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
     const assetMap = new Map<string, UniqueAsset>();
@@ -106,9 +106,6 @@ const MyYieldsPage: React.FC = () => {
     return Array.from(assetMap.values());
   }, [allYieldAssets]);
 
-  const handleNavigate = () => {
-    navigate("/explore")
-  }
 
   useEffect(() => {
     fetchProtocols()
@@ -116,8 +113,6 @@ const MyYieldsPage: React.FC = () => {
 
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
-    console.log("ASSETS", assets);
-
     const handleResize = () => {
       if (window.innerWidth <= 900 && viewType !== 'cards') {
         setViewType('cards');
@@ -216,7 +211,78 @@ const MyYieldsPage: React.FC = () => {
         };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity]);
-  // console.log({ filteredYieldAssets })
+
+    useEffect(() => {
+      console.log("ASSETS is Loading: ", loading)
+      console.log("ASSETS is error: ", error)
+    console.log("ASSETS:All assets for filtering:", assets);
+    console.log("Updated filteredYieldAssets:", filteredYieldAssets);
+  },[filteredYieldAssets, assets]);
+
+  // ---------------------------------------------------------
+  // 🔍 DEBUGGING CONSOLE: ASSET ANALYSIS
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (loading) return;
+    console.log("\n---------------(START of debug report)---------------\n");
+
+    const totalAssets = assets.length;
+    const supportedAssets = assets.filter(a => a.yieldBearingToken);
+    
+    // 1. Check for assets with ACTUAL value in the Wallet (Dormant)
+    const assetsWithWalletBalance = assets.filter(a => Number(a.balanceUsd) > 0.01);
+    
+    // 2. Check for assets with ACTUAL value in Protocols (Working)
+    const assetsWithProtocolBalance = assets.filter(a => Number(a.currentBalanceInProtocolUsd) > 0.01);
+
+    // 3. Check what remains after your filters (Network/Protocol/Search)
+    const visibleAfterFilters = filteredYieldAssets;
+
+    console.group("🔍 YIELDSCAN DEBUG REPORT");
+    console.log(`%c Wallet Address: ${wallet.address}`, "color: yellow; font-weight: bold;");
+    
+    console.log(`📊 TOTAL Assets from API: ${totalAssets}`);
+    console.log(`✅ System Supported Assets (Yield Bearing): ${supportedAssets.length}`);
+    
+    console.log(`%c 💰 Assets with WALLET Balance (> $0.01): ${assetsWithWalletBalance.length}`, "color: #4ade80");
+    if (assetsWithWalletBalance.length > 0) {
+      console.table(assetsWithWalletBalance.map(a => ({ 
+        Token: a.token, 
+        Chain: a.chainId, 
+        Balance: a.balance, 
+        Value: `$${a.balanceUsd}` 
+      })));
+    } else {
+      console.log("   (User holds no idle supported assets)");
+    }
+
+    console.log(`%c 🏦 Assets with PROTOCOL Balance (> $0.01): ${assetsWithProtocolBalance.length}`, "color: #60a5fa");
+    if (assetsWithProtocolBalance.length > 0) {
+      console.table(assetsWithProtocolBalance.map(a => ({ 
+        Token: a.token, 
+        Protocol: a.protocol, 
+        Balance: a.currentBalanceInProtocol, 
+        Value: `$${a.currentBalanceInProtocolUsd}` 
+      })));
+    } else {
+      console.log("   (User has no active investments in supported protocols)");
+    }
+
+    console.log(`🎯 Final Visible Cards (After Filters): ${visibleAfterFilters.length}`);
+    
+    // The Verdict
+    if (assetsWithWalletBalance.length === 0 && assetsWithProtocolBalance.length === 0) {
+      console.error("🚨 VERDICT: The UI is empty because this wallet holds $0.00 in supported assets.");
+    } else if (visibleAfterFilters.length === 0) {
+      console.warn("⚠️ VERDICT: You HAVE assets, but your filters (Network/Protocol) are hiding them.");
+    } else {
+      console.log("✅ VERDICT: Assets found. If UI is blank, check YieldCard.tsx for internal return null.");
+    }
+    
+    console.groupEnd();
+    console.log("\n---------------(End of debug report)---------------\n");
+  }, [assets, filteredYieldAssets, loading, wallet.address]);
+  // ---------------------------------------------------------
   // Get unique chain IDs from assets for the network selector
   const uniqueChainIds = useMemo(() =>
     Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
@@ -376,46 +442,9 @@ const MyYieldsPage: React.FC = () => {
     // Iterate each address' activity and aggregate
     addresses.forEach(addr => {
       const userData = getUserActivity(addr);
+      console.log("User Data for address ", addr, userData);
       if (!userData) return;
-      // const totalDepositsUsdBefore = totalDepositsUsd
-      // const totalWithdrawlsUsdBefore = totalWithdrawalsUsd
-      // Object.entries(userData).forEach(([chainIdStr, chainData]) => {
-      //   const chainId = parseInt(chainIdStr, 10);
-      //   Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
-      //     if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant' && protocolName.toLowerCase() !== 'compound' && protocolName.toLowerCase() !== 'yearn v3') return;
-      //     Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
-      //       const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-      //       const depositsBigInt = BigInt((tokenData as any).totalDeposit || '0');
-      //       const withdrawalsBigInt = BigInt((tokenData as any).totalWithdraw || '0');
-      //       const divisor = BigInt('1' + '0'.repeat(decimals));
-      //       const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
-      //       const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
-      //       const tokenInfo = allYieldAssets.find(t => t.chainId === chainId && (t.token.toUpperCase() === tokenSymbol.toUpperCase()));
-      //       const tokenPrice = tokenInfo?.usd || 1;
-      //       if (selectedNetwork !== 'all' && selectedNetwork !== chainId) return;
-      //       totalDepositsUsd += depositsFormatted * tokenPrice;
-      //       totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
-      //     });
-      //   });
-      // });
-      // const userDeposits = totalDepositsUsd - totalDepositsUsdBefore
-      // const userWithdrawls = totalWithdrawalsUsd - totalWithdrawlsUsdBefore
-      // const userBalance = filteredYieldAssets.reduce((sum, asset) => {
-      //   if (asset.walletAddress?.toLowerCase() === addr?.toLowerCase()) {
-      //     const balanceValue = Number(asset.currentBalanceInProtocolUsd || '0');
-      //     return isNaN(balanceValue) ? sum : sum + balanceValue;
-      //   }
-      //   return sum
-      // }, 0);
-      // const TotalEarnings = userBalance - (userDeposits - userWithdrawls);
-      // const ClaimableEarnings = Math.max(
-      //   0,
-      //   userBalance -
-      //   (userDeposits - userWithdrawls) -
-      //   (userWithdrawls - userDeposits > 0 ? userWithdrawls - userDeposits : 0)
-      // );
-      //   const currentDepositCalculated =  TotalDeposit- TotalWithdraw
-      // const currentDepositCalculated = Math.max(userDeposits - userWithdrawls, 0)
+     
       userCalculatedData[addr] = {
         currentDeposit: userData.currentDeposit,
         totalDeposit: userData.totalDeposits,
@@ -501,6 +530,9 @@ const MyYieldsPage: React.FC = () => {
     let currentEarned = 0
     let totalEarned = 0
     let totalWithdrawls = 0
+    console.warn("USER CALCULATED DATA");
+    console.table(userCalculatedData);
+
     // if (isConsolidated) {
     Object.values(userCalculatedData).forEach((data) => {
       currentDeposits += data.currentDeposit
@@ -608,7 +640,7 @@ const MyYieldsPage: React.FC = () => {
   };
 
   // Loading state
-  if (loading || earningsLoading || activityLoading) {
+  if (loading ) {
     return (
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
@@ -636,11 +668,12 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.emptyState}>
           <h3>No yield-bearing assets found</h3>
           <p>You don't have any assets currently earning yield.</p>
-          <button onClick={handleNavigate} className={styles.exploreButton}>Explore Yield Opportunities</button>
+          <button onClick={()=> navigate("/explore")} className={styles.exploreButton}>Explore Yield Opportunities</button>
         </div>
       </div>
     );
   }
+
 
   // Render the content
   return (
@@ -867,6 +900,7 @@ const MyYieldsPage: React.FC = () => {
             viewType === 'cards' ? (
               <div className={styles.yieldGrid}>
                 {filteredYieldAssets.map((asset) => {
+                  // console.log("Rendering YieldCard for asset:", asset);
                   const optimizationData = getOptimizationDataForAsset(asset);
 
                   // Handle optimization for this specific asset

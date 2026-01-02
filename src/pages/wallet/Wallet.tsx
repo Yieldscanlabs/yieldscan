@@ -76,6 +76,10 @@ function Wallet() {
   }, [viewType, setViewType]);
 
   const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
+    console.log('Asset Details:');
+    console.table(asset);
+    console.log('Best APY Data:');
+    console.table(apyData);
     setState(prev => ({
       ...prev,
       selectedAsset: asset,
@@ -167,7 +171,11 @@ function Wallet() {
       const matchesSearch = state.searchQuery === '' ||
         asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
 
-      return matchesNetwork && matchesSearch;
+      // 👇 Keep asset if it has idle balance OR active protocol balance
+      // const hasBalance = Number(asset.balance) > 0 || Number(asset.currentBalanceInProtocolUsd) > 0;
+      const hasBalance = Number(asset.balance) > 0;
+
+      return matchesNetwork && matchesSearch && hasBalance;
     };
 
     const commonProps = {
@@ -214,7 +222,7 @@ function Wallet() {
               />
               <SearchBar
                 ref={searchInputRef}
-                placeholder="Search coins..."
+                placeholder="Search coins ..."
                 value={state.searchQuery}
                 onChange={handleSearchChange}
                 showKeybind={true}
@@ -225,9 +233,12 @@ function Wallet() {
           {/* Render sections for each wallet */}
           {allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
+            console.log(`AssetsByWallet:`, assetsByWallet);
+            console.log(`walletAssets for ${address}:`, walletAssets);
             const filteredAssets = walletAssets.filter(filterAsset);
 
-            if (filteredAssets.length === 0) return null;
+            // The AssetList handles empty states internally, so let it render!
+            // if (filteredAssets.length === 0) return null;
 
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
 
@@ -251,8 +262,7 @@ function Wallet() {
 
     // Single wallet view
     const filteredAssets = assets.filter(filterAsset);
-    console.log({ filteredAssets });
-
+    console.log('Filtered Assets:', filteredAssets);
     return (
       <div className={styles.assetViewContainer}>
         <PageHeader

@@ -55,6 +55,10 @@ async function getWalletYields(walletAddress: string) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
   const data = await response.json();
+  console.warn("WALLET_YIELDS_API_ENDPOINT response:", data);
+
+  console.log(data);
+
   if (!data.assets || !Array.isArray(data.assets)) {
     throw new Error('Invalid response format: expected assets array');
   }
@@ -139,141 +143,7 @@ export const useAssetStore = create<AssetStore>()(
         set({ error: null });
 
         try {
-          // const assets: Asset[] = [];
-
-          // // First, fetch the available tokens from the API
-          // const tokens = await fetchTokens();
-          // const chains = await fetchChains();
-          // const supportedChainIds = [...new Set(tokens.map((t: any) => t.chain.chainId))];
-          // console.log({ tokens })
-          // // Fetch token balances for each supported chain
-          // let dormantCapital = 0;
-          // const balancePromises = supportedChainIds.map(async (chainId) => {
-          //   const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
-          //   const tokenChain = tokens.find((t: any) => t.chain.chainId === chainId);
-          //   const chain = chains.find(chain => chain.chainId === chainId)
-          //   const balanceUsd = chain?.usdPrice || 0;
-          //   if (!moralisChain) return null;
-
-          //   // Fetch ERC20 tokens
-          //   const tokenBalances = await Moralis.EvmApi.token.getWalletTokenBalances({
-          //     address: walletAddress,
-          //     chain: moralisChain
-          //   });
-
-          //   // Fetch native token balance
-          //   const nativeBalance = await Moralis.EvmApi.balance.getNativeBalance({
-          //     address: walletAddress,
-          //     chain: moralisChain
-          //   });
-
-          //   const nativeBalanceRaw = BigInt(nativeBalance.toJSON().balance);
-          //   const nativeBalanceFormatted = formatUnits(nativeBalanceRaw, tokenChain?.decimals || 18);
-          //   dormantCapital += (parseFloat(nativeBalanceFormatted) * balanceUsd);
-
-          //   return {
-          //     chainId,
-          //     tokenBalances: tokenBalances.toJSON(),
-          //     nativeBalance: nativeBalance.toJSON()
-          //   };
-          // });
-
-          // // Wait for all balance requests to complete
-          // const balanceResults = await Promise.all(balancePromises);
-          // // Process all tokens and find matches with balances from Moralis
-          // for (const token of tokens) {
-          //   const chainResult = balanceResults.find(result => result?.chainId === token.chain.chainId);
-
-          //   if (!chainResult) continue;
-          //   if (!ethers.isAddress(token.address)) {
-          //     // Handle native token
-          //     const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
-          //     console.log({ nativeBalanceRaw });
-
-          //     // if (nativeBalanceRaw > 0n) {
-          //     const balance = formatUnits(nativeBalanceRaw, token.decimals);
-          //     const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
-
-          //     for (const def of token.definitions || []) {
-          //       const tokenBalanceY = chainResult.tokenBalances.find(
-          //         (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
-          //       );
-          //       let balanceY = '0';
-          //       let balanceUsdY = '0';
-          //       if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
-          //         balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
-          //         balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
-          //       }
-          //       assets.push({
-          //         id: token.id,
-          //         token: token.symbol,
-          //         address: "0x",
-          //         chain: token.chain.name,
-          //         maxDecimalsShow: token.maxDecimalsShow,
-          //         protocol: def.protocol.name,
-          //         withdrawContract: def.withdraw,
-          //         underlyingAsset: def.underlyingAsset,
-          //         balance,
-          //         yieldBearingToken: Boolean(def.yieldBearingToken),
-          //         chainId: Number(token.chain.chainId),
-          //         decimals: token.decimals,
-          //         balanceUsd,
-          //         icon: API_BASE_URL + token.image,
-          //         withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
-          //         usd: token.usdPrice,
-          //         currentBalanceInProtocol: Number(balanceY),
-          //         currentBalanceInProtocolUsd: balanceUsdY
-          //       });
-          //     }
-          //     // }
-          //   } else {
-          //     // Handle ERC20 tokens
-          //     const tokenBalance = chainResult.tokenBalances.find(
-          //       (tb: any) => tb.token_address.toLowerCase() === token.address.toLowerCase()
-          //     );
-
-          //     // if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
-          //     const balance = formatUnits(BigInt(tokenBalance ? tokenBalance.balance : "0"), token.decimals);
-          //     const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
-          //     for (const def of token.definitions || []) {
-
-          //       const tokenBalanceY = chainResult.tokenBalances.find(
-          //         (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
-          //       );
-          //       let balanceY = '0';
-          //       let balanceUsdY = '0';
-          //       if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
-          //         balanceY = formatUnits(BigInt(tokenBalanceY.balance), tokenBalanceY.decimals);
-          //         balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
-          //       }
-
-          //       assets.push({
-          //         id: token.id,
-          //         token: token.symbol,
-          //         address: token.address,
-          //         chain: token.chain.name,
-          //         maxDecimalsShow: token.maxDecimalsShow,
-          //         protocol: def.protocol.name,
-          //         withdrawContract: def.withdraw,
-          //         underlyingAsset: def.underlyingAsset,
-          //         balance,
-          //         yieldBearingToken: Boolean(def.yieldBearingToken),
-          //         chainId: Number(token.chain.chainId),
-          //         decimals: token.decimals,
-          //         balanceUsd,
-          //         icon: API_BASE_URL + token.image,
-          //         withdrawUri: def.withdrawUri, // or token?.withdrawUri
-          //         usd: token.usdPrice,
-          //         currentBalanceInProtocol: Number(balanceY),
-          //         currentBalanceInProtocolUsd: balanceUsdY
-          //       });
-          //     }
-          //     // }
-          //   }
-          // }
-
-          // dormantCapital += assets.reduce((acc, val) => acc + Number(val?.currentBalanceInProtocolUsd || 0), 0)
-
+          
           // // Update assetsByAddress and dormantCapitalByAddress
           const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress)
           const state = get();

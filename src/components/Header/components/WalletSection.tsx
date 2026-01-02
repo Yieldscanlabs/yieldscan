@@ -70,6 +70,7 @@ const WalletSection: React.FC<WalletSectionProps> = ({
   };
 
   const handleSwitchWallet = (walletIndex: number | null) => {
+    console.log("Switching to wallet index:", walletIndex);
     setActiveManualAddress(walletIndex);
   };
 

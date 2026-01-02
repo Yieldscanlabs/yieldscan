@@ -114,21 +114,25 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
           // The API returns data in the format we need
           const data: ApiResponseStructure = await response.json();
-
+          console.warn("USER_DETAILS_API_ENDPOINT data:", data);
           // Ensure all wallet addresses are lowercase for consistency
           let normalizedData: ActivityDataType = {};
           // Object.entries(data.transactions).forEach(([address, userData]) => {
           normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
           // });
-          set(state => ({
-            activityData: {
-              ...state.activityData,
-              ...normalizedData
-            },
-            isLoading: false,
-            lastUpdated: Date.now()
-          }));
+
+          
+          // set(state => ({
+          //   activityData: {
+          //     ...state.activityData,
+          //     ...normalizedData
+          //   },
+          //   isLoading: false,
+          //   lastUpdated: Date.now()
+          // }));
         } catch (error) {
+          console.error("USER_DETAILS_API_ENDPOINT data:", error);
+
           set({
             error: error instanceof Error ? error.message : 'Unknown error fetching user activity data',
             isLoading: false
@@ -142,7 +146,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       // Get activity data for a specific user
       getUserActivity: (walletAddress: string) => {
         const state = get();
-        const normalizedAddress = walletAddress.toLowerCase();
+        const normalizedAddress = walletAddress?.toLowerCase();
 
         return state.activityData[normalizedAddress] || null;
       },
@@ -150,7 +154,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       // Calculate total deposits across all chains and protocols for a user
       getTotalDepositsForUser: (walletAddress: string) => {
         const state = get();
-        const normalizedAddress = walletAddress.toLowerCase();
+        const normalizedAddress = walletAddress?.toLowerCase();
         const userData = state.activityData[normalizedAddress];
 
         if (!userData) return '0';

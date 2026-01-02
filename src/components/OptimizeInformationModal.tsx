@@ -6,6 +6,7 @@ import type { OptimizationData } from './YieldCard/types';
 import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
 import Protocol from './Protocol';
 import { useAccount, useSwitchChain } from 'wagmi';
+import { API_BASE_URL } from '../utils/constants';
 
 interface OptimizeInformationModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
   const { chainId } = useAccount()
   const { switchChainAsync } = useSwitchChain()
   if (!isOpen) return null;
+  console.log('OptimizationModal render', { asset });
 
   const onOptimize = async () => {
     if (asset.chainId !== chainId) {
@@ -50,7 +52,7 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
           <div className={styles.modalSection}>
             <div className={styles.assetInfoLarge}>
               <div className={styles.assetIconWrapperLarge}>
-                <img src={asset.icon} alt={asset.token} className={styles.assetIconMedium} />
+                <img src={API_BASE_URL+ asset.icon} alt={asset.token} className={styles.assetIconMedium} />
                 <img src={chainIcon} alt={chainName} className={styles.chainIconOverlayLarge} />
               </div>
               <div>

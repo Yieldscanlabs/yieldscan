@@ -7,6 +7,16 @@ export const CHAIN_NAMES = {
   BASE: 'Base',
 };
 
+export const CHAIN_IDS = {
+  Ethereum: 1,
+  Optimism: 10,
+  Polygon: 137,
+  Arbitrum: 42161,
+  Avalanche: 43114,
+  BNB_CHAIN: 56,
+};
+
+
 export const TOKEN_NAMES = {
   USDC: 'USD Coin',
   USDT: 'Tether',
