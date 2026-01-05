@@ -78,7 +78,7 @@ const MyYieldsPage: React.FC = () => {
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
-
+  
   // Get unique assets from yield-bearing assets with their data for selectors/filters
   const uniqueAssets = useMemo(() => {
     type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
@@ -157,8 +157,7 @@ const MyYieldsPage: React.FC = () => {
           const matchesProtocol = asset.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
           if (!matchesToken && !matchesProtocol) return false;
         }
-        const hasBalance = Number(asset.currentBalanceInProtocolUsd) > 0.001;
-        return hasBalance;
+        return true;
       })
       .map(asset => {
         let totalDeposited = 0;
@@ -172,30 +171,53 @@ const MyYieldsPage: React.FC = () => {
             const protocolData = (chainData as Record<string, any>)[protocolKey];
             if (protocolData) {
               const tokenKey = asset.token;
-              const tokenData = protocolData[tokenKey] || protocolData[tokenKey.replace(/^a/i, "")];
+              const tokenData =
+                protocolData[tokenKey] || protocolData[tokenKey.replace(/^a/i, "")];
               if (tokenData) {
                 const decimals = asset.decimals || 18;
                 const divisor = BigInt("1" + "0".repeat(decimals));
+
                 const depositsBigInt = BigInt(tokenData.totalDeposit || "0");
                 const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || "0");
-                const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
-                const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
+                const depositsFormatted =
+                  Number(depositsBigInt / divisor) +
+                  Number(depositsBigInt % divisor) / Number(divisor);
+
+                const withdrawalsFormatted =
+                  Number(withdrawalsBigInt / divisor) +
+                  Number(withdrawalsBigInt % divisor) / Number(divisor);
+
+
                 totalDeposited = depositsFormatted - withdrawalsFormatted;
                 totalDepositedUsd = (totalDeposited * asset.usd).toString();
+                // Use BigInt math for precision
+                // const netDepositsBigInt = depositsBigInt - withdrawalsBigInt;
+
+                // // Perform division only once at the end
+                // const totalDeposited =
+                //   Number(netDepositsBigInt / divisor) +
+                //   Number(netDepositsBigInt % divisor) / Number(divisor);
+
+                // // Now convert to USD after all math is done
+                // const totalDepositedUsd = (totalDeposited * asset.usd).toString();
               }
             }
           }
         }
-        return { ...asset, totalDeposited, totalDepositedUsd };
+        return {
+          ...asset,
+          totalDeposited,
+          totalDepositedUsd
+        };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity]);
 
-  useEffect(() => {
-    console.log("ASSETS is Loading: ", loading)
-    console.log("ASSETS is error: ", error)
+    useEffect(() => {
+      console.log("ASSETS is Loading: ", loading)
+      console.log("ASSETS is error: ", error)
     console.log("ASSETS:All assets for filtering:", assets);
     console.log("Updated filteredYieldAssets:", filteredYieldAssets);
-  }, [filteredYieldAssets, assets]);
+  },[filteredYieldAssets, assets]);
 
   // ---------------------------------------------------------
   // 🔍 DEBUGGING CONSOLE: ASSET ANALYSIS
@@ -206,10 +228,10 @@ const MyYieldsPage: React.FC = () => {
 
     const totalAssets = assets.length;
     const supportedAssets = assets.filter(a => a.yieldBearingToken);
-
+    
     // 1. Check for assets with ACTUAL value in the Wallet (Dormant)
     const assetsWithWalletBalance = assets.filter(a => Number(a.balanceUsd) > 0.01);
-
+    
     // 2. Check for assets with ACTUAL value in Protocols (Working)
     const assetsWithProtocolBalance = assets.filter(a => Number(a.currentBalanceInProtocolUsd) > 0.01);
 
@@ -218,17 +240,17 @@ const MyYieldsPage: React.FC = () => {
 
     console.group("🔍 YIELDSCAN DEBUG REPORT");
     console.log(`%c Wallet Address: ${wallet.address}`, "color: yellow; font-weight: bold;");
-
+    
     console.log(`📊 TOTAL Assets from API: ${totalAssets}`);
     console.log(`✅ System Supported Assets (Yield Bearing): ${supportedAssets.length}`);
-
+    
     console.log(`%c 💰 Assets with WALLET Balance (> $0.01): ${assetsWithWalletBalance.length}`, "color: #4ade80");
     if (assetsWithWalletBalance.length > 0) {
-      console.table(assetsWithWalletBalance.map(a => ({
-        Token: a.token,
-        Chain: a.chainId,
-        Balance: a.balance,
-        Value: `$${a.balanceUsd}`
+      console.table(assetsWithWalletBalance.map(a => ({ 
+        Token: a.token, 
+        Chain: a.chainId, 
+        Balance: a.balance, 
+        Value: `$${a.balanceUsd}` 
       })));
     } else {
       console.log("   (User holds no idle supported assets)");
@@ -236,18 +258,18 @@ const MyYieldsPage: React.FC = () => {
 
     console.log(`%c 🏦 Assets with PROTOCOL Balance (> $0.01): ${assetsWithProtocolBalance.length}`, "color: #60a5fa");
     if (assetsWithProtocolBalance.length > 0) {
-      console.table(assetsWithProtocolBalance.map(a => ({
-        Token: a.token,
-        Protocol: a.protocol,
-        Balance: a.currentBalanceInProtocol,
-        Value: `$${a.currentBalanceInProtocolUsd}`
+      console.table(assetsWithProtocolBalance.map(a => ({ 
+        Token: a.token, 
+        Protocol: a.protocol, 
+        Balance: a.currentBalanceInProtocol, 
+        Value: `$${a.currentBalanceInProtocolUsd}` 
       })));
     } else {
       console.log("   (User has no active investments in supported protocols)");
     }
 
     console.log(`🎯 Final Visible Cards (After Filters): ${visibleAfterFilters.length}`);
-
+    
     // The Verdict
     if (assetsWithWalletBalance.length === 0 && assetsWithProtocolBalance.length === 0) {
       console.error("🚨 VERDICT: The UI is empty because this wallet holds $0.00 in supported assets.");
@@ -256,7 +278,7 @@ const MyYieldsPage: React.FC = () => {
     } else {
       console.log("✅ VERDICT: Assets found. If UI is blank, check YieldCard.tsx for internal return null.");
     }
-
+    
     console.groupEnd();
     console.log("\n---------------(End of debug report)---------------\n");
   }, [assets, filteredYieldAssets, loading, wallet.address]);
@@ -422,7 +444,7 @@ const MyYieldsPage: React.FC = () => {
       const userData = getUserActivity(addr);
       console.log("User Data for address ", addr, userData);
       if (!userData) return;
-
+     
       userCalculatedData[addr] = {
         currentDeposit: userData.currentDeposit,
         totalDeposit: userData.totalDeposits,
@@ -617,30 +639,15 @@ const MyYieldsPage: React.FC = () => {
     }
   };
 
-
-
-  const globalState = useMemo(() => {
-    const hasActiveYields = assets.some(a => Number(a.currentBalanceInProtocolUsd) > 0.01);
-    const hasDormantFunds = assets.some(a => Number(a.balanceUsd) > 0.01);
-    return { hasActiveYields, hasDormantFunds };
-  }, [assets]);
-
-  // Empty state - no yield-bearing assets at all
-  // if (allYieldAssets.length === 0) {
-  //   return (
-  //     <div className={styles.container}>
-  //       <div className={styles.header}>
-  //         {/* <h1>My Yields</h1> */}
-  //       </div>
-  //       <div className={styles.emptyState}>
-  //         <h3>No yield-bearing assets found</h3>
-  //         <p>You don't have any assets currently earning yield.</p>
-  //         <button onClick={() => navigate("/explore")} className={styles.exploreButton}>Explore Yield Opportunities</button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
+  // Loading state
+  if (loading ) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.loadingSpinner}></div>
+        <div className={styles.loadingText}>Loading your yields...</div>
+      </div>
+    );
+  }
 
   // Error state
   if (error) {
@@ -651,15 +658,22 @@ const MyYieldsPage: React.FC = () => {
     );
   }
 
-  // Loading state
-  if (loading) {
+  // Empty state - no yield-bearing assets at all
+  if (allYieldAssets.length === 0) {
     return (
-      <div className={styles.loading}>
-        <div className={styles.loadingSpinner}></div>
-        <div className={styles.loadingText}>Loading your yields...</div>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          {/* <h1>My Yields</h1> */}
+        </div>
+        <div className={styles.emptyState}>
+          <h3>No yield-bearing assets found</h3>
+          <p>You don't have any assets currently earning yield.</p>
+          <button onClick={()=> navigate("/explore")} className={styles.exploreButton}>Explore Yield Opportunities</button>
+        </div>
       </div>
     );
   }
+
 
   // Render the content
   return (
@@ -801,8 +815,7 @@ const MyYieldsPage: React.FC = () => {
             }
             assetsByWallet.get(walletAddr)!.push(asset);
           });
-          console.log("Consolidated view - assets by wallet:", assetsByWallet);
-          // return <>NA</>
+
           return (
             <>
               {allAddresses.map((address) => {
@@ -817,25 +830,7 @@ const MyYieldsPage: React.FC = () => {
                       {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
                     </div>
                     {walletAssets.length === 0 ? (
-                      // <div className={styles.noYieldsText}>No yields for this wallet.</div>
-                      <div className={styles.emptyState}>
-                        <h3>You have not yet started yielding</h3>
-                        {globalState.hasDormantFunds ? (
-                          <>
-                            <p>You have dormant assets in your wallet that could be earning yield.</p>
-                            <button onClick={() => navigate("/")} className={styles.exploreButton}>
-                              View Wallet Options
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <p>You don't have any assets currently earning yield.</p>
-                            <button onClick={() => navigate("/explore")} className={styles.exploreButton}>
-                              Explore Yield Opportunities
-                            </button>
-                          </>
-                        )}
-                      </div>
+                      <div className={styles.noYieldsText}>No yields for this wallet.</div>
                     ) : (
                       (
                         viewType === 'cards' ? (
@@ -871,12 +866,12 @@ const MyYieldsPage: React.FC = () => {
                   </div>
                 );
               })}
-              {/* {filteredYieldAssets.length === 0 && (
+              {filteredYieldAssets.length === 0 && (
                 <div className={styles.filteredEmptyState}>
                   <div className={styles.filteredEmptyContent}>
                     <div className={styles.filteredEmptyIcon}>🔍</div>
                     <div className={styles.filteredEmptyText}>
-                      <h3>No matching assets found!</h3>
+                      <h3>No matching assets found</h3>
                       <p>
                         No yield-bearing assets match your current filters.
                         Try changing the network or protocol filter to see your assets.
@@ -894,67 +889,45 @@ const MyYieldsPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              )} */}
+              )}
             </>
           );
         })()
       ) : (
         // Single wallet view
         <div className={styles.section}>
-
-          {filteredYieldAssets.length > 0 ? (
-
-
-            viewType === 'cards' ? (
-              <div className={styles.yieldGrid}>
-                {filteredYieldAssets.map((asset) => (
-                  <YieldCard
-                    key={`${asset.token}-${asset.chainId}-${asset.protocol}`}
-                    asset={asset}
-                    optimizationData={getOptimizationDataForAsset(asset)}
-                    onOptimize={() => { }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <YieldsTable assets={filteredYieldAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
-            )
-          ) : (
-            console.log("Rendering Single Event assets:", globalState, filteredYieldAssets),
-            <div className={styles.emptyState}>
-              <h3>You have not yet started yielding</h3>
-              {globalState.hasDormantFunds ? (
-                <>
-                  <p>You have dormant assets in your wallet that could be earning yield.</p>
-                  <button onClick={() => navigate("/")} className={styles.exploreButton}>
-                    View Wallet Options
-                  </button>
-                </>
+            {filteredYieldAssets.length > 0 ? (
+              viewType === 'cards' ? (
+                <div className={styles.yieldGrid}>
+                  {filteredYieldAssets.map((asset) => (
+                    <YieldCard
+                      key={`${asset.token}-${asset.chainId}-${asset.protocol}`}
+                      asset={asset}
+                      optimizationData={getOptimizationDataForAsset(asset)}
+                      onOptimize={() => {}}
+                    />
+                  ))}
+                </div>
               ) : (
-                <>
-                  <p>You don't have any assets currently earning yield.</p>
-                  <button onClick={() => navigate("/explore")} className={styles.exploreButton}>
-                    Explore Yield Opportunities
+                <YieldsTable assets={filteredYieldAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
+              )
+            ) : (
+              <div className={styles.filteredEmptyState}>
+                <div className={styles.filteredEmptyContent}>
+                  <div className={styles.filteredEmptyIcon}>🔍</div>
+                  <div className={styles.filteredEmptyText}>
+                    <h3>No matching assets found</h3>
+                    <p>No yield-bearing assets match your current filters.</p>
+                  </div>
+                  <button className={styles.resetFiltersButton} onClick={() => {
+                      setSelectedNetwork('all'); setSelectedProtocol('all'); setSelectedAsset('all');
+                    }}>
+                    Reset Filters
                   </button>
-                </>
-              )}
-            </div>
-            // <div className={styles.filteredEmptyState}>
-            //   <div className={styles.filteredEmptyContent}>
-            //     <div className={styles.filteredEmptyIcon}>🔍</div>
-            //     <div className={styles.filteredEmptyText}>
-            //       <h3>No matching assets found...</h3>
-            //       <p>No yield-bearing assets match your current filters.</p>
-            //     </div>
-            //     <button className={styles.resetFiltersButton} onClick={() => {
-            //       setSelectedNetwork('all'); setSelectedProtocol('all'); setSelectedAsset('all');
-            //     }}>
-            //       Reset Filters
-            //     </button>
-            //   </div>
-            // </div>
-          )}
-        </div>
+                </div>
+              </div>
+            )}
+          </div>
       )}
     </div>
   );

@@ -6,6 +6,9 @@ interface ManualWalletState {
   activeManualAddressIndex: number | null;
   isConsolidated: boolean;
   isManualModalOpen: boolean;
+  hasHydrated: boolean;
+
+
   addManualAddress: (address: string) => void;
   removeManualAddress: (index: number) => void;
   setActiveManualAddress: (index: number | null) => void;
@@ -13,6 +16,7 @@ interface ManualWalletState {
   clearAllManualAddresses: () => void;
   openManualModal: () => void;
   closeManualModal: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useManualWalletStore = create<ManualWalletState>()(
@@ -22,6 +26,7 @@ export const useManualWalletStore = create<ManualWalletState>()(
       activeManualAddressIndex: null,
       isConsolidated: false,
       isManualModalOpen: false,
+      hasHydrated: false,
       addManualAddress: (address: string) => {
         const state = get();
         const trimmedAddress = address.trim().toLowerCase();
@@ -96,6 +101,9 @@ export const useManualWalletStore = create<ManualWalletState>()(
       },
       openManualModal: () => set({ isManualModalOpen: true }),
       closeManualModal: () => set({ isManualModalOpen: false }),
+      setHasHydrated: (state) => {
+        set({ hasHydrated: state });
+      }
     }),
     {
       name: 'yieldscan-manual-wallet',
@@ -103,7 +111,10 @@ export const useManualWalletStore = create<ManualWalletState>()(
         manualAddresses: state.manualAddresses,
         activeManualAddressIndex: state.activeManualAddressIndex,
         isConsolidated: state.isConsolidated,
-      }),
+      }), 
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      }
     }
   )
 );
