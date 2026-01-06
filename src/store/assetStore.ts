@@ -55,6 +55,10 @@ async function getWalletYields(walletAddress: string) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
   const data = await response.json();
+  console.warn("WALLET_YIELDS_API_ENDPOINT response:", data);
+
+  console.log(data);
+
   if (!data.assets || !Array.isArray(data.assets)) {
     throw new Error('Invalid response format: expected assets array');
   }
@@ -124,182 +128,31 @@ export const useAssetStore = create<AssetStore>()(
       error: null,
       lastUpdated: null,
       autoRefreshEnabled: true,
-      // Fetch assets for a specific wallet address
+      // 1. Single Wallet Fetch
       fetchAssets: async (walletAddress: string, showLoading = true) => {
         if (!walletAddress || walletAddress === '0x') {
           set({ assets: [], error: null, isLoading: false });
           return;
         }
 
-        // Only show loading state if explicitly requested
-        if (showLoading) {
-          set({ isLoading: true });
-        }
-
+        if (showLoading) set({ isLoading: true });
         set({ error: null });
 
         try {
-          // const assets: Asset[] = [];
+          // Use the internal helper
+          const { assets, dormantCapital, workingCapital } = await fetchWalletDataInternal(walletAddress, get, set);
 
-          // // First, fetch the available tokens from the API
-          // const tokens = await fetchTokens();
-          // const chains = await fetchChains();
-          // const supportedChainIds = [...new Set(tokens.map((t: any) => t.chain.chainId))];
-          // console.log({ tokens })
-          // // Fetch token balances for each supported chain
-          // let dormantCapital = 0;
-          // const balancePromises = supportedChainIds.map(async (chainId) => {
-          //   const moralisChain = chainIdToMoralisChain[chainId as keyof typeof chainIdToMoralisChain];
-          //   const tokenChain = tokens.find((t: any) => t.chain.chainId === chainId);
-          //   const chain = chains.find(chain => chain.chainId === chainId)
-          //   const balanceUsd = chain?.usdPrice || 0;
-          //   if (!moralisChain) return null;
-
-          //   // Fetch ERC20 tokens
-          //   const tokenBalances = await Moralis.EvmApi.token.getWalletTokenBalances({
-          //     address: walletAddress,
-          //     chain: moralisChain
-          //   });
-
-          //   // Fetch native token balance
-          //   const nativeBalance = await Moralis.EvmApi.balance.getNativeBalance({
-          //     address: walletAddress,
-          //     chain: moralisChain
-          //   });
-
-          //   const nativeBalanceRaw = BigInt(nativeBalance.toJSON().balance);
-          //   const nativeBalanceFormatted = formatUnits(nativeBalanceRaw, tokenChain?.decimals || 18);
-          //   dormantCapital += (parseFloat(nativeBalanceFormatted) * balanceUsd);
-
-          //   return {
-          //     chainId,
-          //     tokenBalances: tokenBalances.toJSON(),
-          //     nativeBalance: nativeBalance.toJSON()
-          //   };
-          // });
-
-          // // Wait for all balance requests to complete
-          // const balanceResults = await Promise.all(balancePromises);
-          // // Process all tokens and find matches with balances from Moralis
-          // for (const token of tokens) {
-          //   const chainResult = balanceResults.find(result => result?.chainId === token.chain.chainId);
-
-          //   if (!chainResult) continue;
-          //   if (!ethers.isAddress(token.address)) {
-          //     // Handle native token
-          //     const nativeBalanceRaw = BigInt(chainResult.nativeBalance.balance);
-          //     console.log({ nativeBalanceRaw });
-
-          //     // if (nativeBalanceRaw > 0n) {
-          //     const balance = formatUnits(nativeBalanceRaw, token.decimals);
-          //     const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
-
-          //     for (const def of token.definitions || []) {
-          //       const tokenBalanceY = chainResult.tokenBalances.find(
-          //         (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
-          //       );
-          //       let balanceY = '0';
-          //       let balanceUsdY = '0';
-          //       if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
-          //         balanceY = formatUnits(BigInt(tokenBalanceY.balance), token.decimals);
-          //         balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
-          //       }
-          //       assets.push({
-          //         id: token.id,
-          //         token: token.symbol,
-          //         address: "0x",
-          //         chain: token.chain.name,
-          //         maxDecimalsShow: token.maxDecimalsShow,
-          //         protocol: def.protocol.name,
-          //         withdrawContract: def.withdraw,
-          //         underlyingAsset: def.underlyingAsset,
-          //         balance,
-          //         yieldBearingToken: Boolean(def.yieldBearingToken),
-          //         chainId: Number(token.chain.chainId),
-          //         decimals: token.decimals,
-          //         balanceUsd,
-          //         icon: API_BASE_URL + token.image,
-          //         withdrawUri: def.withdrawUri, // or token?.withdrawUri if you want
-          //         usd: token.usdPrice,
-          //         currentBalanceInProtocol: Number(balanceY),
-          //         currentBalanceInProtocolUsd: balanceUsdY
-          //       });
-          //     }
-          //     // }
-          //   } else {
-          //     // Handle ERC20 tokens
-          //     const tokenBalance = chainResult.tokenBalances.find(
-          //       (tb: any) => tb.token_address.toLowerCase() === token.address.toLowerCase()
-          //     );
-
-          //     // if (tokenBalance && BigInt(tokenBalance.balance) > 0n) {
-          //     const balance = formatUnits(BigInt(tokenBalance ? tokenBalance.balance : "0"), token.decimals);
-          //     const balanceUsd = (parseFloat(balance) * token.usdPrice).toString();
-          //     for (const def of token.definitions || []) {
-
-          //       const tokenBalanceY = chainResult.tokenBalances.find(
-          //         (tb: any) => tb.token_address.toLowerCase() === def.yieldBearingToken.toLowerCase()
-          //       );
-          //       let balanceY = '0';
-          //       let balanceUsdY = '0';
-          //       if (tokenBalanceY && BigInt(tokenBalanceY.balance) > 0n) {
-          //         balanceY = formatUnits(BigInt(tokenBalanceY.balance), tokenBalanceY.decimals);
-          //         balanceUsdY = (parseFloat(balanceY) * token.usdPrice).toString();
-          //       }
-
-          //       assets.push({
-          //         id: token.id,
-          //         token: token.symbol,
-          //         address: token.address,
-          //         chain: token.chain.name,
-          //         maxDecimalsShow: token.maxDecimalsShow,
-          //         protocol: def.protocol.name,
-          //         withdrawContract: def.withdraw,
-          //         underlyingAsset: def.underlyingAsset,
-          //         balance,
-          //         yieldBearingToken: Boolean(def.yieldBearingToken),
-          //         chainId: Number(token.chain.chainId),
-          //         decimals: token.decimals,
-          //         balanceUsd,
-          //         icon: API_BASE_URL + token.image,
-          //         withdrawUri: def.withdrawUri, // or token?.withdrawUri
-          //         usd: token.usdPrice,
-          //         currentBalanceInProtocol: Number(balanceY),
-          //         currentBalanceInProtocolUsd: balanceUsdY
-          //       });
-          //     }
-          //     // }
-          //   }
-          // }
-
-          // dormantCapital += assets.reduce((acc, val) => acc + Number(val?.currentBalanceInProtocolUsd || 0), 0)
-
-          // // Update assetsByAddress and dormantCapitalByAddress
-          const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress)
-          const state = get();
-
-          const newAssetsByAddress = {
-            ...state.assetsByAddress,
-            [walletAddress.toLowerCase()]: assets
-          };
-          const newDormantCapitalByAddress = {
-            ...state.dormantCapitalByAddress,
-            [walletAddress.toLowerCase()]: dormantCapital
-          };
-
+          // Update the Active View (because this is a single fetch)
           set({
-            assets: assets,
-            assetsByAddress: newAssetsByAddress,
+            assets: assets, 
             dormantCapital,
             workingCapital,
-            dormantCapitalByAddress: newDormantCapitalByAddress,
             isLoading: false,
             lastUpdated: Date.now()
           });
         } catch (error) {
-          console.error('Error fetching assets from Moralis:', error);
           set({
-            error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
+            error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false
           });
         }
@@ -310,28 +163,26 @@ export const useAssetStore = create<AssetStore>()(
         set({ protocols })
       },
 
-      // Fetch assets for multiple addresses
+      // 2. Multiple Wallet Fetch (Consolidated)
       fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
         if (!addresses || addresses.length === 0) {
           set({ assets: [], error: null, isLoading: false });
           return;
         }
 
-        if (showLoading) {
-          set({ isLoading: true });
-        }
-
+        if (showLoading) set({ isLoading: true });
         set({ error: null });
 
         try {
-          // Fetch assets for all addresses in parallel
+          // Call internal helper for all addresses
+          // This updates 'assetsByAddress' but DOES NOT touch 'isLoading' or 'assets'
           const fetchPromises = addresses.map(address =>
-            get().fetchAssets(address, false)  // Don't show loading for individual fetches
+            fetchWalletDataInternal(address, get, set)
           );
 
           await Promise.all(fetchPromises);
 
-          // Update consolidated view
+          // NOW calculate consolidated view and update state ONCE
           const state = get();
           const consolidatedAssets: Asset[] = [];
           let totalDormantCapital = 0;
@@ -339,7 +190,6 @@ export const useAssetStore = create<AssetStore>()(
           addresses.forEach(address => {
             const addressLower = address.toLowerCase();
             const assets = state.assetsByAddress[addressLower] || [];
-            // Add walletAddress field to each asset for identification
             const assetsWithSource = assets.map(asset => ({
               ...asset,
               walletAddress: address
@@ -351,17 +201,126 @@ export const useAssetStore = create<AssetStore>()(
           set({
             assets: consolidatedAssets,
             dormantCapital: totalDormantCapital,
-            isLoading: false,
-            lastUpdated: Date.now()
+            lastUpdated: Date.now(),
+            isLoading: false // <--- Only turn off loading HERE at the very end
           });
         } catch (error) {
           console.error('Error fetching assets for multiple addresses:', error);
           set({
-            error: error instanceof Error ? error.message : 'Unknown error fetching assets',
+            error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false
           });
         }
       },
+      // Fetch assets for a specific wallet address
+      // fetchAssets: async (walletAddress: string, showLoading = true) => {
+      //   if (!walletAddress || walletAddress === '0x') {
+      //     set({ assets: [], error: null, isLoading: false });
+      //     return;
+      //   }
+
+      //   // Only show loading state if explicitly requested
+      //   if (showLoading) {
+      //     set({ isLoading: true });
+      //   }
+
+      //   set({ error: null });
+
+      //   try {
+          
+      //     // // Update assetsByAddress and dormantCapitalByAddress
+      //     const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress)
+      //     const state = get();
+
+      //     const newAssetsByAddress = {
+      //       ...state.assetsByAddress,
+      //       [walletAddress.toLowerCase()]: assets
+      //     };
+      //     const newDormantCapitalByAddress = {
+      //       ...state.dormantCapitalByAddress,
+      //       [walletAddress.toLowerCase()]: dormantCapital
+      //     };
+
+      //     set({
+      //       assets: assets,
+      //       assetsByAddress: newAssetsByAddress,
+      //       dormantCapital,
+      //       workingCapital,
+      //       dormantCapitalByAddress: newDormantCapitalByAddress,
+      //       isLoading: false,
+      //       lastUpdated: Date.now()
+      //     });
+      //   } catch (error) {
+      //     console.error('Error fetching assets from Moralis:', error);
+      //     set({
+      //       error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
+      //       isLoading: false
+      //     });
+      //   }
+      // },
+
+      // fetchProtocols: async () => {
+      //   const { protocols } = await getProtocols();
+      //   set({ protocols })
+      // },
+
+      // Fetch assets for multiple addresses
+      // fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
+      //   if (!addresses || addresses.length === 0) {
+      //     set({ assets: [], error: null, isLoading: false });
+      //     return;
+      //   }
+
+      //   if (showLoading) {
+      //     set({ isLoading: true });
+      //   }
+
+      //   set({ error: null });
+
+      //   try {
+      //     // Fetch assets for all addresses in parallel
+      //     const fetchPromises = addresses.map(address =>
+      //       get().fetchAssets(address, false)  // Don't show loading for individual fetches
+      //     );
+
+      //     await Promise.all(fetchPromises);
+
+      //     // Update consolidated view
+      //     const state = get();
+      //     const consolidatedAssets: Asset[] = [];
+      //     let totalDormantCapital = 0;
+
+      //     addresses.forEach(address => {
+      //       const addressLower = address.toLowerCase();
+      //       const assets = state.assetsByAddress[addressLower] || [];
+      //       // Add walletAddress field to each asset for identification
+      //       const assetsWithSource = assets.map(asset => ({
+      //         ...asset,
+      //         walletAddress: address
+      //       }));
+      //       consolidatedAssets.push(...assetsWithSource);
+      //       totalDormantCapital += state.dormantCapitalByAddress[addressLower] || 0;
+      //     });
+
+      //     set({
+      //       assets: consolidatedAssets,
+      //       dormantCapital: totalDormantCapital,
+      //       lastUpdated: Date.now()
+      //     });
+      //   } catch (error) {
+      //     console.error('Error fetching assets for multiple addresses:', error);
+      //     set({
+      //       error: error instanceof Error ? error.message : 'Unknown error fetching assets',
+      //       isLoading: false
+      //     });
+      //   }finally{
+      //     console.log("FINALY executed: stopping loading: , ", showLoading);
+      //     set({
+      //       isLoading: false
+      //     });
+      //     alert("FINALY executed: stopping loading: , " + showLoading);
+      //   }
+      // },
 
       // Get assets for a specific address
       getAssetsForAddress: (address: string) => {
@@ -503,3 +462,32 @@ export function useAssetAutoRefresh(address: string) {
     };
   }, [address, fetchAssets, autoRefreshEnabled]);
 }
+
+
+// Helper to just fetch data without messing with the View State (isLoading/assets)
+const fetchWalletDataInternal = async (walletAddress: string, get: () => AssetStore, set: any) => {
+  try {
+    const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress);
+    const state = get();
+
+    const newAssetsByAddress = {
+      ...state.assetsByAddress,
+      [walletAddress.toLowerCase()]: assets
+    };
+    const newDormantCapitalByAddress = {
+      ...state.dormantCapitalByAddress,
+      [walletAddress.toLowerCase()]: dormantCapital
+    };
+
+    // Only update the data cache, NOT the active view 'assets' or 'isLoading'
+    set({
+      assetsByAddress: newAssetsByAddress,
+      dormantCapitalByAddress: newDormantCapitalByAddress,
+    });
+    
+    return { assets, dormantCapital, workingCapital };
+  } catch (error) {
+    console.error(`Error fetching for ${walletAddress}:`, error);
+    throw error;
+  }
+};

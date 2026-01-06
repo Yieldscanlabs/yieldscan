@@ -40,7 +40,7 @@ const WalletSection: React.FC<WalletSectionProps> = ({
 
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
 
-  // Build wallets list (MetaMask + manual) unconditionally to maintain stable hook order
+  // Build wallets list (MetaMask + manual) unconditionally
   const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = (() => {
     const wallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = [];
     if (isMetamaskConnected && metamaskAddress) {
@@ -77,7 +77,6 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     try {
       removeManualAddress(index);
     } catch (error) {
-      // Error already handled in store (e.g., trying to remove active wallet)
       console.error(error);
     }
   };
@@ -87,10 +86,6 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     if (walletIndex === null) return false;
     return activeManualAddressIndex !== walletIndex;
   };
-
-  const isMetamaskActive = activeManualAddressIndex === null && isMetamaskConnected;
-  const showDisconnectButton = (manualAddresses.length === 1 && activeManualAddressIndex === 0) ||
-    (manualAddresses.length === 0 && isMetamaskActive);
 
   return (
     <div className={styles.walletContainer} ref={dropdownRef}>
@@ -246,22 +241,21 @@ const WalletSection: React.FC<WalletSectionProps> = ({
 
           <div className={styles.dropdownDivider}></div>
 
-          {showDisconnectButton && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                disconnectWallet();
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className={`${styles.dropdownButton} ${styles.disconnectButton}`}
-            >
-              Disconnect
-            </button>
-          )}
+          {/* 👇 Disconnect Button is now Always Visible */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              disconnectWallet();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className={`${styles.dropdownButton} ${styles.disconnectButton}`}
+          >
+            Disconnect
+          </button>
         </div>
       )}
     </div>
   );
 };
 
-export default WalletSection; 
+export default WalletSection;

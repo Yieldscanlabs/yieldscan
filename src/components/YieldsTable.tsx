@@ -39,7 +39,7 @@ const YieldsTableRow: React.FC<{
 
   // Get current protocol and APY from the asset and token data
   const token = tokens.find(
-    t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
+    (t:any) => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
   );
 
   // Get current protocol from asset or token
@@ -265,11 +265,12 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
   onLockApy
 }) => {
 
+  console.log('YieldsTable assets:', assets);
   if (loading) {
     return (
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
-        <div className={styles.loadingText}>Loading your yields...</div>
+        <div className={styles.loadingText}>Loading your yields!...</div>
       </div>
     );
   }
