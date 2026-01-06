@@ -128,48 +128,31 @@ export const useAssetStore = create<AssetStore>()(
       error: null,
       lastUpdated: null,
       autoRefreshEnabled: true,
-      // Fetch assets for a specific wallet address
+      // 1. Single Wallet Fetch
       fetchAssets: async (walletAddress: string, showLoading = true) => {
         if (!walletAddress || walletAddress === '0x') {
           set({ assets: [], error: null, isLoading: false });
           return;
         }
 
-        // Only show loading state if explicitly requested
-        if (showLoading) {
-          set({ isLoading: true });
-        }
-
+        if (showLoading) set({ isLoading: true });
         set({ error: null });
 
         try {
-          
-          // // Update assetsByAddress and dormantCapitalByAddress
-          const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress)
-          const state = get();
+          // Use the internal helper
+          const { assets, dormantCapital, workingCapital } = await fetchWalletDataInternal(walletAddress, get, set);
 
-          const newAssetsByAddress = {
-            ...state.assetsByAddress,
-            [walletAddress.toLowerCase()]: assets
-          };
-          const newDormantCapitalByAddress = {
-            ...state.dormantCapitalByAddress,
-            [walletAddress.toLowerCase()]: dormantCapital
-          };
-
+          // Update the Active View (because this is a single fetch)
           set({
-            assets: assets,
-            assetsByAddress: newAssetsByAddress,
+            assets: assets, 
             dormantCapital,
             workingCapital,
-            dormantCapitalByAddress: newDormantCapitalByAddress,
             isLoading: false,
             lastUpdated: Date.now()
           });
         } catch (error) {
-          console.error('Error fetching assets from Moralis:', error);
           set({
-            error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
+            error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false
           });
         }
@@ -180,28 +163,26 @@ export const useAssetStore = create<AssetStore>()(
         set({ protocols })
       },
 
-      // Fetch assets for multiple addresses
+      // 2. Multiple Wallet Fetch (Consolidated)
       fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
         if (!addresses || addresses.length === 0) {
           set({ assets: [], error: null, isLoading: false });
           return;
         }
 
-        if (showLoading) {
-          set({ isLoading: true });
-        }
-
+        if (showLoading) set({ isLoading: true });
         set({ error: null });
 
         try {
-          // Fetch assets for all addresses in parallel
+          // Call internal helper for all addresses
+          // This updates 'assetsByAddress' but DOES NOT touch 'isLoading' or 'assets'
           const fetchPromises = addresses.map(address =>
-            get().fetchAssets(address, false)  // Don't show loading for individual fetches
+            fetchWalletDataInternal(address, get, set)
           );
 
           await Promise.all(fetchPromises);
 
-          // Update consolidated view
+          // NOW calculate consolidated view and update state ONCE
           const state = get();
           const consolidatedAssets: Asset[] = [];
           let totalDormantCapital = 0;
@@ -209,7 +190,6 @@ export const useAssetStore = create<AssetStore>()(
           addresses.forEach(address => {
             const addressLower = address.toLowerCase();
             const assets = state.assetsByAddress[addressLower] || [];
-            // Add walletAddress field to each asset for identification
             const assetsWithSource = assets.map(asset => ({
               ...asset,
               walletAddress: address
@@ -221,17 +201,126 @@ export const useAssetStore = create<AssetStore>()(
           set({
             assets: consolidatedAssets,
             dormantCapital: totalDormantCapital,
-            isLoading: false,
-            lastUpdated: Date.now()
+            lastUpdated: Date.now(),
+            isLoading: false // <--- Only turn off loading HERE at the very end
           });
         } catch (error) {
           console.error('Error fetching assets for multiple addresses:', error);
           set({
-            error: error instanceof Error ? error.message : 'Unknown error fetching assets',
+            error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false
           });
         }
       },
+      // Fetch assets for a specific wallet address
+      // fetchAssets: async (walletAddress: string, showLoading = true) => {
+      //   if (!walletAddress || walletAddress === '0x') {
+      //     set({ assets: [], error: null, isLoading: false });
+      //     return;
+      //   }
+
+      //   // Only show loading state if explicitly requested
+      //   if (showLoading) {
+      //     set({ isLoading: true });
+      //   }
+
+      //   set({ error: null });
+
+      //   try {
+          
+      //     // // Update assetsByAddress and dormantCapitalByAddress
+      //     const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress)
+      //     const state = get();
+
+      //     const newAssetsByAddress = {
+      //       ...state.assetsByAddress,
+      //       [walletAddress.toLowerCase()]: assets
+      //     };
+      //     const newDormantCapitalByAddress = {
+      //       ...state.dormantCapitalByAddress,
+      //       [walletAddress.toLowerCase()]: dormantCapital
+      //     };
+
+      //     set({
+      //       assets: assets,
+      //       assetsByAddress: newAssetsByAddress,
+      //       dormantCapital,
+      //       workingCapital,
+      //       dormantCapitalByAddress: newDormantCapitalByAddress,
+      //       isLoading: false,
+      //       lastUpdated: Date.now()
+      //     });
+      //   } catch (error) {
+      //     console.error('Error fetching assets from Moralis:', error);
+      //     set({
+      //       error: error instanceof Error ? error.message : 'Unknown error fetching assets from Moralis',
+      //       isLoading: false
+      //     });
+      //   }
+      // },
+
+      // fetchProtocols: async () => {
+      //   const { protocols } = await getProtocols();
+      //   set({ protocols })
+      // },
+
+      // Fetch assets for multiple addresses
+      // fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
+      //   if (!addresses || addresses.length === 0) {
+      //     set({ assets: [], error: null, isLoading: false });
+      //     return;
+      //   }
+
+      //   if (showLoading) {
+      //     set({ isLoading: true });
+      //   }
+
+      //   set({ error: null });
+
+      //   try {
+      //     // Fetch assets for all addresses in parallel
+      //     const fetchPromises = addresses.map(address =>
+      //       get().fetchAssets(address, false)  // Don't show loading for individual fetches
+      //     );
+
+      //     await Promise.all(fetchPromises);
+
+      //     // Update consolidated view
+      //     const state = get();
+      //     const consolidatedAssets: Asset[] = [];
+      //     let totalDormantCapital = 0;
+
+      //     addresses.forEach(address => {
+      //       const addressLower = address.toLowerCase();
+      //       const assets = state.assetsByAddress[addressLower] || [];
+      //       // Add walletAddress field to each asset for identification
+      //       const assetsWithSource = assets.map(asset => ({
+      //         ...asset,
+      //         walletAddress: address
+      //       }));
+      //       consolidatedAssets.push(...assetsWithSource);
+      //       totalDormantCapital += state.dormantCapitalByAddress[addressLower] || 0;
+      //     });
+
+      //     set({
+      //       assets: consolidatedAssets,
+      //       dormantCapital: totalDormantCapital,
+      //       lastUpdated: Date.now()
+      //     });
+      //   } catch (error) {
+      //     console.error('Error fetching assets for multiple addresses:', error);
+      //     set({
+      //       error: error instanceof Error ? error.message : 'Unknown error fetching assets',
+      //       isLoading: false
+      //     });
+      //   }finally{
+      //     console.log("FINALY executed: stopping loading: , ", showLoading);
+      //     set({
+      //       isLoading: false
+      //     });
+      //     alert("FINALY executed: stopping loading: , " + showLoading);
+      //   }
+      // },
 
       // Get assets for a specific address
       getAssetsForAddress: (address: string) => {
@@ -373,3 +462,32 @@ export function useAssetAutoRefresh(address: string) {
     };
   }, [address, fetchAssets, autoRefreshEnabled]);
 }
+
+
+// Helper to just fetch data without messing with the View State (isLoading/assets)
+const fetchWalletDataInternal = async (walletAddress: string, get: () => AssetStore, set: any) => {
+  try {
+    const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress);
+    const state = get();
+
+    const newAssetsByAddress = {
+      ...state.assetsByAddress,
+      [walletAddress.toLowerCase()]: assets
+    };
+    const newDormantCapitalByAddress = {
+      ...state.dormantCapitalByAddress,
+      [walletAddress.toLowerCase()]: dormantCapital
+    };
+
+    // Only update the data cache, NOT the active view 'assets' or 'isLoading'
+    set({
+      assetsByAddress: newAssetsByAddress,
+      dormantCapitalByAddress: newDormantCapitalByAddress,
+    });
+    
+    return { assets, dormantCapital, workingCapital };
+  } catch (error) {
+    console.error(`Error fetching for ${walletAddress}:`, error);
+    throw error;
+  }
+};
