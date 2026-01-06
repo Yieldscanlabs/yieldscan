@@ -13,11 +13,16 @@ import useWalletConnection from '../../hooks/useWalletConnection';
 import useYieldOptions from '../../hooks/useYieldOptions';
 import type { Asset, YieldOption } from '../../types';
 import type { BestApyResult } from '../../hooks/useBestApy';
-import Loading from '../../components/Loading';
 import { useAssetStore } from '../../store/assetStore';
 import { AVAILABLE_NETWORKS } from '../../utils/markets';
 import WalletWelcome from './WalletWelcome';
 import PageHeader from '../../components/PageHeader';
+import { useManualWalletStore } from '../../store/manualWalletStore';
+import { useAccount } from 'wagmi';
+import { shortenAddress } from '../../utils/helpers';
+import { useNavigate } from 'react-router-dom';
+import EmptyStateCard from '../../components/wallet-page/EmptyWalletStateCard';
+import { WalletSkeletonLoader } from '../../components/loaders/WalletSkeletonLoader';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -34,13 +39,14 @@ interface WalletState {
 }
 
 function Wallet() {
+  const navigate = useNavigate();
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
-  // Use userPreferencesStore for view toggle state
+  const { manualAddresses, isConsolidated } = useManualWalletStore();
+  const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
-  
+
   const [state, setState] = useState<WalletState>({
     selectedAsset: null,
     bestApyData: null,
@@ -53,21 +59,14 @@ function Wallet() {
 
   const { yieldOptions } = useYieldOptions(state.selectedAsset);
 
-  // Force cards view on mobile screens (900px and below)
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 900 && viewType !== 'cards') {
         setViewType('cards');
       }
     };
-
-    // Check on mount
     handleResize();
-
-    // Add event listener
     window.addEventListener('resize', handleResize);
-
-    // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, [viewType, setViewType]);
 
@@ -105,17 +104,15 @@ function Wallet() {
   };
 
   const handleNetworkChange = (selectedNetwork: number | 'all') => {
-    setState(prev => ({
-      ...prev,
-      selectedNetwork
-    }));
+    setState(prev => ({ ...prev, selectedNetwork }));
   };
 
   const handleSearchChange = (query: string) => {
-    setState(prev => ({
-      ...prev,
-      searchQuery: query
-    }));
+    setState(prev => ({ ...prev, searchQuery: query }));
+  };
+
+  const handleResetFilters = () => {
+    setState(prev => ({ ...prev, selectedNetwork: 'all', searchQuery: '' }));
   };
 
   const getSelectedYieldOption = (): YieldOption => {
@@ -126,12 +123,11 @@ function Wallet() {
         token: state.selectedAsset.token,
         chain: state.selectedAsset.chain,
         apy: state.bestApyData.bestApy,
-        tvl: '$0', 
+        tvl: '$0',
         risk: 'Low',
         lockupDays: 0
       };
     }
-    
     return yieldOptions[0] || {
       id: '0',
       protocol: 'Loading...',
@@ -145,40 +141,44 @@ function Wallet() {
   };
 
   const renderAssetView = () => {
-    if (assetsLoading) {
-      return (
-        <Loading
-          message="Loading your assets"
-          subtitle="Scanning blockchain for your tokens..." 
-        />
-      );
+
+    // Filter logic
+    const filterAsset = (asset: Asset) => {
+      const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
+      const matchesSearch = state.searchQuery === '' || asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
+      const hasBalance = Number(asset.balance) > 0;
+      return matchesNetwork && matchesSearch && hasBalance;
+    };
+
+    const hasAnyAssets = (walletAssets: Asset[]) => {
+      return walletAssets.some(asset => Number(asset.balance) > 0);
     }
 
-    // Filter assets by selected network and search query
-    const filteredAssets = assets.filter(asset => {
-      // Filter out yield bearing tokens
-      if (asset.yieldBearingToken) return false;
-      
-      // Filter by network
-      const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
-      
-      // Filter by search query
-      const matchesSearch = state.searchQuery === '' || 
-        asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
-      
-      return matchesNetwork && matchesSearch;
-    });
-    console.log(filteredAssets)
     const commonProps = {
-      assets: filteredAssets,
       loading: assetsLoading,
       onSelectAsset: handleSelectAsset,
       selectedAsset: state.selectedAsset
     };
 
-          return (
+    // --- CONSOLIDATED VIEW ---
+    if (isConsolidated) {
+      const allAddresses = [...manualAddresses];
+      if (isMetamaskConnected && metamaskAddress) {
+        allAddresses.push(metamaskAddress);
+      }
+
+      const assetsByWallet = new Map<string, Asset[]>();
+      assets.forEach(asset => {
+        const walletAddr = asset.walletAddress?.toLowerCase() || '';
+        if (!assetsByWallet.has(walletAddr)) {
+          assetsByWallet.set(walletAddr, []);
+        }
+        assetsByWallet.get(walletAddr)!.push(asset);
+      });
+
+      return (
         <div className={styles.assetViewContainer}>
-          <PageHeader 
+          <PageHeader
             title="Wallet"
             subtitle="Only showing assets that can earn yield with the best APY"
           />
@@ -190,30 +190,142 @@ function Wallet() {
               onChange={handleNetworkChange}
             />
             <div className={styles.searchAndViewGroup}>
-              <ViewToggle 
-                currentView={viewType}
-                onViewChange={handleViewChange}
-              />
+              <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
               <SearchBar
                 ref={searchInputRef}
-                placeholder="Search coins..."
+                placeholder="Search coins ..."
                 value={state.searchQuery}
                 onChange={handleSearchChange}
                 showKeybind={true}
               />
             </div>
           </div>
-          {viewType === 'cards' ? (
-            <AssetList {...commonProps} />
-          ) : (
-            <AssetTable {...commonProps} />
-          )}
+
+          {allAddresses.map((address) => {
+            const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
+            const filteredAssets = walletAssets.filter(filterAsset);
+            const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
+            const walletName = shortenAddress(address);
+            const walletHasAnyAssets = hasAnyAssets(walletAssets);
+
+            return (
+              <div key={address} className={styles.walletSection}>
+                <div className={styles.walletSectionHeader}>
+                  <h3>Wallet: {walletName}</h3>
+                  {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
+                </div>
+
+                {/* Consolidate View Skeleton */}
+
+                {assetsLoading ? (
+                  <WalletSkeletonLoader viewType={viewType} />
+                ) : (
+                  <>
+                    {filteredAssets.length > 0 ? (
+                      viewType === 'cards' ? (
+                        <AssetList {...commonProps} assets={filteredAssets} />
+                      ) : (
+                        <AssetTable {...commonProps} assets={filteredAssets} />
+                      )
+                    ) : (
+                      // Empty State Logic
+                      walletHasAnyAssets ? (
+                        <div className={styles.filteredEmptyState}>
+                          <div className={styles.filteredEmptyContent}>
+                            <div className={styles.filteredEmptyIcon}>🔍</div>
+                            <div className={styles.filteredEmptyText}>
+                              <h3>No matching assets found</h3>
+                              <p>No assets match your current filters in this wallet.</p>
+                            </div>
+                            <button className={styles.resetFiltersButton} onClick={handleResetFilters}>
+                              Reset Filters
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={viewType === 'cards' ? styles.assetGrid : ''}>
+                          <EmptyStateCard onClick={() => navigate('/explore')} walletAddress={address} />
+                        </div>
+                      )
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
+      );
+    }
+
+    // --- SINGLE VIEW ---
+    const filteredAssets = assets.filter(filterAsset);
+    const hasAnyTotal = hasAnyAssets(assets);
+
+    return (
+      <div className={styles.assetViewContainer}>
+        <PageHeader
+          title="Wallet"
+          subtitle="Only showing assets that can earn yield with the best APY"
+        />
+        <div className={styles.controlsRow}>
+          <NetworkSelector
+            selectedNetwork={state.selectedNetwork}
+            networks={AVAILABLE_NETWORKS}
+            //@ts-ignore
+            onChange={handleNetworkChange}
+          />
+          <div className={styles.searchAndViewGroup}>
+            <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
+            <SearchBar
+              ref={searchInputRef}
+              placeholder="Search coins..."
+              value={state.searchQuery}
+              onChange={handleSearchChange}
+              showKeybind={true}
+            />
+          </div>
+        </div>
+
+        {/* Single View Skeleton */}
+        {assetsLoading ? (
+          <WalletSkeletonLoader viewType={viewType} />
+        ) : (
+          <>
+            {filteredAssets.length > 0 ? (
+              viewType === 'cards' ? (
+                <AssetList {...commonProps} assets={filteredAssets} />
+              ) : (
+                <AssetTable {...commonProps} assets={filteredAssets} />
+              )
+            ) : (
+              // Empty State Logic
+              hasAnyTotal ? (
+                <div className={styles.filteredEmptyState}>
+                  <div className={styles.filteredEmptyContent}>
+                    <div className={styles.filteredEmptyIcon}>🔍</div>
+                    <div className={styles.filteredEmptyText}>
+                      <h3>No matching assets found</h3>
+                      <p>No assets match your current filters.</p>
+                    </div>
+                    <button className={styles.resetFiltersButton} onClick={handleResetFilters}>
+                      Reset Filters
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className={viewType === 'cards' ? styles.assetGrid : ''}>
+                  <EmptyStateCard onClick={() => navigate('/explore')} />
+                </div>
+              )
+            )}
+          </>
+        )}
+      </div>
     );
   };
 
   const renderContent = () => {
-    if (!wallet.isConnected) {
+    if (!wallet.isConnected && manualAddresses.length === 0) {
       return <WalletWelcome onConnect={openConnectModal} />;
     }
 
@@ -221,7 +333,6 @@ function Wallet() {
       const protocol = state.bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
       const usdPrice = parseFloat(state.selectedAsset.balanceUsd) / parseFloat(state.selectedAsset.balance);
       const amountUsd = (parseFloat(state.depositData.amount) * usdPrice).toFixed(2);
-      
       return (
         <div className={styles.stepContainer}>
           <div className={styles.depositContainer}>
@@ -243,7 +354,7 @@ function Wallet() {
       return (
         <div className={styles.stepContainer}>
           <div className={styles.depositContainer}>
-            <DepositForm 
+            <DepositForm
               asset={state.selectedAsset}
               yieldOption={getSelectedYieldOption()}
               onDeposit={handleDeposit}
@@ -265,23 +376,16 @@ function Wallet() {
     );
   };
 
-  // Add keyboard shortcut to focus search
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Focus search on Ctrl/Cmd + K or just "/" key
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        searchInputRef.current?.focus();
-      } else if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        // Only focus if not typing in an input already
-        const activeElement = document.activeElement;
+      if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const activeElement = document.activeElement as HTMLElement | null;
         if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
           event.preventDefault();
           searchInputRef.current?.focus();
         }
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -290,8 +394,7 @@ function Wallet() {
     <div className={styles.appWrapper}>
       <div className={styles.appContainer}>
         {renderContent()}
-        
-        <WalletModal 
+        <WalletModal
           isOpen={isModalOpen}
           onClose={closeConnectModal}
         />
@@ -300,4 +403,4 @@ function Wallet() {
   );
 }
 
-export default Wallet; 
+export default Wallet;

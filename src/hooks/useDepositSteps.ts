@@ -1,50 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { parseUnits, type Address } from 'viem';
 import useERC20 from './useERC20';
-
-interface FunctionConfig {
-  name: string;
-  type: string;
-  stateMutability: string;
-  inputs: Array<{
-    name: string;
-    type: string;
-  }>;
-  outputs: Array<{
-    name?: string;
-    type: string;
-  }>;
-}
+import { API_BASE_URL } from '../utils/constants';
+// @ts-ignore
+import { ethers } from "ethers";
 
 interface DepositStep {
-  assetId: string;
-  order: number;
   title: string;
   description: string;
-  chain: string;
-  protocol: string;
-  contractAddress: string;
-  approvalFrom?: string;
-  approvalTo?: string;
-  functionConfig: FunctionConfig;
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  id: string;
-}
-
-interface StepsResponse {
-  steps: DepositStep[];
-  count: number;
-  contractAddress: string;
-  chainId: number;
-  chainName: string;
-  protocol: string;
-  assetId: string;
+  fn: () => Promise<any>;
+  id: string
 }
 
 interface UseDepositStepsOptions {
+  id: string;
   contractAddress: string;
   chainId: number;
   protocol: string;
@@ -61,6 +31,7 @@ interface StepExecutionState {
 }
 
 export default function useDepositSteps({
+  id,
   contractAddress,
   chainId,
   protocol,
@@ -69,7 +40,6 @@ export default function useDepositSteps({
 }: UseDepositStepsOptions) {
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
-  
   const [steps, setSteps] = useState<DepositStep[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,20 +49,6 @@ export default function useDepositSteps({
     executedSteps: new Set(),
     error: null
   });
-
-  // Initialize ERC20 hook for approval steps
-  const approvalStep = steps.find(step => step.functionConfig.name === 'approve');
-  const { 
-    hasEnoughAllowance,
-    approve,
-    isApproving
-  } = useERC20({
-    tokenAddress: (approvalStep?.approvalFrom || contractAddress) as Address,
-    spenderAddress: (approvalStep?.approvalTo || approvalStep?.contractAddress) as Address,
-    chainId,
-    tokenDecimals
-  });
-
   // Transaction receipt monitoring
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash: executionState.txHash,
@@ -107,19 +63,27 @@ export default function useDepositSteps({
     setError(null);
 
     try {
-      const url = `http://localhost:4023/api/steps/contract/${contractAddress}/chain/${chainId}/protocol/${protocol}?includeDisabled=false`;
+      const url = API_BASE_URL + `/api/definitions/asset/${id}/${protocol}`;
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch steps: ${response.statusText}`);
       }
 
-      const data: StepsResponse = await response.json();
-      
+      const data = await response.json();
+
+      const getDepositEval = eval(`(${data.deposit})`);
+
       // Sort steps by order
-      const sortedSteps = data.steps.filter(step => step.enabled).sort((a, b) => a.order - b.order);
-      setSteps(sortedSteps);
-      
+      const sortedSteps = getDepositEval;
+
+      setSteps([{
+        title: "depositing",
+        description: "",
+        fn: sortedSteps,
+        id: "1"
+      }]);
+
       // Reset execution state when steps change
       setExecutionState({
         currentStep: 0,
@@ -149,60 +113,19 @@ export default function useDepositSteps({
 
     try {
       let success = false;
-      let txHash: `0x${string}` | undefined;
+      let txHash: any;
 
-      if (step.functionConfig.name === 'approve') {
-        // Handle approval step using ERC20 hook
-        if (hasEnoughAllowance(amount)) {
-          success = true; // Already approved
-        } else {
-          success = await approve(amount, step.contractAddress as Address);
-          // The ERC20 hook manages its own transaction hash
-        }
-      } else {
-        // Handle other steps (deposit, etc.) using direct contract calls
-        const amountInWei = parseUnits(amount, tokenDecimals);
-        
-        // Prepare arguments based on function inputs
-        const args = step.functionConfig.inputs.map(input => {
-          switch (input.name) {
-            case 'asset':
-              return contractAddress as Address;
-            case 'amount':
-              return amountInWei;
-            case 'onBehalfOf':
-            case 'to':
-            case 'receiver':
-              return address as Address;
-            case 'referralCode':
-              return 0;
-            case 'spender':
-              return step.contractAddress as Address;
-            default:
-              // For unknown parameters, try to infer based on type
-              if (input.type === 'address') {
-                return address as Address;
-              } else if (input.type === 'uint256') {
-                return amountInWei;
-              } else if (input.type === 'uint16') {
-                return 0;
-              }
-              return '0x';
-          }
-        });
+      console.log("Executing step:", step);
+      //@ts-ignore
+      txHash = await step.fn(amount, address, tokenDecimals, chainId);
 
-        // Execute the contract function
-        txHash = await writeContractAsync({
-          address: step.contractAddress as Address,
-          abi: [step.functionConfig],
-          functionName: step.functionConfig.name,
-          args,
-          chainId
-        });
-
-        setExecutionState(prev => ({ ...prev, txHash }));
-        success = true;
+      if (typeof txHash === "object") {
+        console.log({txHash});
+        throw new Error(txHash.details);
       }
+
+      setExecutionState(prev => ({ ...prev, txHash }));
+      success = true;
 
       if (success) {
         setExecutionState(prev => ({
@@ -223,7 +146,7 @@ export default function useDepositSteps({
     } finally {
       setExecutionState(prev => ({ ...prev, isExecuting: false }));
     }
-  }, [address, steps, amount, tokenDecimals, contractAddress, hasEnoughAllowance, approve, writeContractAsync, chainId]);
+  }, [address, steps, amount, tokenDecimals, contractAddress, writeContractAsync, chainId]);
 
   // Execute all steps in sequence
   const executeAllSteps = useCallback(async (): Promise<boolean> => {
@@ -232,7 +155,7 @@ export default function useDepositSteps({
       if (!success) {
         return false;
       }
-      
+
       // Wait for transaction confirmation if there was a transaction
       if (executionState.txHash) {
         await new Promise<void>((resolve) => {
@@ -268,16 +191,16 @@ export default function useDepositSteps({
     steps,
     isLoading,
     error,
-    
+
     // Execution state
     currentStep: executionState.currentStep,
-    isExecuting: executionState.isExecuting || isApproving,
+    isExecuting: executionState.isExecuting,
     executedSteps: executionState.executedSteps,
     executionError: executionState.error,
     isConfirming,
     isConfirmed,
     txHash: executionState.txHash,
-    
+
     // Functions
     executeStep,
     executeAllSteps,

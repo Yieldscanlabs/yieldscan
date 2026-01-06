@@ -82,12 +82,12 @@ export default function useAaveYield({
 }: UseAaveYieldOptions) {
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
-  
+
   const [isSupplying, setIsSupplying] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
-  
+
   // Get fee percentage
   const { data: feePercentage } = useReadContract({
     address: contractAddress,
@@ -95,7 +95,7 @@ export default function useAaveYield({
     functionName: 'feePercentage',
     chainId
   });
-  
+
   // Get user's Aave address
   const { data: userAaveAddress } = useReadContract({
     address: contractAddress,
@@ -104,7 +104,7 @@ export default function useAaveYield({
     args: [address as Address],
     chainId,
   });
-  
+
   // Check allowance
   const { data: allowance } = useReadContract({
     address: tokenAddress,
@@ -119,41 +119,41 @@ export default function useAaveYield({
     hash: txHash,
     chainId
   });
-  
+
   // Calculates the amount after fee that the user will receive
   const calculateAmountAfterFee = useCallback((amount: string): string => {
     if (!feePercentage) return amount;
-    
+
     const amountBN = parseFloat(amount);
     const fee = (amountBN * Number(feePercentage)) / 100;
     const amountAfterFee = amountBN - fee;
     return amountAfterFee.toString();
   }, [feePercentage]);
-  
+
   // Check if the current allowance is enough
   const hasEnoughAllowance = useCallback((amount: string): boolean => {
     if (!allowance) return false;
-    
+
     const amountInWei = parseUnits(amount, tokenDecimals);
     return BigInt(allowance) >= amountInWei;
   }, [allowance, tokenDecimals]);
-  
+
   // Approve token spending
   const approveToken = useCallback(async (amount: string): Promise<boolean> => {
     if (!address || !contractAddress) return false;
-    
+
     try {
       setIsApproving(true);
       const amountInWei = parseUnits(amount, tokenDecimals);
-      
+
       const hash = await writeContractAsync({
         address: tokenAddress,
         abi: erc20ApprovalAbi,
         functionName: 'approve',
         args: [contractAddress, amountInWei],
-        chainId
+        chainId,
       });
-      
+
       setTxHash(hash);
       return true;
     } catch (error) {
@@ -163,22 +163,22 @@ export default function useAaveYield({
       setIsApproving(false);
     }
   }, [address, contractAddress, tokenAddress, tokenDecimals, writeContractAsync, chainId]);
-  
+
   // Supply tokens to Aave
   const supplyToAave = useCallback(async (amount: string, onBehalfOf?: Address, referralCode: number = 0): Promise<boolean> => {
     if (!address || !contractAddress) return false;
-    
+
     // First check if we have enough allowance
     if (!hasEnoughAllowance(amount)) {
       const approved = await approveToken(amount);
       if (!approved) return false;
     }
-    
+
     try {
       setIsSupplying(true);
       const amountInWei = parseUnits(amount, tokenDecimals);
       const recipient = onBehalfOf || address;
-      
+
       const hash = await writeContractAsync({
         address: contractAddress,
         abi: aaveYieldscanAbi,
@@ -186,7 +186,7 @@ export default function useAaveYield({
         args: [tokenAddress, amountInWei, recipient, referralCode as any],
         chainId
       });
-      
+
       setTxHash(hash);
       return true;
     } catch (error) {
@@ -196,16 +196,16 @@ export default function useAaveYield({
       setIsSupplying(false);
     }
   }, [address, contractAddress, tokenAddress, hasEnoughAllowance, approveToken, writeContractAsync, tokenDecimals, chainId]);
-  
+
   // Withdraw tokens from Aave
   const withdrawFromAave = useCallback(async (amount: string, to?: Address): Promise<boolean> => {
     if (!address || !contractAddress) return false;
-    
+
     try {
       setIsWithdrawing(true);
       const amountInWei = parseUnits(amount, tokenDecimals);
       const recipient = to || address;
-      
+
       const hash = await writeContractAsync({
         address: contractAddress,
         abi: aaveYieldscanAbi,
@@ -213,7 +213,7 @@ export default function useAaveYield({
         args: [tokenAddress, amountInWei, recipient],
         chainId
       });
-      
+
       setTxHash(hash);
       return true;
     } catch (error) {
@@ -223,7 +223,7 @@ export default function useAaveYield({
       setIsWithdrawing(false);
     }
   }, [address, contractAddress, tokenAddress, writeContractAsync, tokenDecimals, chainId]);
-  
+
   return {
     // State
     isSupplying,
@@ -231,13 +231,13 @@ export default function useAaveYield({
     isApproving,
     isConfirming,
     isConfirmed,
-    
+
     // Data
     feePercentage: feePercentage ? Number(feePercentage) : undefined,
     userAaveAddress,
     allowance: allowance ? formatUnits(allowance, tokenDecimals) : '0',
     txHash,
-    
+
     // Functions
     supplyToAave,
     withdrawFromAave,

@@ -5,6 +5,8 @@ import type { Asset } from '../types';
 import type { OptimizationData } from './YieldCard/types';
 import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
 import Protocol from './Protocol';
+import { useAccount, useSwitchChain } from 'wagmi';
+import { API_BASE_URL } from '../utils/constants';
 
 interface OptimizeInformationModalProps {
   isOpen: boolean;
@@ -21,7 +23,17 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
   asset,
   optimizationData
 }) => {
+  const { chainId } = useAccount()
+  const { switchChainAsync } = useSwitchChain()
   if (!isOpen) return null;
+  console.log('OptimizationModal render', { asset });
+
+  const onOptimize = async () => {
+    if (asset.chainId !== chainId) {
+      await switchChainAsync({ chainId: asset.chainId })
+    }
+    onConfirm()
+  }
 
   // Get the chain icon for the asset
   const chainIcon = getNetworkIcon(asset.chainId);
@@ -31,16 +43,16 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <button className={styles.closeButton} onClick={onClose}>×</button>
-        
+
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>Optimize {asset.token} Yield</h2>
         </div>
-        
+
         <div className={styles.modalBody}>
           <div className={styles.modalSection}>
             <div className={styles.assetInfoLarge}>
               <div className={styles.assetIconWrapperLarge}>
-                <img src={asset.icon} alt={asset.token} className={styles.assetIconMedium} />
+                <img src={API_BASE_URL+ asset.icon} alt={asset.token} className={styles.assetIconMedium} />
                 <img src={chainIcon} alt={chainName} className={styles.chainIconOverlayLarge} />
               </div>
               <div>
@@ -54,7 +66,7 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className={styles.modalSection}>
             <div className={styles.sectionTitle}>What will happen</div>
             <div className={styles.explanationBox}>
@@ -109,11 +121,11 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div className={styles.modalFooterCentered}>
-          <button 
-            className={styles.optimizeButton} 
-            onClick={onConfirm}
+          <button
+            className={styles.optimizeButton}
+            onClick={onOptimize}
           >
             Optimize
           </button>

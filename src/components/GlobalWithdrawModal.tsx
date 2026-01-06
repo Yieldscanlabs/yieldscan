@@ -7,6 +7,7 @@ import useWithdrawSteps from '../hooks/useWithdrawSteps';
 import styles from './WithdrawModal.module.css';
 import Protocol from './Protocol';
 import ThumbSlider from './ThumbSlider';
+import { useChainId, useSwitchChain } from 'wagmi';
 
 const GlobalWithdrawModal: React.FC = () => {
   const {
@@ -25,6 +26,8 @@ const GlobalWithdrawModal: React.FC = () => {
   const [percentage, setPercentage] = useState(0);
   const [hasStartedWithdraw, setHasStartedWithdraw] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const { chains, switchChain, } = useSwitchChain()
+  const chainId = useChainId();
 
   // Use the withdrawal steps hook
   const {
@@ -36,10 +39,10 @@ const GlobalWithdrawModal: React.FC = () => {
     executedSteps,
     executionError,
     isConfirming,
-    isConfirmed,
     executeAllSteps,
     retryCurrentStep
   } = useWithdrawSteps({
+    id: asset?.id || '',
     contractAddress: asset?.address || '',
     chainId: asset?.chainId || 1,
     protocol: protocol || '',
@@ -47,7 +50,7 @@ const GlobalWithdrawModal: React.FC = () => {
     tokenDecimals: asset?.decimals || 18,
     asset: asset || undefined
   });
-  
+
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -61,7 +64,7 @@ const GlobalWithdrawModal: React.FC = () => {
   // Handle slider percentage change
   const handleSliderChange = (newPercentage: number) => {
     setPercentage(newPercentage);
-    
+
     // If 100% is selected, use the exact balance value to avoid rounding errors
     if (newPercentage === 100) {
       setWithdrawAmount(balance.toString());
@@ -87,7 +90,7 @@ const GlobalWithdrawModal: React.FC = () => {
         if (wallet.address) {
           fetchAssets(wallet.address, false);
         }
-        
+
         // Complete after a brief delay
         setTimeout(() => {
           closeModal();
@@ -104,9 +107,9 @@ const GlobalWithdrawModal: React.FC = () => {
   };
 
   if (!isOpen || !asset) return null;
-  
+
   // Calculate USD value
-  const usdPrice = parseFloat(asset.balanceUsd) / balance;
+  const usdPrice = asset.usd;
   const amountUsd = (parseFloat(withdrawAmount || '0') * usdPrice).toFixed(2);
 
   // Determine if we should show steps (only if more than 1 step)
@@ -120,7 +123,7 @@ const GlobalWithdrawModal: React.FC = () => {
           <h3>Withdraw {asset.token}</h3>
           <button className={styles.closeButton} onClick={closeModal}>×</button>
         </div>
-        
+
         <div className={styles.modalContent}>
           {isCompleted ? (
             <div className={styles.successContainer}>
@@ -167,21 +170,29 @@ const GlobalWithdrawModal: React.FC = () => {
                     </div>
                     <div className={styles.amountUsd}>${amountUsd}</div>
                   </div>
-                  
                   <ThumbSlider
                     value={percentage}
                     onChange={handleSliderChange}
                   />
-
-                  <button 
-                    className={styles.withdrawButton}
-                    onClick={handleWithdraw}
-                    disabled={isLoadingSteps || parseFloat(withdrawAmount || '0') <= 0}
-                  >
-                    <span className={styles.buttonIcon}>↓</span>
-                    {isLoadingSteps ? 'Loading...' : `Withdraw ${asset.token}`}
-                    {isNativeToken ? ' (Native)' : ''}
-                  </button>
+                  {asset.chainId !== chainId ? (
+                    <button
+                      className={styles.withdrawButton}
+                      onClick={() => switchChain({ chainId: asset.chainId })}
+                    >
+                      <span className={styles['button-icon']}>↺</span>
+                      Switch to {chains.find(chain => chain.id === asset.chainId)?.name || 'Correct Chain'}
+                    </button>
+                  ) : (
+                    <button
+                      className={styles.withdrawButton}
+                      onClick={handleWithdraw}
+                      disabled={isLoadingSteps || parseFloat(withdrawAmount || '0') <= 0}
+                    >
+                      <span className={styles.buttonIcon}>↓</span>
+                      {isLoadingSteps ? 'Loading...' : `Withdraw ${asset.token}`}
+                      {isNativeToken ? ' (Native)' : ''}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className={styles.progressContainer}>
@@ -246,7 +257,7 @@ const GlobalWithdrawModal: React.FC = () => {
                                 {isCurrentlyExecuting && <div className={styles.stepSpinner}></div>}
                               </div>
                             </div>
-                            
+
                             {index < steps.length - 1 && (
                               <div className={styles.verticalProgressLine}></div>
                             )}
@@ -285,7 +296,7 @@ const GlobalWithdrawModal: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {error && (
                     <div className={styles.error}>
                       {error}

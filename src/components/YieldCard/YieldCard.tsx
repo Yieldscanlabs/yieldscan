@@ -11,20 +11,21 @@ import { useYieldCard } from './useYieldCard';
 import MaturityBadge from './MaturityBadge';
 import YieldInfo from './YieldInfo';
 import YieldActions from './YieldActions';
+import { API_BASE_URL } from '../../utils/constants';
 
 const YieldCard: React.FC<YieldCardProps> = (props) => {
-  const { 
+  const {
     asset,
     optimizationData,
-    onOptimize, 
-    onLockAPY 
+    onOptimize,
+    onLockAPY
   } = props;
-  
+
   const { openModal } = useOptimizationStore();
   const { openInformationModal } = useOptimizeInformationStore();
   const { openLockAPYInformationModal } = useLockAPYInformationStore();
   const { openModal: openWithdrawModalGlobal } = useWithdrawModalStore();
-  
+
   const {
     // Token and protocol info
     protocol,
@@ -36,12 +37,12 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     daysUntilMaturity,
     isNativeToken,
     chainId,
-    
+
     // Calculated values
     balanceNum,
     dailyYieldUsd,
     yearlyYieldUsd,
-    
+
     // Event handlers
     handleLockAPYConfirm,
     handleWithdrawComplete,
@@ -68,7 +69,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     console.log('handleOptimizeConfirm called', { optimizationData });
     if (optimizationData) {
       console.log('Opening transaction modal via store');
-      
+
       // Open the transaction modal using the global store (like Lock flow)
       openModal({
         asset,
@@ -77,7 +78,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
         betterProtocol: optimizationData.betterProtocol,
         betterApy: optimizationData.betterApy,
         additionalYearlyUsd: optimizationData.additionalYearlyUsd,
-        onOptimize: onOptimize || (() => {})
+        onOptimize: onOptimize || (() => { })
       });
     }
   };
@@ -105,7 +106,7 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
     openWithdrawModalGlobal({
       asset,
       protocol,
-      balance: balanceNum,
+      balance: asset.currentBalanceInProtocol || 0,
       maxDecimals: asset.maxDecimalsShow || 6,
       isNativeToken,
       onWithdraw: handleWithdraw,
@@ -114,56 +115,58 @@ const YieldCard: React.FC<YieldCardProps> = (props) => {
   };
 
   return (
-    <div className={styles.yieldCardSlim} style={{ position: 'relative' }}>
-      <div className={styles.cardTopSection}>
-        <div className={styles.assetInfoSlim}>
-          <AssetIcon
-            assetIcon={asset.icon || ''}
-            assetName={asset.token}
-            chainId={asset.chainId}
-            size="medium"
-          />
-          <div>
-            <div className={styles.assetNameBold} style={{ display: 'flex', alignItems: 'center' }}>
-              {asset.token}
-              {showMaturity && (
-                <MaturityBadge
-                  maturityDate={formattedMaturityDate}
-                  formattedMaturityDate={formattedMaturityDate}
-                  daysUntilMaturity={daysUntilMaturity}
-                />
-              )}
-            </div>
-            <div className={styles.detailsRow}>
-              <Protocol name={protocol} showLogo={true} className={styles.protocolBadge} />
+    asset.currentBalanceInProtocolUsd && Number(asset.currentBalanceInProtocolUsd) > 0 ?
+      <div className={styles.yieldCardSlim} style={{ position: 'relative' }}>
+        <div className={styles.cardTopSection}>
+          <div className={styles.assetInfoSlim}>
+            <AssetIcon
+              assetIcon={asset.icon ? API_BASE_URL + asset.icon : ''}
+              assetName={asset.token}
+              chainId={asset.chainId}
+              size="medium"
+            />
+            <div>
+              <div className={styles.assetNameBold} style={{ display: 'flex', alignItems: 'center' }}>
+                {asset.token}
+                {showMaturity && (
+                  <MaturityBadge
+                    maturityDate={formattedMaturityDate}
+                    formattedMaturityDate={formattedMaturityDate}
+                    daysUntilMaturity={daysUntilMaturity}
+                  />
+                )}
+              </div>
+              <div className={styles.detailsRow}>
+                <Protocol name={protocol} showLogo={true} className={styles.protocolBadge} />
+              </div>
             </div>
           </div>
+
+          <div className={styles.apyBadge}>
+            <span className={styles.apyValue}>{apy.toFixed(2)}%</span>
+            <span className={styles.apyLabel}>APY</span>
+          </div>
         </div>
-        
-        <div className={styles.apyBadge}>
-          <span className={styles.apyValue}>{apy.toFixed(2)}%</span>
-          <span className={styles.apyLabel}>APY</span>
-        </div>
+
+        <YieldInfo
+          asset={asset}
+          apy={apy}
+          balanceNum={balanceNum}
+          dailyYieldUsd={dailyYieldUsd}
+          yearlyYieldUsd={yearlyYieldUsd}
+        />
+
+        <YieldActions
+          asset={asset}
+          hasLockYield={hasLockYield}
+          chainId={chainId}
+          optimizationData={optimizationData}
+          onWithdrawClick={handleWithdrawClick}
+          onOptimize={handleOptimize}
+          onLockAPYClick={handleLockAPY}
+        />
       </div>
-      
-      <YieldInfo
-        asset={asset}
-        apy={apy}
-        balanceNum={balanceNum}
-        dailyYieldUsd={dailyYieldUsd}
-        yearlyYieldUsd={yearlyYieldUsd}
-      />
-      
-      <YieldActions
-        asset={asset}
-        hasLockYield={hasLockYield}
-        chainId={chainId}
-        optimizationData={optimizationData}
-        onWithdrawClick={handleWithdrawClick}
-        onOptimize={handleOptimize}
-        onLockAPYClick={handleLockAPY}
-      />
-    </div>
+      : <></>
   );
 };
 

@@ -404,12 +404,14 @@
   font-weight: 500;
   color: var(--text-primary);
   width: 120px;
-  text-align: center;
+  text-align: start;
 }
 
 .apyValue {
   font-family: var(--font-mono);
   font-weight: 600;
+  padding-left: 10px;
+  
 }
 
 .bestApyCell {
@@ -417,7 +419,8 @@
   color: var(--success-color) !important;
   position: relative;
   width: 120px;
-  text-align: center;
+  text-align: start;
+  padding-left: 10px;
 }
 
 .bestApyCell::after {

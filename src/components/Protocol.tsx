@@ -11,6 +11,21 @@ import pendle from '../assets/protocols/pendle.svg'
 import fluid from '../assets/protocols/fluid.png'
 import rocketpool from '../assets/protocols/rocketpool.webp'
 import eigenlayer from '../assets/protocols/eigenlayer.svg'
+import uniswap from '../assets/protocols/uniswap.png'
+import curvefinance from '../assets/protocols/curvefinance.png'
+import synthetix from '../assets/protocols/synthetix.png'
+import pancake from '../assets/protocols/pancake.png'
+import markerdao from '../assets/protocols/marker_dao.png'
+import dolomite from '../assets/protocols/dolomite.jpg'
+import euler from '../assets/protocols/euler.jpg'
+import fluxFinance from '../assets/protocols/fluxFinance.jpg'
+import sparklend from '../assets/protocols/sparklend.jpg'
+import zerolend from '../assets/protocols/zerolend.jpg'
+import ethena from '../assets/protocols/ethena.jpg'
+import creamFinance from '../assets/protocols/creamFinance.jpg'
+import maple from '../assets/protocols/maple.jpg'
+import kinza_finance from '../assets/protocols/kinza_finance.jpg'
+import yearn from '../assets/protocols/yearn.png'
 
 interface ProtocolProps {
   name: string | null;
@@ -28,13 +43,27 @@ const PROTOCOL_LOGOS: Record<string, string> = {
   'Morpho Blue': morphoblue,
   'Radiant': radiant,
   'Curve': 'https://cryptologos.cc/logos/curve-dao-token-crv-logo.png',
-  'Yearn': 'https://cryptologos.cc/logos/yearn-finance-yfi-logo.png',
+  'Yearn': yearn,
   'Lido': lido,
   'Spark': spark,
   'Pendle': pendle,
   'Fluid': fluid,
   'Rocket Pool': rocketpool,
   'EigenLayer': eigenlayer,
+  'Uniswap': uniswap,
+  'Curve Finance': curvefinance,
+  'PancakeSwap': pancake,
+  'Synthetix': synthetix,
+  'MakerDAO': markerdao,
+  'dolomite': dolomite,
+  'Euler': euler,
+  'fluxfinance': fluxFinance,
+  'sparklend': sparklend,
+  'zerolend': zerolend,
+  'kinzafinance': kinza_finance,
+  'ethena': ethena,
+  'creamfinance': creamFinance,
+  'maple': maple,
   // Add more protocols as needed
 };
 
@@ -50,34 +79,89 @@ const PROTOCOL_TOOLTIPS: Record<string, string> = {
   // Add more protocol descriptions as needed
 };
 
-const Protocol: React.FC<ProtocolProps> = ({ 
-  name, 
-  showLogo = true, 
+
+
+
+const Protocol: React.FC<ProtocolProps> = ({
+  name,
+  showLogo = true,
   showName = true,
   className = '',
   size = 'medium',
   showTooltip = false
 }) => {
-  const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
-  const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name}` : null;
-  const tooltipId = name ? `protocol-tooltip-${name.toLowerCase()}` : 'protocol-tooltip';
+  function formatProtocolNameForImage(name: string) {
+    switch (name) {
+      case 'Dolomite':
+        return 'dolomite';
+      case 'Flux Finance':
+        return 'fluxfinance';
+      case 'Kinza Finance':
+        return 'kinzafinance';
+      case 'Cream Finance':
+        return 'creamfinance';
+      case 'Ethena':
+        return 'ethena';
+      case 'Maple':
+        return 'maple';
+      case 'Sparklend':
+        return 'sparklend';
+      case 'Zerolend':
+        return 'zerolend';
+      case 'Yearn V3':
+        return 'Yearn';
+
+      default:
+        return name;
+    }
+  }
+  // const logoUrl = name ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null : null;
+  const logoUrl = name
+    ? PROTOCOL_LOGOS[formatProtocolNameForImage(name)] || null
+    : null;
+
+  // const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
+  const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name} ` : null;
+  const tooltipId = name ? `protocol - tooltip - ${name.toLowerCase()} ` : 'protocol-tooltip';
+  const formatProtocolName = (name: string) => {
+    switch (name) {
+      case 'fluxfinance':
+        return 'Flux Finance';
+      case 'kinzafinance':
+        return 'Kinza Finance';
+      case 'creamfinance':
+        return 'Cream Finance';
+      case 'Dolomite':
+        return 'dolomite';
+      default:
+        return name;
+    }
+  };
   return (
     <>
-      <div 
-        className={`${styles.protocol} ${styles[size]} ${className} ${styles[name?.toLowerCase() || '']}`}
+      <div
+        className={`${styles.protocol} ${styles[size]} ${className} ${styles[name?.toLowerCase() || '']} `}
         data-tooltip-id={showTooltip ? tooltipId : undefined}
         data-tooltip-content={tooltipText || ''}
       >
         {showLogo && logoUrl && (
-          <img 
-            src={logoUrl} 
-            alt={`${name} logo`} 
-            className={styles.protocolLogo} 
+          <img
+            src={logoUrl}
+            alt={`${name} logo`}
+            className={styles.protocolLogo}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            loading="lazy"
           />
         )}
-        <span className={styles.protocolName}>{showName ? name : ''}</span>
+
+        <span className={styles.protocolName}>
+          {showName ? formatProtocolName(name || '') : ''}
+        </span>
+
+        {/* <span className={styles.protocolName}>{showName ? name : ''}</span> */}
       </div>
-      
+
     </>
   );
 };

@@ -3,6 +3,7 @@ export type SupportedChain = 'ETH' | 'BSC' | 'ARBITRUM_ONE' | 'BASE';
 export type SupportedToken = 'USDC' | 'USDT' | 'BTC' | 'ETH' | 'aUSDC' | 'aUSDT v2' | 'AUSDT' | 'cUSDC' | 'cUSDT';
 
 export interface Asset {
+  id: string;
   token: string;
   address: string;
   chain: SupportedChain;
@@ -13,10 +14,23 @@ export interface Asset {
   withdrawContract?: string;
   underlyingAsset?: string;
   chainId: number;
-    yieldBearingToken: boolean;
+  yieldBearingToken: boolean;
   balanceUsd: string;
-    maxDecimalsShow: number;
+  maxDecimalsShow: number;
   icon?: string;
+  totalDeposited?: number;
+  totalDepositedUsd?: string;
+  usd: number;
+  currentBalanceInProtocol?: number;
+  currentBalanceInProtocolUsd?: string;
+  walletAddress?: string;  // Source wallet address (for consolidated view)
+}
+
+export interface Chain {
+  name: string;
+  chainId: number;
+  usdPrice: number;
+  image: string;
 }
 
 export interface YieldOption {
@@ -34,4 +48,14 @@ export interface WalletInfo {
   address: string;
   isConnected: boolean;
   chainId: number;
+}
+
+export interface Protocol {
+  id: string;
+
+  name: string;
+
+  website?: string;
+
+  image: string;
 }

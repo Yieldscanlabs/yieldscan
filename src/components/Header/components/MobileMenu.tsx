@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
-import Logo from '../../Logo';
+// import Logo from '../../Logo';
 import styles from '../Header.module.css';
+import Logo from '../../Logo';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface MobileMenuProps {
   isConnected: boolean;
   location: Location;
   totalValue: number;
+  dormantCapital: number; // Add this line
   formatValue: (value: number) => string;
 }
 
@@ -22,6 +24,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   location,
   totalValue,
   formatValue,
+  dormantCapital
 }) => {
   const closeMobileMenu = () => setIsOpen(false);
 
@@ -29,14 +32,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     <>
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div 
-          className={styles.mobileMenuOverlay} 
-          onClick={closeMobileMenu} 
+        <div
+          className={styles.mobileMenuOverlay}
+          onClick={closeMobileMenu}
         />
       )}
 
       {/* Mobile Menu Sidebar */}
-      <div 
+      <div
         ref={mobileMenuRef}
         className={`${styles.mobileMenu} ${isOpen ? styles.mobileMenuOpen : ''}`}
       >
@@ -44,7 +47,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           <Link to="/" className={styles.mobileMenuLogo} onClick={closeMobileMenu}>
             <Logo />
           </Link>
-          <button 
+          <button
             className={styles.mobileMenuCloseButton}
             onClick={closeMobileMenu}
             aria-label="Close mobile menu"
@@ -54,33 +57,33 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         </div>
 
         <nav className={styles.mobileNavigation}>
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className={`${styles.mobileNavLink} ${location.pathname === '/' ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
             Wallet
           </Link>
-          
+
           {/* Only show My Yields when connected */}
           {isConnected && (
-            <Link 
-              to="/yields" 
+            <Link
+              to="/yields"
               className={`${styles.mobileNavLink} ${location.pathname === '/yields' ? styles.mobileNavLinkActive : ''}`}
               onClick={closeMobileMenu}
             >
               My Yields
             </Link>
           )}
-          <Link 
-            to="/explore" 
+          <Link
+            to="/explore"
             className={`${styles.mobileNavLink} ${location.pathname === '/explore' ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
             Explore
           </Link>
-          <Link 
-            to="/alerts" 
+          <Link
+            to="/alerts"
             className={`${styles.mobileNavLink} ${location.pathname === '/alerts' ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -92,11 +95,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         {isConnected && (
           <div className={styles.mobileWalletSection}>
             <div className={styles.mobileWalletInfo}>
-              
               {/* Display total value on mobile */}
               <div className={styles.mobileEarningsContainer}>
                 <div className={styles.mobileEarningsBadge}>
-                  <span className={styles.mobileEarningsLabel}>Total Savings:</span>
+                  <span className={styles.mobileEarningsLabel}>Dormant Capital:</span>
+                  <span className={styles.mobileEarningsAmount}>
+                    ~${formatValue(dormantCapital)}
+                  </span>
+                </div>
+                <div className={styles.mobileEarningsBadge}>
+                  <span className={styles.mobileEarningsLabel}>Working Capital:</span>
                   <span className={styles.mobileEarningsAmount}>
                     ~${formatValue(totalValue)}
                   </span>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
+import { API_BASE_URL } from '../utils/constants';
 
 // Define types for deposit/withdrawal data structure
 export interface TokenActivity {
@@ -37,27 +38,40 @@ export interface ChainActivity {
 //     }
 //   }
 // }
-export type ApiResponseStructure = Record<string, Record<string, ChainActivity>>;
+export type ApiResponseStructure = {
+  totalDeposits: number,
+  currentDeposit: number,
+  totalEarnings: number,
+  currentEarnings: number,
+  totalWithdrawals: number,
+  userBalance: number,
+  transactions: Record<string, Record<string, ChainActivity>>
+};
+
+export type ActivityDataType = Record<string, ApiResponseStructure>;
 
 export interface DepositsAndWithdrawalsStore {
   // Data structure: [walletAddress][chainId][protocol][token] = { totalDeposit, totalWithdraw }
-  activityData: ApiResponseStructure;
+  activityData: ActivityDataType;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
   autoRefreshEnabled: boolean;
-  
+
   // Actions
   fetchUserActivity: (walletAddress: string, showLoading?: boolean) => Promise<void>;
   clearErrors: () => void;
-  getUserActivity: (walletAddress: string) => Record<string, ChainActivity> | null;
+  getUserActivity: (walletAddress: string) => ApiResponseStructure | null;
   getTotalDepositsForUser: (walletAddress: string) => string;
   getTotalWithdrawalsForUser: (walletAddress: string) => string;
   setAutoRefresh: (enabled: boolean) => void;
 }
 
+function generateId() {
+  return crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9);
+}
 // API endpoint for fetching user activity data
-const USER_DETAILS_API_ENDPOINT = 'http://65.109.34.27:5678/user-details';
+const USER_DETAILS_API_ENDPOINT = API_BASE_URL + '/api/user-details';
 
 // Note: Auto-refresh is disabled by default due to long fetch times for this endpoint
 // Auto-refresh interval in milliseconds (disabled by default)
@@ -83,28 +97,31 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         if (showLoading) {
           set({ isLoading: true });
         }
-        
+
         set({ error: null });
-        
+
         try {
           // Normalize wallet address to lowercase for consistency
           const normalizedAddress = walletAddress.toLowerCase();
-          const url = `${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`;
-            
+
+          const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
+          url.searchParams.set("requestId", generateId());
+
           const response = await fetch(url);
           if (!response.ok) {
             throw new Error(`API response error: ${response.statusText}`);
           }
-          
+
           // The API returns data in the format we need
           const data: ApiResponseStructure = await response.json();
-          
+          console.warn("USER_DETAILS_API_ENDPOINT data:", data);
           // Ensure all wallet addresses are lowercase for consistency
-          const normalizedData: ApiResponseStructure = {};
-          Object.entries(data).forEach(([address, userData]) => {
-            normalizedData[address.toLowerCase()] = userData;
-          });
-          
+          let normalizedData: ActivityDataType = {};
+          // Object.entries(data.transactions).forEach(([address, userData]) => {
+          normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
+          // });
+
+
           set(state => ({
             activityData: {
               ...state.activityData,
@@ -114,7 +131,8 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             lastUpdated: Date.now()
           }));
         } catch (error) {
-          set({ 
+
+          set({
             error: error instanceof Error ? error.message : 'Unknown error fetching user activity data',
             isLoading: false
           });
@@ -127,30 +145,30 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       // Get activity data for a specific user
       getUserActivity: (walletAddress: string) => {
         const state = get();
-        const normalizedAddress = walletAddress.toLowerCase();
-        
+        const normalizedAddress = walletAddress?.toLowerCase();
+
         return state.activityData[normalizedAddress] || null;
       },
 
       // Calculate total deposits across all chains and protocols for a user
       getTotalDepositsForUser: (walletAddress: string) => {
         const state = get();
-        const normalizedAddress = walletAddress.toLowerCase();
+        const normalizedAddress = walletAddress?.toLowerCase();
         const userData = state.activityData[normalizedAddress];
-        
+
         if (!userData) return '0';
-        
-        let totalDeposits = BigInt(0);
-        
-        Object.values(userData).forEach(chainData => {
-          Object.values(chainData).forEach(protocolData => {
-            Object.values(protocolData).forEach(tokenData => {
-              totalDeposits += BigInt(tokenData.totalDeposit || '0');
-            });
-          });
-        });
-        
-        return totalDeposits.toString();
+
+        // let totalDeposits = BigInt(0);
+
+        // Object.values(userData).forEach(chainData => {
+        //   Object.values(chainData).forEach(protocolData => {
+        //     Object.values(protocolData).forEach(tokenData => {
+        //       totalDeposits += BigInt(tokenData.totalDeposit || '0');
+        //     });
+        //   });
+        // });
+
+        return userData.totalDeposits.toString();
       },
 
       // Calculate total withdrawals across all chains and protocols for a user
@@ -158,20 +176,20 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         const state = get();
         const normalizedAddress = walletAddress.toLowerCase();
         const userData = state.activityData[normalizedAddress];
-        
+
         if (!userData) return '0';
-        
-        let totalWithdrawals = BigInt(0);
-        
-        Object.values(userData).forEach(chainData => {
-          Object.values(chainData).forEach(protocolData => {
-            Object.values(protocolData).forEach(tokenData => {
-              totalWithdrawals += BigInt(tokenData.totalWithdraw || '0');
-            });
-          });
-        });
-        
-        return totalWithdrawals.toString();
+
+        // let totalWithdrawals = BigInt(0);
+
+        // Object.values(userData).forEach(chainData => {
+        //   Object.values(chainData).forEach(protocolData => {
+        //     Object.values(protocolData).forEach(tokenData => {
+        //       totalWithdrawals += BigInt(tokenData.totalWithdraw || '0');
+        //     });
+        //   });
+        // });
+
+        return userData.totalWithdrawals.toString();
       },
 
       // Set auto-refresh preference
@@ -191,7 +209,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 // Hook for auto-refreshing user activity data
 export function useDepositsAndWithdrawalsAutoRefresh(walletAddress: string) {
   const { fetchUserActivity, autoRefreshEnabled, lastUpdated } = useDepositsAndWithdrawalsStore();
-  
+
   useEffect(() => {
     if (!autoRefreshEnabled || !walletAddress || walletAddress === '0x') {
       return;

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
-import Logo from '../../Logo';
+// import Logo from '../../Logo';
 import Navigation from './Navigation';
 import EarningsDisplay from './EarningsDisplay';
 import WalletSection from './WalletSection';
 import HamburgerButton from './HamburgerButton';
 import styles from '../Header.module.css';
+import Logo from '../../Logo';
 
 interface DesktopHeaderProps {
   isVisible: boolean;
@@ -14,6 +15,7 @@ interface DesktopHeaderProps {
   address?: string;
   location: Location;
   totalValue: number;
+  dormantCapital: number;
   formatValue: (value: number) => string;
   isDropdownOpen: boolean;
   toggleDropdown: () => void;
@@ -42,43 +44,48 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   handleCopyAddress,
   handleOpenExplorer,
   disconnectWallet,
+  dormantCapital
 }) => {
   return (
     <header className={`${styles.header} ${isVisible ? styles.headerVisible : styles.headerHidden}`}>
-      <div className={styles.headerLeft}>
-        <Link to="/" className={styles.titleLink}>
-          <Logo />
-        </Link>
-        
-        <Navigation 
-          isConnected={isConnected}
-          location={location}
-        />
-      </div>
-      
-      <div className={styles.headerRight}>
-        <EarningsDisplay
-          isConnected={isConnected}
-          totalValue={totalValue}
-          formatValue={formatValue}
-        />
-        
-        <WalletSection
-          isConnected={isConnected}
-          address={address}
-          isDropdownOpen={isDropdownOpen}
-          toggleDropdown={toggleDropdown}
-          dropdownRef={dropdownRef}
-          copySuccess={copySuccess}
-          handleCopyAddress={handleCopyAddress}
-          handleOpenExplorer={handleOpenExplorer}
-          disconnectWallet={disconnectWallet}
-        />
+      <div className={styles.headerContent}>
 
-        <HamburgerButton
-          isOpen={isMobileMenuOpen}
-          onClick={toggleMobileMenu}
-        />
+        <div className={styles.headerLeft}>
+          <Link to="/" className={styles.titleLink}>
+            <Logo />
+          </Link>
+
+          <Navigation
+            isConnected={isConnected}
+            location={location}
+          />
+        </div>
+
+        <div className={styles.headerRight}>
+          <EarningsDisplay
+            isConnected={isConnected}
+            totalValue={totalValue}
+            formatValue={formatValue}
+            dormantCapital={dormantCapital}
+          />
+
+          <WalletSection
+            isConnected={isConnected}
+            address={address}
+            isDropdownOpen={isDropdownOpen}
+            toggleDropdown={toggleDropdown}
+            dropdownRef={dropdownRef}
+            copySuccess={copySuccess}
+            handleCopyAddress={handleCopyAddress}
+            handleOpenExplorer={handleOpenExplorer}
+            disconnectWallet={disconnectWallet}
+          />
+
+          <HamburgerButton
+            isOpen={isMobileMenuOpen}
+            onClick={toggleMobileMenu}
+          />
+        </div>
       </div>
     </header>
   );

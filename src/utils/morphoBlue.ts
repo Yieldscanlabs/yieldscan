@@ -1,4 +1,4 @@
-import { MarketParams, Market } from '@morpho-org/blue-sdk';
+import { MarketParams } from '@morpho-org/blue-sdk';
 
 // USDC Vault Market Parameters
 export const USDC_VAULT_ADDRESS = '0xd63070114470f685b75B74D60EEc7c1113d33a3D';

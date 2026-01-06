@@ -7,70 +7,87 @@ import { useEarnStore } from '../store/earnStore';
 import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
 import useWalletConnection from '../hooks/useWalletConnection';
 import type { Asset } from '../types';
+import { useManualWalletStore } from '../store/manualWalletStore';
+import { useAccount } from 'wagmi';
+import { shortenAddress } from '../utils/helpers';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard/YieldCard';
 import type { OptimizationData } from '../components/YieldCard/types';
 import { useAssetStore } from '../store/assetStore';
 import NetworkSelector from '../components/NetworkSelector';
 import ProtocolSelector from '../components/ProtocolSelector';
+import AssetSelector from '../components/AssetSelector';
 import ViewToggle from '../components/ViewToggle';
 import SearchBar from '../components/SearchBar';
-import { useUserPreferencesStore, type ViewType } from '../store/userPreferencesStore';
+import { useUserPreferencesStore } from '../store/userPreferencesStore';
 import YieldsTable from '../components/YieldsTable';
 import PageHeader from '../components/PageHeader';
+import { useNavigate } from 'react-router-dom';
+import { MyYieldSkeletonLoader, MyYieldSummaryCardsSkeleton } from '../components/loaders/MyYieldSkeletonLoader';
 
 const MyYieldsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { wallet } = useWalletConnection();
-  const { assets, error, isLoading: loading } = useAssetStore();
+  const { assets, error, isLoading: loading, fetchProtocols, protocols } = useAssetStore();
+  const { manualAddresses, isConsolidated } = useManualWalletStore();
+  const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
+  const [selectedAsset, setSelectedAsset] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
   // State for total deposited, total withdrawn, and total earning
   const [totalDeposited, setTotalDeposited] = useState<number>(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
-  
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
+  const [currentDeposit, setCurrentDeposit] = useState<number>(0);
+  const [currentEarned, setCurrentEarned] = useState<number>(0);
+
   // Use userPreferencesStore for view toggle state
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
-  
+
   // Get the getBestApy method from the store
-  const { getBestApy, lastUpdated, apyData } = useApyStore();
-  
-  // Get the earnings data from the earnStore
-  const { 
-    isLoading: earningsLoading,
-    getTotalEarnings
-  } = useEarnStore();
+  const { getBestApy, apyData } = useApyStore();
+  const { getUserActivity } = useDepositsAndWithdrawalsStore();
 
-  // Get deposits and withdrawals data
-  const { 
-    getUserActivity,
-    getTotalDepositsForUser,
-    getTotalWithdrawalsForUser,
-    isLoading: activityLoading
-  } = useDepositsAndWithdrawalsStore();
-  
-  // No need to fetch manually here since it's now handled in Layout
-  
-  // Get total earnings for display
-
-  // Get unique protocols from tokens
-  const uniqueProtocols = useMemo(() => 
-    Array.from(new Set(tokens
-      .filter(token => token.protocol && token.yieldBearingToken)
-      .map(token => token.protocol)
-    )),
-    []
-  );
-
-  // Get all yield-bearing assets without filtering by protocol
-  const allYieldAssets = useMemo(() => 
+  const allYieldAssets = useMemo(() =>
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
+
+  const uniqueAssets = useMemo(() => {
+    type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
+    const assetMap = new Map<string, UniqueAsset>();
+
+    allYieldAssets.forEach(asset => {
+      const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
+      const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
+      const existing = assetMap.get(asset.token);
+
+      if (existing) {
+        if (hasHoldings && !existing.hasHoldings) {
+          assetMap.set(asset.token, { ...existing, hasHoldings: true });
+        }
+      } else {
+        assetMap.set(asset.token, {
+          token: asset.token,
+          icon: asset.icon,
+          chainId: asset.chainId,
+          hasHoldings
+        });
+      }
+    });
+
+    return Array.from(assetMap.values());
+  }, [allYieldAssets]);
+
+
+  useEffect(() => {
+    fetchProtocols()
+  }, [])
 
   // Force cards view on mobile screens (900px and below)
   useEffect(() => {
@@ -79,120 +96,108 @@ const MyYieldsPage: React.FC = () => {
         setViewType('cards');
       }
     };
-
-    // Check on mount
     handleResize();
-
-    // Add event listener
     window.addEventListener('resize', handleResize);
-
-    // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, [viewType, setViewType]);
 
-  // Add keyboard shortcut to focus search
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Focus search on Ctrl/Cmd + K or just "/" key
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        searchInputRef.current?.focus();
-      } else if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        // Only focus if not typing in an input already
-        const activeElement = document.activeElement;
+      if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const activeElement = document.activeElement as HTMLElement | null;
         if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
           event.preventDefault();
           searchInputRef.current?.focus();
         }
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Memoize filtered yield-bearing tokens for display only
-  const filteredYieldAssets = useMemo(() => 
-    allYieldAssets.filter(asset => {
-      // Filter by network if selected
-      if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
-      
-      // Filter by protocol if selected
-      if (selectedProtocol !== 'all') {
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        if (!token || token.protocol !== selectedProtocol) return false;
-      }
-      
-      // Filter by search query
-      if (searchQuery) {
-        const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        const matchesProtocol = token?.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
-        if (!matchesToken && !matchesProtocol) return false;
-      }
-      
-      return true;
-    }),
-    [allYieldAssets, selectedNetwork, selectedProtocol, searchQuery, tokens]
-  );
+  const filteredYieldAssets = useMemo(() => {
+    return allYieldAssets
+      .filter(asset => {
+        if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
+        if (selectedProtocol !== 'all' && asset.protocol?.toLowerCase() !== selectedProtocol.toLowerCase()) return false;
+        if (selectedAsset !== 'all' && asset.token.toLowerCase() !== selectedAsset.toLowerCase()) return false;
+        if (searchQuery) {
+          const matchesToken = asset.token.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesProtocol = asset.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
+          if (!matchesToken && !matchesProtocol) return false;
+        }
+        const hasBalance = Number(asset.currentBalanceInProtocolUsd) > 0.001;
+        return hasBalance;
+      })
+      .map(asset => {
+        let totalDeposited = 0;
+        let totalDepositedUsd = "";
+        const activityAddress = (asset.walletAddress || wallet.address || "");
+        const userData = getUserActivity(activityAddress);
+        if (userData) {
+          const chainData = (userData as Record<string, any>)[asset.chainId];
+          if (chainData) {
+            const protocolKey = asset.protocol || "";
+            const protocolData = (chainData as Record<string, any>)[protocolKey];
+            if (protocolData) {
+              const tokenKey = asset.token;
+              const tokenData = protocolData[tokenKey] || protocolData[tokenKey.replace(/^a/i, "")];
+              if (tokenData) {
+                const decimals = asset.decimals || 18;
+                const divisor = BigInt("1" + "0".repeat(decimals));
+                const depositsBigInt = BigInt(tokenData.totalDeposit || "0");
+                const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || "0");
+                const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
+                const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
+                totalDeposited = depositsFormatted - withdrawalsFormatted;
+                totalDepositedUsd = (totalDeposited * asset.usd).toString();
+              }
+            }
+          }
+        }
+        return { ...asset, totalDeposited, totalDepositedUsd };
+      });
+  }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity]);
 
   // Get unique chain IDs from assets for the network selector
-  const uniqueChainIds = useMemo(() => 
+  const uniqueChainIds = useMemo(() =>
     Array.from(new Set(assets.filter(asset => asset.yieldBearingToken).map(asset => asset.chainId))),
     [assets]
   );
 
   // Function to calculate optimization data for a single asset
   const getOptimizationDataForAsset = (asset: Asset): OptimizationData | undefined => {
-    // Get APY info for the asset
     const token = tokens.find(
       t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
     );
-    
+
     if (!token) return undefined;
-    
-    // Determine which protocol this yield-bearing token belongs to
-    const currentProtocol = token.protocol;
+    const currentProtocol = asset.protocol;
     if (!currentProtocol) return undefined;
-    
-    // Find the underlying asset for this yield token
-    const underlyingTokenSymbol = token.token.substring(1); // e.g., aUSDC -> USDC
-    const underlyingToken = tokens.find(
-      t => t.token === underlyingTokenSymbol && t.chainId === token.chainId && !t.yieldBearingToken
-    );
-    
-    if (!underlyingToken) return undefined;
-    
-    // Get best APY from the store
+
     const { bestApy, bestProtocol } = getBestApy(
-      underlyingToken.chainId,
-      underlyingToken.address.toLowerCase()
+      token.chainId,
+      token.address.toLowerCase()
     );
-    
-    // If no best APY found, skip this asset
+
     if (bestApy === null || !bestProtocol) return undefined;
-    
+
     //@ts-ignore
-    const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[underlyingToken.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
-    
-    // Check if there's a better APY available
+    const currentApyEstimate = currentProtocol && apyData[token.chainId]?.[token.address.toLowerCase()]?.[currentProtocol.toLowerCase()] || 0;
+
     if (bestProtocol !== currentProtocol && bestApy > currentApyEstimate) {
-      // Calculate additional yield if user switches to better protocol
       const balanceNum = parseFloat(asset.balance);
       const usdPrice = parseFloat(asset.balanceUsd) / balanceNum;
       const currentYearlyUsd = (balanceNum * (currentApyEstimate / 100)) * usdPrice;
       const betterYearlyUsd = (balanceNum * (bestApy / 100)) * usdPrice;
       const additionalYearlyUsd = betterYearlyUsd - currentYearlyUsd;
       const apyImprovement = ((bestApy - currentApyEstimate) / currentApyEstimate * 100);
-      
-      const betterProtocolName = bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES 
-        ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] 
+
+      const betterProtocolName = bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES
+        ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES]
         : bestProtocol;
-      
+
       return {
         currentProtocol,
         currentApy: currentApyEstimate,
@@ -202,7 +207,6 @@ const MyYieldsPage: React.FC = () => {
         apyImprovement: parseFloat(apyImprovement.toFixed(0))
       };
     }
-    
     return undefined;
   };
 
@@ -210,39 +214,24 @@ const MyYieldsPage: React.FC = () => {
   const calculateWeightedApy = (): number => {
     let totalWeightedApy = 0;
     let totalValue = 0;
-    
-    // Get Aave and Radiant assets from current balances
-    const supportedAssets = allYieldAssets.filter(asset => {
-      const token = tokens.find(
-        t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-      );
-      return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant';
+
+    const supportedAssets = filteredYieldAssets.filter(asset => {
+      return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
     });
 
     supportedAssets.forEach(asset => {
-      const balanceValue = parseFloat(asset.balanceUsd || '0');
+      const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
       if (isNaN(balanceValue) || balanceValue === 0) return;
-      
-      // Get APY for this asset from apyStore if available
+
       let assetApy = 0;
       if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
         const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
         assetApy = apys[asset.protocol.toLowerCase()] || 0;
       }
-      
-      // If no APY found, use defaults: 3% for Aave, 4% for Radiant
-      if (assetApy === 0) {
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        assetApy = token?.protocol?.toLowerCase() === 'radiant' ? 4 : 3;
-      }
-      
       totalWeightedApy += assetApy * balanceValue;
       totalValue += balanceValue;
     });
-    
-    // Return weighted average APY (default to 3.5% if no supported assets)
+
     return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
   };
 
@@ -256,295 +245,114 @@ const MyYieldsPage: React.FC = () => {
       return;
     }
 
-    // Get real deposits and withdrawals data from the store
-    const userData = getUserActivity(wallet.address);
-    
-    if (!userData) {
-      setTotalDeposited(0);
-      setTotalWithdrawn(0);
-      setTotalEarned(0);
-      setLiveTotalEarned(0);
-      return;
+    const addresses: string[] = [];
+    if (isConsolidated) {
+      addresses.push(...manualAddresses);
+      if (isMetamaskConnected && metamaskAddress) addresses.push(metamaskAddress);
+      if (addresses.length === 0 && wallet.address) addresses.push(wallet.address);
+    } else {
+      addresses.push(wallet.address);
     }
 
-    let totalDepositsUsd = 0;
-    let totalWithdrawalsUsd = 0;
+    const userCalculatedData: Record<string, {
+      currentDeposit: number,
+      totalDeposit: number,
+      currentEarnings: number,
+      totalEarnings: number,
+      totalWithdrawn: number
+    }> = {}
 
-    // Helper function to find token decimals
-    const findTokenDecimals = (chainId: number, protocolName: string, tokenSymbol: string): number => {
-      // Find the token in the tokens array that matches the chain, protocol, and symbol
-      const token = tokens.find(t => 
-        t.chainId === chainId && 
-        t.protocol?.toLowerCase() === protocolName.toLowerCase() && 
-        (t.token.toUpperCase().includes(tokenSymbol.toUpperCase()) || t.token === tokenSymbol)
-      );
-      
-      if (token) {
-        return token.decimals;
+    addresses.forEach(addr => {
+      const userData = getUserActivity(addr);
+      if (!userData) return;
+      userCalculatedData[addr] = {
+        currentDeposit: userData.currentDeposit,
+        totalDeposit: userData.totalDeposits,
+        currentEarnings: userData.currentEarnings,
+        totalEarnings: userData.totalEarnings,
+        totalWithdrawn: userData.totalWithdrawals
       }
-      
-      // Fallback: try to find the underlying asset (non-yield-bearing version)
-      const underlyingToken = tokens.find(t => 
-        t.chainId === chainId && 
-        !t.yieldBearingToken &&
-        t.token.toUpperCase() === tokenSymbol.toUpperCase()
-      );
-      
-      if (underlyingToken) {
-        return underlyingToken.decimals;
-      }
-      
-      // Default fallback based on common token decimals
-      if (tokenSymbol.toUpperCase() === 'USDC' || tokenSymbol.toUpperCase() === 'USDT') {
-        return 6; // Most USDC/USDT have 6 decimals
-      }
-      
-      return 18; // Default to 18 decimals for other tokens
-    };
-
-    // Calculate Aave and Radiant earnings using: current_balance - deposits + withdrawals
-    const calculateSupportedEarnings = (): number => {
-      let totalEarnings = 0;
-
-      // Get Aave and Radiant assets from current balances
-      const supportedAssets = allYieldAssets.filter(asset => {
-        const token = tokens.find(
-          t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-        );
-        return token?.protocol?.toLowerCase() === 'aave' || token?.protocol?.toLowerCase() === 'radiant';
-      });
-
-      supportedAssets.forEach(asset => {
-        // Current balance in USD
-        const currentBalanceUsd = parseFloat(asset.balanceUsd);
-
-        // Find corresponding deposits and withdrawals for this token
-        let depositsUsd = 0;
-        let withdrawalsUsd = 0;
-
-        Object.entries(userData).forEach(([chainIdStr, chainData]) => {
-          const chainId = parseInt(chainIdStr, 10);
-          if (chainId !== asset.chainId) return;
-
-          // Get the protocol data (Aave or Radiant)
-          const token = tokens.find(
-            t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId
-          );
-          const protocolName = token?.protocol;
-          
-          if (!protocolName) return;
-          
-          const protocolData = (chainData as Record<string, any>)[protocolName];
-          if (!protocolData) return;
-
-          // Map token symbols to underlying asset symbols for deposits/withdrawals lookup
-          let tokenSymbol = asset.token;
-          
-          // Handle specific token mappings
-          if (protocolName.toLowerCase() === 'aave') {
-            // Aave token mappings
-            if (tokenSymbol === 'aUSDC' || tokenSymbol === 'AUSDC') {
-              tokenSymbol = 'USDC';
-            } else if (tokenSymbol === 'AUSDT') {
-              tokenSymbol = 'USDT';
-            } else if (tokenSymbol === 'AWETH') {
-              tokenSymbol = 'ETH'; // WETH is usually referred to as ETH in deposits
-            } else if (tokenSymbol === 'aBnbUSDC') {
-              tokenSymbol = 'USDC';
-            } else if (tokenSymbol === 'aBnbUSDT') {
-              tokenSymbol = 'USDT';
-            } else if (tokenSymbol === 'aBnbWBNB') {
-              tokenSymbol = 'wBNB'; // BNB Wrapped BNB
-            } else if (tokenSymbol === 'aArbUSDT') {
-              tokenSymbol = 'USDT';
-            } else if (tokenSymbol.startsWith('a') || tokenSymbol.startsWith('A')) {
-              // Generic handling for other aTokens - remove 'a' prefix
-              tokenSymbol = tokenSymbol.substring(1);
-            }
-          } else if (protocolName.toLowerCase() === 'radiant') {
-            // Radiant token mappings
-            if (tokenSymbol === 'Radiant USDC') {
-              tokenSymbol = 'USDC';
-            } else if (tokenSymbol === 'Radiant USDT') {
-              tokenSymbol = 'USDT';
-            }
-          }
-
-          const tokenData = protocolData[tokenSymbol];
-          if (!tokenData) {
-            console.log(`No deposit/withdrawal data found for ${protocolName} token ${asset.token} (mapped to ${tokenSymbol}) on chain ${chainId}`);
-            return;
-          }
-
-          const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-          
-          // Convert BigInt values to regular numbers with proper decimals
-          const depositsRawString = tokenData.totalDeposit || '0';
-          const withdrawalsRawString = tokenData.totalWithdraw || '0';
-          
-          const depositsBigInt = BigInt(depositsRawString);
-          const withdrawalsBigInt = BigInt(withdrawalsRawString);
-          const divisor = BigInt('1' + '0'.repeat(decimals));
-          
-          const depositsWhole = depositsBigInt / divisor;
-          const depositsRemainder = depositsBigInt % divisor;
-          const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
-          
-          const withdrawalsWhole = withdrawalsBigInt / divisor;
-          const withdrawalsRemainder = withdrawalsBigInt % divisor;
-          const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
-          
-          // Find token price for USD conversion - use the underlying asset price
-          const tokenInfo = tokens.find(t => 
-            t.chainId === chainId && 
-            !t.yieldBearingToken &&
-            (t.token.toUpperCase() === tokenSymbol.toUpperCase())
-          );
-          
-          const tokenPrice = tokenInfo?.usdPrice || 1;
-          
-          depositsUsd += depositsFormatted * tokenPrice;
-          withdrawalsUsd += withdrawalsFormatted * tokenPrice;
-        });
-
-        // Calculate earnings for this token: current_balance - deposits + withdrawals
-        const tokenEarnings = currentBalanceUsd - depositsUsd + withdrawalsUsd;
-        totalEarnings += tokenEarnings;
-
-        console.log(`${asset.token} earnings calculation:`, {
-          protocol: tokens.find(t => t.address.toLowerCase() === asset.address.toLowerCase() && t.chainId === asset.chainId)?.protocol,
-          currentBalanceUsd,
-          depositsUsd,
-          withdrawalsUsd,
-          tokenEarnings
-        });
-      });
-
-      return totalEarnings;
-    };
-
-    // Process deposits and withdrawals for each chain and protocol (Aave and Radiant)
-    Object.entries(userData).forEach(([chainIdStr, chainData]) => {
-      const chainId = parseInt(chainIdStr, 10);
-      
-      Object.entries(chainData as Record<string, any>).forEach(([protocolName, protocolData]) => {
-        // Only process Aave and Radiant protocol data to be consistent with earnings calculation
-        if (protocolName.toLowerCase() !== 'aave' && protocolName.toLowerCase() !== 'radiant') return;
-        
-        Object.entries(protocolData as Record<string, any>).forEach(([tokenSymbol, tokenData]) => {
-          const decimals = findTokenDecimals(chainId, protocolName, tokenSymbol);
-          
-          // Convert BigInt values to regular numbers with proper decimals
-          const depositsRawString = (tokenData as any).totalDeposit || '0';
-          const withdrawalsRawString = (tokenData as any).totalWithdraw || '0';
-          
-          // Handle as BigInt and use BigInt arithmetic for division
-          const depositsBigInt = BigInt(depositsRawString);
-          const withdrawalsBigInt = BigInt(withdrawalsRawString);
-          
-          // Create divisor as BigInt more carefully
-          const divisor = BigInt('1' + '0'.repeat(decimals)); // Creates 10^decimals as BigInt
-          
-          // Do BigInt division to get the main units, then handle remainder for precision
-          const depositsWhole = depositsBigInt / divisor;
-          const depositsRemainder = depositsBigInt % divisor;
-          const depositsFormatted = Number(depositsWhole) + Number(depositsRemainder) / Number(divisor);
-          
-          const withdrawalsWhole = withdrawalsBigInt / divisor;
-          const withdrawalsRemainder = withdrawalsBigInt % divisor;
-          const withdrawalsFormatted = Number(withdrawalsWhole) + Number(withdrawalsRemainder) / Number(divisor);
-          
-          // Find token price for USD conversion - use underlying asset price
-          const tokenInfo = tokens.find(t => 
-            t.chainId === chainId && 
-            !t.yieldBearingToken &&
-            (t.token.toUpperCase() === tokenSymbol.toUpperCase())
-          );
-          
-          const tokenPrice = tokenInfo?.usdPrice || 1; // Default to $1 if no price found
-          
-          // Add to totals in USD
-          totalDepositsUsd += depositsFormatted * tokenPrice;
-          totalWithdrawalsUsd += withdrawalsFormatted * tokenPrice;
-        });
-      });
     });
+   
+    let currentDeposits = 0
+    let totalDeposits = 0
+    let currentEarned = 0
+    let totalEarned = 0
+    let totalWithdrawls = 0
 
-    // Calculate earnings: Use supported protocols calculation (Aave and Radiant)
-    const supportedEarnings = calculateSupportedEarnings();
+    Object.values(userCalculatedData).forEach((data) => {
+      currentDeposits += data.currentDeposit
+      totalDeposits += data.totalDeposit
+      currentEarned += data.currentEarnings
+      totalEarned += data.totalEarnings
+      totalWithdrawls += data.totalWithdrawn
+    })
     
-    // For non-Aave protocols, we could still use the existing APY-based calculation
-    // const otherProtocolEarnings = getTotalEarnings().lifetime; // You can uncomment this if needed
-    
-    const totalEarnedUsd = supportedEarnings; // Only Aave and Radiant earnings for now, as requested
+    setLiveTotalEarned(totalEarned);
+    setTotalDeposited(totalDeposits);
+    setTotalWithdrawn(totalWithdrawls);
+    setCurrentDeposit(currentDeposits);
+    setCurrentEarned(currentEarned);
+    setTotalEarned(totalEarned);
+  }, [
+    wallet.address,
+    isConsolidated,
+    manualAddresses,
+    isMetamaskConnected,
+    metamaskAddress,
+    getUserActivity,
+    allYieldAssets,
+    selectedNetwork,
+    currentBalance
+  ]);
 
-    // Update state with real data
-    setTotalDeposited(totalDepositsUsd);
-    setTotalWithdrawn(totalWithdrawalsUsd);
-    setTotalEarned(totalEarnedUsd);
-    setLiveTotalEarned(totalEarnedUsd);
-  }, [wallet.address, getUserActivity, getTotalEarnings, allYieldAssets]);
-
-  // Live ticker effect - update earnings every 100ms based on Aave APY
+  // Live ticker effect
   useEffect(() => {
     if (!wallet.address || totalEarned <= 0) return;
-    
-    // Set initial live value
+
+    if (currentEarned <= 0) {
+      return
+    }
     setLiveTotalEarned(totalEarned);
-    
-    // Calculate the weighted APY for Aave tokens
+
     const weightedApy = calculateWeightedApy();
-    
-    // Calculate the per-tick growth rate based on APY
-    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100; // Number of 100ms ticks in a year
-    
+    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
+
     const timer = setInterval(() => {
       setLiveTotalEarned(prevValue => {
-        // Calculate growth for this tick
         const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-        
-        // Use high precision multiplication to ensure decimal changes are visible
-        const newValue = prevValue * growthRate;
-        
-        return newValue;
+        return prevValue * growthRate;
+      });
+      setCurrentEarned(prevCurrent => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevCurrent * growthRate;
       });
     }, 100);
-    
-    // Cleanup timer on unmount or when dependencies change
-    return () => clearInterval(timer);
-  }, [totalEarned, wallet.address, allYieldAssets, apyData]);
 
-  // Format value with proper comma separators and more decimal places for precision
+    return () => clearInterval(timer);
+  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
+
   const formatLiveValue = (value: number): string => {
-    // Ensure the value is a valid number
     if (typeof value !== 'number' || isNaN(value)) {
       return '0.000000000000000000';
     }
-    
     try {
-      // Use higher precision (18 decimal places) to match the header's live ticker
       if (value >= 1000) {
         return value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 });
       } else {
         return value.toFixed(18);
       }
     } catch (error) {
-      console.error('Error formatting value:', error);
       return '0.000000000000000000';
     }
   };
-  
-  // Loading state
-  if (loading || earningsLoading || activityLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loadingSpinner}></div>
-        <div className={styles.loadingText}>Loading your yields...</div>
-      </div>
-    );
-  }
 
-  // Error state
+  const globalState = useMemo(() => {
+    const hasActiveYields = assets.some(a => Number(a.currentBalanceInProtocolUsd) > 0.01);
+    const hasDormantFunds = assets.some(a => Number(a.balanceUsd) > 0.01);
+    return { hasActiveYields, hasDormantFunds };
+  }, [assets]);
+
   if (error) {
     return (
       <div className={styles.error}>
@@ -553,33 +361,14 @@ const MyYieldsPage: React.FC = () => {
     );
   }
 
-  // Empty state - no yield-bearing assets at all
-  if (allYieldAssets.length === 0) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          {/* <h1>My Yields</h1> */}
-        </div>
-        <div className={styles.emptyState}>
-          <h3>No yield-bearing assets found</h3>
-          <p>You don't have any assets currently earning yield.</p>
-          <button className={styles.exploreButton}>Explore Yield Opportunities</button>
-        </div>
-      </div>
-    );
-  }
-
-  // Render the content
   return (
     <div className={styles.container}>
-      <PageHeader 
+      <PageHeader
         title="My Yields"
         subtitle="Track and optimize your yield-bearing positions"
       />
-      
-      {/* Filters container with earnings summary */}
+
       <div className={styles.filtersContainer}>
-        {/* Network selector for filtering yields */}
         <div className={styles.filterItem}>
           <NetworkSelector
             selectedNetwork={selectedNetwork}
@@ -589,10 +378,9 @@ const MyYieldsPage: React.FC = () => {
             className={styles.networkSelector}
           />
         </div>
-        
-        {/* Protocol, Search and View Toggle Group */}
+
         <div className={styles.protocolSearchViewGroup}>
-          <ViewToggle 
+          <ViewToggle
             currentView={viewType}
             onViewChange={setViewType}
           />
@@ -606,103 +394,191 @@ const MyYieldsPage: React.FC = () => {
           <ProtocolSelector
             selectedProtocol={selectedProtocol}
             //@ts-ignore
-            protocols={uniqueProtocols}
+            protocols={protocols}
             onChange={setSelectedProtocol}
             className={styles.protocolSelector}
+          />
+          <AssetSelector
+            selectedAsset={selectedAsset}
+            assets={uniqueAssets}
+            onChange={setSelectedAsset}
+            className={styles.assetSelector}
           />
         </div>
       </div>
 
-      {/* Summary section - real data from stores */}
-      <div className={styles.summaryCards}>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryTitle}>Total Deposited</div>
-          <div className={styles.summaryAmount}>
-            ${formatNumber(totalDeposited, 2)}
+      {loading ? (
+        <MyYieldSummaryCardsSkeleton />
+      ) : (
+        <div className={styles.summaryCards}>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryTitle}>Current Deposit</div>
+            <div className={styles.summaryAmount}>
+              ${formatNumber(currentDeposit, 10)}
+            </div>
+            <div className={styles.summarySubtext}>
+              Total Deposit  ${formatNumber(totalDeposited, 10)}
+            </div>
           </div>
-          <div className={styles.summarySubtext}>
-            Total deposited to Aave & Radiant protocols
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryTitle}>Current Earned</div>
+            <div className={styles.summaryAmount}>
+              ${formatLiveValue(currentEarned)}
+            </div>
+            <div className={styles.summarySubtext}>
+              Total Earning ${formatLiveValue(liveTotalEarned)}
+            </div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryTitle}>Total Withdrawn</div>
+            <div className={styles.summaryAmount}>
+              ${formatNumber(totalWithdrawn, 4)}
+            </div>
+            <div className={styles.summarySubtext}></div>
           </div>
         </div>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryTitle}>Total Earned</div>
-          <div className={styles.summaryAmount}>
-            ${formatLiveValue(liveTotalEarned)}
-          </div>
-          <div className={styles.summarySubtext}>
-            Aave & Radiant earnings (balance - deposits + withdrawals)
-          </div>
-        </div>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryTitle}>Total Withdrawn</div>
-          <div className={styles.summaryAmount}>
-            ${formatNumber(totalWithdrawn, 2)}
-          </div>
-          <div className={styles.summarySubtext}>
-            Total withdrawn from Aave & Radiant protocols
-          </div>
-        </div>
-      </div>
+      )}
 
-      {/* Current Yields Section - Uses filteredYieldAssets for display */}
-      <div className={styles.section}>
-        {filteredYieldAssets.length > 0 ? (
-          viewType === 'cards' ? (
-            <div className={styles.yieldGrid}>
-              {filteredYieldAssets.map((asset) => {
-                const optimizationData = getOptimizationDataForAsset(asset);
-                
-                // Handle optimization for this specific asset
-                const handleOptimize = () => {
-                  console.log('Starting optimization for:', asset.token);
-                  if (optimizationData) {
-                    console.log(`Optimizing ${asset.token} from ${optimizationData.currentProtocol} to ${optimizationData.betterProtocol}`);
-                  }
-                };
-                
+      {/* Current Yields Section */}
+      {isConsolidated ? (
+        // Consolidated view: group by wallet address
+        (() => {
+          const allAddresses = [...manualAddresses];
+          if (isMetamaskConnected && metamaskAddress) {
+            allAddresses.push(metamaskAddress);
+          }
+
+          // Group assets by walletAddress
+          const assetsByWallet = new Map<string, typeof filteredYieldAssets>();
+          filteredYieldAssets.forEach(asset => {
+            const walletAddr = asset.walletAddress?.toLowerCase() || '';
+            if (!assetsByWallet.has(walletAddr)) {
+              assetsByWallet.set(walletAddr, []);
+            }
+            assetsByWallet.get(walletAddr)!.push(asset);
+          });
+         
+          return (
+            <>
+              {allAddresses.map((address) => {
+                const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
+                const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
+
+                // ✅ FIX: Calculate dormant funds SPECIFICALLY for this wallet
+                // We must look at the RAW assets array, filter by this address, and check balanceUsd
+                const thisWalletHasDormantFunds = assets
+                    .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
+                    .some(a => Number(a.balanceUsd) > 0.01);
+
                 return (
-                  <YieldCard
-                    key={`${asset.token}-${asset.chainId}`}
-                    asset={asset}
-                    optimizationData={optimizationData}
-                    onOptimize={handleOptimize}
-                  />
+                  <div key={address} className={styles.section}>
+                    <div className={styles.walletSectionHeader}>
+                      <h3>Wallet: {shortenAddress(address)}</h3>
+                      {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
+                    </div>
+
+                    {loading ? (
+                      <MyYieldSkeletonLoader viewType={viewType} />
+                    ) : (
+                      <>
+                        {walletAssets.length === 0 ? (
+                          <div className={styles.emptyState}>
+                            <h3>You have not yet started yielding</h3>
+                            {/* Use local boolean instead of globalState */}
+                            {thisWalletHasDormantFunds ? (
+                              <>
+                                <p>You have dormant assets in your wallet that could be earning yield.</p>
+                                <button onClick={() => navigate("/")} className={styles.exploreButton}>
+                                  View Wallet Options
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <p>You don't have any assets currently earning yield.</p>
+                                <button onClick={() => navigate("/explore")} className={styles.exploreButton}>
+                                  Explore Yield Opportunities
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          viewType === 'cards' ? (
+                            <div className={styles.yieldGrid}>
+                              {walletAssets.map((asset) => {
+                                const optimizationData = getOptimizationDataForAsset(asset);
+                                return (
+                                  <YieldCard
+                                    key={`${asset.token}-${asset.chainId}-${asset.protocol}-${address}`}
+                                    asset={asset}
+                                    optimizationData={optimizationData}
+                                    onOptimize={() => { }}
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <YieldsTable
+                              assets={walletAssets}
+                              loading={loading}
+                              getOptimizationDataForAsset={getOptimizationDataForAsset}
+                            />
+                          )
+                        )}
+                      </>
+                    )}
+                  </div>
                 );
               })}
-            </div>
+            </>
+          );
+        })()
+      ) : (
+        // Single wallet view
+        <div className={styles.section}>
+          {loading ? (
+            <MyYieldSkeletonLoader viewType={viewType} />
           ) : (
-            <YieldsTable
-              assets={filteredYieldAssets}
-              loading={loading}
-              getOptimizationDataForAsset={getOptimizationDataForAsset}
-            />
-          )
-        ) : (
-          <div className={styles.filteredEmptyState}>
-            <div className={styles.filteredEmptyContent}>
-              <div className={styles.filteredEmptyIcon}>🔍</div>
-              <div className={styles.filteredEmptyText}>
-                <h3>No matching assets found</h3>
-                <p>
-                  No yield-bearing assets match your current filters.
-                  Try changing the network or protocol filter to see your assets.
-                </p>
-              </div>
-              <button 
-                className={styles.resetFiltersButton}
-                onClick={() => {
-                  setSelectedNetwork('all');
-                  setSelectedProtocol('all');
-                }}
-              >
-                Reset Filters
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+            <>
+              {filteredYieldAssets.length > 0 ? (
+                viewType === 'cards' ? (
+                  <div className={styles.yieldGrid}>
+                    {filteredYieldAssets.map((asset) => (
+                      <YieldCard
+                        key={`${asset.token}-${asset.chainId}-${asset.protocol}`}
+                        asset={asset}
+                        optimizationData={getOptimizationDataForAsset(asset)}
+                        onOptimize={() => { }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <YieldsTable assets={filteredYieldAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
+                )
+              ) : (
+                <div className={styles.emptyState}>
+                  <h3>You have not yet started yielding</h3>
+                  {globalState.hasDormantFunds ? (
+                    <>
+                      <p>You have dormant assets in your wallet that could be earning yield.</p>
+                      <button onClick={() => navigate("/")} className={styles.exploreButton}>
+                        View Wallet Options
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>You don't have any assets currently earning yield.</p>
+                      <button onClick={() => navigate("/explore")} className={styles.exploreButton}>
+                        Explore Yield Opportunities
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 export default MyYieldsPage;
