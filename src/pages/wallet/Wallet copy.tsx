@@ -21,46 +21,6 @@ import PageHeader from '../../components/PageHeader';
 import { useManualWalletStore } from '../../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import { shortenAddress } from '../../utils/helpers';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-
-// --- NEW COMPONENT: Empty State Card ---
-interface EmptyStateCardProps {
-  onClick: () => void;
-  walletName?: string;
-}
-
-const EmptyStateCard: React.FC<EmptyStateCardProps> = ({ onClick, walletName }) => {
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        {/* <h1>My Yields</h1> */}
-      </div>
-      <div className={styles.emptyState}>
-        <h3>No Assets Found</h3>
-        <p>
-          {walletName ? `No assets found in ${walletName}.` : "You don't have any assets yet."} Click the button below to explore yield opportunities.
-
-        </p>
-        <button onClick={onClick} className={styles.exploreButton}>
-          Yield Opportunities.
-        </button>
-      </div>
-    </div>
-  )
-
-  return (
-    <div className={styles.emptyStateCard} onClick={onClick}>
-      <div className={styles.emptyIconWrapper}>
-        <span>+</span>
-      </div>
-      <div className={styles.emptyTitle}>No Assets Found</div>
-      <div className={styles.emptyDesc}>
-        {walletName ? `No assets found in ${walletName}.` : "You don't have any assets yet."} Click to find yield opportunities.
-      </div>
-    </div>
-  );
-};
-// ----------------------------------------
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -77,12 +37,12 @@ interface WalletState {
 }
 
 function Wallet() {
-  const navigate = useNavigate(); // Hook for navigation
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading, getAssetsForAddress } = useAssetStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { manualAddresses, isConsolidated } = useManualWalletStore();
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
+  // Use userPreferencesStore for view toggle state
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
 
   const [state, setState] = useState<WalletState>({
@@ -97,18 +57,29 @@ function Wallet() {
 
   const { yieldOptions } = useYieldOptions(state.selectedAsset);
 
+  // Force cards view on mobile screens (900px and below)
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 900 && viewType !== 'cards') {
         setViewType('cards');
       }
     };
+
+    // Check on mount
     handleResize();
+
+    // Add event listener
     window.addEventListener('resize', handleResize);
+
+    // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, [viewType, setViewType]);
 
   const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
+    console.log('Asset Details:');
+    console.table(asset);
+    console.log('Best APY Data:');
+    console.table(apyData);
     setState(prev => ({
       ...prev,
       selectedAsset: asset,
@@ -142,15 +113,17 @@ function Wallet() {
   };
 
   const handleNetworkChange = (selectedNetwork: number | 'all') => {
-    setState(prev => ({ ...prev, selectedNetwork }));
+    setState(prev => ({
+      ...prev,
+      selectedNetwork
+    }));
   };
 
   const handleSearchChange = (query: string) => {
-    setState(prev => ({ ...prev, searchQuery: query }));
-  };
-
-  const handleResetFilters = () => {
-    setState(prev => ({ ...prev, selectedNetwork: 'all', searchQuery: '' }));
+    setState(prev => ({
+      ...prev,
+      searchQuery: query
+    }));
   };
 
   const getSelectedYieldOption = (): YieldOption => {
@@ -166,6 +139,7 @@ function Wallet() {
         lockupDays: 0
       };
     }
+
     return yieldOptions[0] || {
       id: '0',
       protocol: 'Loading...',
@@ -188,19 +162,21 @@ function Wallet() {
       );
     }
 
-    // Helper: Logic to check if a specific asset passes current filters
+    // Filter function for assets
     const filterAsset = (asset: Asset) => {
+      // Filter by network
       const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
-      const matchesSearch = state.searchQuery === '' || asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
+
+      // Filter by search query
+      const matchesSearch = state.searchQuery === '' ||
+        asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
+
+      // 👇 Keep asset if it has idle balance OR active protocol balance
+      // const hasBalance = Number(asset.balance) > 0 || Number(asset.currentBalanceInProtocolUsd) > 0;
       const hasBalance = Number(asset.balance) > 0;
+
       return matchesNetwork && matchesSearch && hasBalance;
     };
-
-    // Helper: Check if a wallet has ANY assets (ignoring current filters)
-    // This helps decide between "Empty Wallet" card vs "No Filter Results"
-    const hasAnyAssets = (walletAssets: Asset[]) => {
-      return walletAssets.some(asset => Number(asset.balance) > 0);
-    }
 
     const commonProps = {
       loading: assetsLoading,
@@ -208,13 +184,15 @@ function Wallet() {
       selectedAsset: state.selectedAsset
     };
 
-    // --- CONSOLIDATED VIEW ---
+    // Consolidated view: group by wallet address
     if (isConsolidated) {
+      // Get all addresses
       const allAddresses = [...manualAddresses];
       if (isMetamaskConnected && metamaskAddress) {
         allAddresses.push(metamaskAddress);
       }
-      // Group assets
+
+      // Group assets by walletAddress
       const assetsByWallet = new Map<string, Asset[]>();
       assets.forEach(asset => {
         const walletAddr = asset.walletAddress?.toLowerCase() || '';
@@ -238,7 +216,10 @@ function Wallet() {
               onChange={handleNetworkChange}
             />
             <div className={styles.searchAndViewGroup}>
-              <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
+              <ViewToggle
+                currentView={viewType}
+                onViewChange={handleViewChange}
+              />
               <SearchBar
                 ref={searchInputRef}
                 placeholder="Search coins ..."
@@ -249,48 +230,28 @@ function Wallet() {
             </div>
           </div>
 
+          {/* Render sections for each wallet */}
           {allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
+            console.log(`AssetsByWallet:`, assetsByWallet);
+            console.log(`walletAssets for ${address}:`, walletAssets);
             const filteredAssets = walletAssets.filter(filterAsset);
+
+            // The AssetList handles empty states internally, so let it render!
+            // if (filteredAssets.length === 0) return null;
+
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
-            const walletName = shortenAddress(address);
-            const walletHasAnyAssets = hasAnyAssets(walletAssets);
 
             return (
               <div key={address} className={styles.walletSection}>
                 <div className={styles.walletSectionHeader}>
-                  <h3>Wallet: {walletName}</h3>
+                  <h3>Wallet: {shortenAddress(address)}</h3>
                   {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
                 </div>
-
-                {filteredAssets.length > 0 ? (
-                  viewType === 'cards' ? (
-                    <AssetList {...commonProps} assets={filteredAssets} />
-                  ) : (
-                    <AssetTable {...commonProps} assets={filteredAssets} />
-                  )
+                {viewType === 'cards' ? (
+                  <AssetList {...commonProps} assets={filteredAssets} />
                 ) : (
-                  // No assets displayed. Check why.
-                  walletHasAnyAssets ? (
-                    // 1. Has assets, but filters hid them
-                    <div className={styles.filteredEmptyState}>
-                      <div className={styles.filteredEmptyContent}>
-                        <div className={styles.filteredEmptyIcon}>🔍</div>
-                        <div className={styles.filteredEmptyText}>
-                          <h3>No matching assets found</h3>
-                          <p>No assets match your current filters in this wallet.</p>
-                        </div>
-                        <button className={styles.resetFiltersButton} onClick={handleResetFilters}>
-                          Reset Filters
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // 2. Wallet is truly empty -> Show EMPTY CARD
-                    <div className={viewType === 'cards' ? styles.assetGrid : ''}>
-                      <EmptyStateCard onClick={() => navigate('/explore')} walletName={walletName} />
-                    </div>
-                  )
+                  <AssetTable {...commonProps} assets={filteredAssets} />
                 )}
               </div>
             );
@@ -299,10 +260,9 @@ function Wallet() {
       );
     }
 
-    // --- SINGLE VIEW ---
+    // Single wallet view
     const filteredAssets = assets.filter(filterAsset);
-    const hasAnyTotal = hasAnyAssets(assets);
-
+    console.log('Filtered Assets:', filteredAssets);
     return (
       <div className={styles.assetViewContainer}>
         <PageHeader
@@ -317,7 +277,10 @@ function Wallet() {
             onChange={handleNetworkChange}
           />
           <div className={styles.searchAndViewGroup}>
-            <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
+            <ViewToggle
+              currentView={viewType}
+              onViewChange={handleViewChange}
+            />
             <SearchBar
               ref={searchInputRef}
               placeholder="Search coins..."
@@ -327,35 +290,10 @@ function Wallet() {
             />
           </div>
         </div>
-
-        {filteredAssets.length > 0 ? (
-          viewType === 'cards' ? (
-            <AssetList {...commonProps} assets={filteredAssets} />
-          ) : (
-            <AssetTable {...commonProps} assets={filteredAssets} />
-          )
+        {viewType === 'cards' ? (
+          <AssetList {...commonProps} assets={filteredAssets} />
         ) : (
-          // No assets displayed. Check why.
-          hasAnyTotal ? (
-            // 1. Filtered out
-            <div className={styles.filteredEmptyState}>
-              <div className={styles.filteredEmptyContent}>
-                <div className={styles.filteredEmptyIcon}>🔍</div>
-                <div className={styles.filteredEmptyText}>
-                  <h3>No matching assets found</h3>
-                  <p>No assets match your current filters.</p>
-                </div>
-                <button className={styles.resetFiltersButton} onClick={handleResetFilters}>
-                  Reset Filters
-                </button>
-              </div>
-            </div>
-          ) : (
-            // 2. Truly Empty -> Show EMPTY CARD
-            <div className={viewType === 'cards' ? styles.assetGrid : ''}>
-              <EmptyStateCard onClick={() => navigate('/explore')} />
-            </div>
-          )
+          <AssetTable {...commonProps} assets={filteredAssets} />
         )}
       </div>
     );
@@ -414,6 +352,7 @@ function Wallet() {
     );
   };
 
+  // Keep "/" to focus search; leave Ctrl/Cmd+K to global manual wallet modal
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
@@ -424,6 +363,7 @@ function Wallet() {
         }
       }
     };
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -432,6 +372,7 @@ function Wallet() {
     <div className={styles.appWrapper}>
       <div className={styles.appContainer}>
         {renderContent()}
+
         <WalletModal
           isOpen={isModalOpen}
           onClose={closeConnectModal}
@@ -441,4 +382,4 @@ function Wallet() {
   );
 }
 
-export default Wallet;
+export default Wallet; 
