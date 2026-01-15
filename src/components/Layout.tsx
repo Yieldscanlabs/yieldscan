@@ -54,7 +54,6 @@ const Layout = () => {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [openManualModal]);
-  console.warn("CONNECTED WALLET DATA: ", useDepositsAndWithdrawalsStore.getState().getUserActivity(manualAddresses[activeManualAddressIndex ?? 0]));
   // Initialize auto-refresh for APY, Assets, and Earnings (no auto-refresh for deposits/withdrawals due to long fetch time)
   useApyAutoRefresh();
   useEarningsAutoRefresh(wallet.address);

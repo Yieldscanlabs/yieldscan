@@ -8,8 +8,10 @@ import TabNavigation from './components/TabNavigation';
 import ApyTable from './components/ApyTable';
 import TrustScores from './components/TrustScores';
 import PageHeader from '../../components/PageHeader';
+import { useLocation } from 'react-router-dom';
 
 const LiveApyPage: React.FC = () => {
+  const location = useLocation();
   const { apyData, isLoading, error, fetchApys, fetchDefinitions } = useApyStore();
   const { wallet } = useWalletConnection();
   const [activeTab, setActiveTab] = useState<string>('best-apy');
@@ -32,6 +34,20 @@ const LiveApyPage: React.FC = () => {
     }
     return Array.from(map.values());
   }, [assets, selectedChain]);
+
+  // Update initial state or useEffect to apply filter
+  useEffect(() => {
+    // Typecast the location state safely
+    const navigationState = location.state as { filterNetwork?: number | 'all' } | null;
+    console.log("navigationState: ", navigationState)
+    // Check if filterNetwork is actually defined (not null or undefined)
+    if (navigationState && navigationState.filterNetwork !== undefined) {
+      setSelectedChain(navigationState.filterNetwork!)
+
+      // Clear the state so it doesn't persist on refresh/back navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Format timestamp for last updated
   const formattedLastUpdate = new Intl.DateTimeFormat('en-US', {
