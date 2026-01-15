@@ -16,6 +16,7 @@ import { useTheme } from '../hooks/useTheme';
 import GlobalManualWalletModal from './GlobalManualWalletModal';
 import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount } from 'wagmi';
+import ScanProgressBar from './loaders/ScanProgressBar';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
@@ -137,6 +138,7 @@ const Layout = () => {
   }
   return (
     <div className={styles.layout}>
+      <ScanProgressBar />
       <Header
         isConnected={wallet.isConnected}
         address={wallet.address}

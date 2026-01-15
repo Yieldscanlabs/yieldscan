@@ -17,6 +17,27 @@ export interface ChainActivity {
   [protocolName: string]: ProtocolActivity;
 }
 
+// The API response structure:
+// {
+//   "0x5fbc2f7b45155cbe713eaa9133dd0e88d74126f6": {
+//     "1": {
+//       "Aave": {
+//         "USDC": {
+//           "totalDeposit": "1000000",
+//           "totalWithdraw": "0"
+//         }
+//       }
+//     },
+//     "56": {
+//       "Aave": {
+//         "USDT": {
+//           "totalDeposit": "50000000000000000100000000000000000",
+//           "totalWithdraw": "0"
+//         }
+//       }
+//     }
+//   }
+// }
 export type ApiResponseStructure = {
   totalDeposits: number,
   currentDeposit: number,
@@ -30,16 +51,12 @@ export type ApiResponseStructure = {
 export type ActivityDataType = Record<string, ApiResponseStructure>;
 
 export interface DepositsAndWithdrawalsStore {
+  // Data structure: [walletAddress][chainId][protocol][token] = { totalDeposit, totalWithdraw }
   activityData: ActivityDataType;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
   autoRefreshEnabled: boolean;
-
-  // 👇 Progress State (You added this correctly)
-  progress: number;
-  scanStatus: string;
-  isScanning: boolean;
 
   // Actions
   fetchUserActivity: (walletAddress: string, showLoading?: boolean) => Promise<void>;
@@ -48,19 +65,16 @@ export interface DepositsAndWithdrawalsStore {
   getTotalDepositsForUser: (walletAddress: string) => string;
   getTotalWithdrawalsForUser: (walletAddress: string) => string;
   setAutoRefresh: (enabled: boolean) => void;
-  resetProgress: () => void;
-  reset: () => void; // Added for logout cleanup
 }
 
 function generateId() {
-  // Use crypto.randomUUID if available, otherwise fallback
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return Math.random().toString(36).substring(2, 9);
+  return crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9);
 }
-
+// API endpoint for fetching user activity data
 const USER_DETAILS_API_ENDPOINT = API_BASE_URL + '/api/user-details';
+
+// Note: Auto-refresh is disabled by default due to long fetch times for this endpoint
+// Auto-refresh interval in milliseconds (disabled by default)
 const AUTO_REFRESH_INTERVAL = 300000;
 
 export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore>()(
@@ -70,108 +84,43 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       isLoading: false,
       error: null,
       lastUpdated: null,
-      autoRefreshEnabled: false,
+      autoRefreshEnabled: false, // Disabled by default due to long fetch times
 
-      // Initial Progress State
-      progress: 0,
-      scanStatus: '',
-      isScanning: false,
-
-      resetProgress: () => set({ progress: 0, scanStatus: '', isScanning: false }),
-      
-      reset: () => set({ 
-        activityData: {}, 
-        isLoading: false, 
-        error: null, 
-        lastUpdated: null,
-        progress: 0,
-        scanStatus: '',
-        isScanning: false
-      }),
-
+      // Fetch user activity data for a specific wallet address
       fetchUserActivity: async (walletAddress: string, showLoading = true) => {
         if (!walletAddress || walletAddress === '0x') {
           set({ activityData: {}, error: null, isLoading: false });
           return;
         }
 
-        // 👇 UPDATED: Set isScanning to true here
+        // Only show loading state if explicitly requested
         if (showLoading) {
-          set({ 
-            isLoading: true, 
-            isScanning: true, 
-            progress: 0, 
-            scanStatus: 'Initializing Blockchain Scan...' 
-          });
+          set({ isLoading: true });
         }
 
         set({ error: null });
 
         try {
+          // Normalize wallet address to lowercase for consistency
           const normalizedAddress = walletAddress.toLowerCase();
-          const requestId = generateId(); // Generate ID for tracking
 
-          // 👇 1. START SSE LISTENER (The Missing Part)
-          // This listens to the backend progress stream while the main fetch runs
-          let eventSource: EventSource | null = null;
-          
-          if (showLoading) {
-            // Connect to the progress endpoint
-            eventSource = new EventSource(`${API_BASE_URL}/api/long-task/progress?requestId=${requestId}`);
-            
-            eventSource.onmessage = (event) => {
-              if (event.data === "done") {
-                eventSource?.close();
-                set({ progress: 100, scanStatus: 'Finalizing data...' });
-              } else {
-                try {
-                  // Parse progress update from backend
-                  // Assuming backend sends: { "Ethereum": 50, "BSC": 100 } (count of txs found)
-                  const data = JSON.parse(event.data);
-                  const totalTxFound = Object.values(data).reduce((a: any, b: any) => Number(a) + Number(b), 0);
-                  
-                  set({ 
-                    scanStatus: `Found ${totalTxFound} transactions...`,
-                    // We increment progress visually to show activity
-                    progress: Math.min(get().progress + 2, 90) 
-                  });
-                } catch (e) {
-                  // Ignore parsing errors
-                }
-              }
-            };
-
-            eventSource.onerror = () => {
-              eventSource?.close();
-            };
-          }
-
-          // 👇 2. START MAIN API FETCH
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
-          url.searchParams.set("requestId", requestId); // Pass the ID so backend knows where to send progress
+          url.searchParams.set("requestId", generateId());
 
           const response = await fetch(url);
-          
-          // Cleanup SSE on completion
-          if (eventSource) {
-            eventSource.close();
-          }
-
           if (!response.ok) {
             throw new Error(`API response error: ${response.statusText}`);
           }
 
+          // The API returns data in the format we need
           const data: ApiResponseStructure = await response.json();
           console.warn("USER_DETAILS_API_ENDPOINT data:", data);
-          
+          // Ensure all wallet addresses are lowercase for consistency
           let normalizedData: ActivityDataType = {};
-          // Handle potential missing transactions object safely
-          if (data.transactions && Object.keys(data.transactions).length > 0) {
-             normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
-          } else {
-             // Fallback if no transaction data returned but request succeeded
-             normalizedData[normalizedAddress] = data;
-          }
+          // Object.entries(data.transactions).forEach(([address, userData]) => {
+          normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
+          // });
+
 
           set(state => ({
             activityData: {
@@ -179,49 +128,71 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
               ...normalizedData
             },
             isLoading: false,
-            isScanning: false, // Turn off scanning
-            progress: 100,
             lastUpdated: Date.now()
           }));
-          
-          // Reset progress bar after a short delay so user sees "100%"
-          setTimeout(() => get().resetProgress(), 1000);
-
         } catch (error) {
-          console.error("Fetch Error:", error);
+
           set({
             error: error instanceof Error ? error.message : 'Unknown error fetching user activity data',
-            isLoading: false,
-            isScanning: false, // Turn off scanning on error
-            progress: 0
+            isLoading: false
           });
         }
       },
 
+      // Clear any error messages
       clearErrors: () => set({ error: null }),
 
+      // Get activity data for a specific user
       getUserActivity: (walletAddress: string) => {
         const state = get();
         const normalizedAddress = walletAddress?.toLowerCase();
+
         return state.activityData[normalizedAddress] || null;
       },
 
+      // Calculate total deposits across all chains and protocols for a user
       getTotalDepositsForUser: (walletAddress: string) => {
         const state = get();
         const normalizedAddress = walletAddress?.toLowerCase();
         const userData = state.activityData[normalizedAddress];
+
         if (!userData) return '0';
+
+        // let totalDeposits = BigInt(0);
+
+        // Object.values(userData).forEach(chainData => {
+        //   Object.values(chainData).forEach(protocolData => {
+        //     Object.values(protocolData).forEach(tokenData => {
+        //       totalDeposits += BigInt(tokenData.totalDeposit || '0');
+        //     });
+        //   });
+        // });
+
         return userData.totalDeposits.toString();
       },
 
+      // Calculate total withdrawals across all chains and protocols for a user
       getTotalWithdrawalsForUser: (walletAddress: string) => {
         const state = get();
         const normalizedAddress = walletAddress.toLowerCase();
         const userData = state.activityData[normalizedAddress];
+
         if (!userData) return '0';
+
+        // let totalWithdrawals = BigInt(0);
+
+        // Object.values(userData).forEach(chainData => {
+        //   Object.values(chainData).forEach(protocolData => {
+        //     Object.values(protocolData).forEach(tokenData => {
+        //       totalWithdrawals += BigInt(tokenData.totalWithdraw || '0');
+        //     });
+        //   });
+        // });
+
         return userData.totalWithdrawals.toString();
       },
 
+      // Set auto-refresh preference
       setAutoRefresh: (enabled: boolean) => set({ autoRefreshEnabled: enabled })
     }),
     {
@@ -235,6 +206,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
   )
 );
 
+// Hook for auto-refreshing user activity data
 export function useDepositsAndWithdrawalsAutoRefresh(walletAddress: string) {
   const { fetchUserActivity, autoRefreshEnabled, lastUpdated } = useDepositsAndWithdrawalsStore();
 
@@ -243,14 +215,16 @@ export function useDepositsAndWithdrawalsAutoRefresh(walletAddress: string) {
       return;
     }
 
+    // Initial fetch if no data exists
     if (!lastUpdated) {
       fetchUserActivity(walletAddress, true);
     }
 
     const interval = setInterval(() => {
+      // Auto-refresh without showing loading state
       fetchUserActivity(walletAddress, false);
     }, AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [fetchUserActivity, autoRefreshEnabled, walletAddress, lastUpdated]);
-}
+} 
