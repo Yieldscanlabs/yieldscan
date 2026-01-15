@@ -166,6 +166,13 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
+  // Navigation Helper: Pass Filters to Next Page
+  const handleRedirect = (path: string) => {
+    // If a specific network is selected, pass it in state
+    const navigationState = selectedNetwork !== 'all' ? { filterNetwork: selectedNetwork } : undefined;
+    navigate(path, { state: navigationState });
+  };
+
   // Function to calculate optimization data for a single asset
   const getOptimizationDataForAsset = (asset: Asset): OptimizationData | undefined => {
     const token = tokens.find(
@@ -273,7 +280,7 @@ const MyYieldsPage: React.FC = () => {
         totalWithdrawn: userData.totalWithdrawals
       }
     });
-   
+
     let currentDeposits = 0
     let totalDeposits = 0
     let currentEarned = 0
@@ -287,7 +294,7 @@ const MyYieldsPage: React.FC = () => {
       totalEarned += data.totalEarnings
       totalWithdrawls += data.totalWithdrawn
     })
-    
+
     setLiveTotalEarned(totalEarned);
     setTotalDeposited(totalDeposits);
     setTotalWithdrawn(totalWithdrawls);
@@ -457,18 +464,18 @@ const MyYieldsPage: React.FC = () => {
             }
             assetsByWallet.get(walletAddr)!.push(asset);
           });
-         
+          console.log("ASSETS BY WALLET:", assetsByWallet);
           return (
             <>
               {allAddresses.map((address) => {
                 const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
                 const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
-
-                // ✅ FIX: Calculate dormant funds SPECIFICALLY for this wallet
+                console.log("WALLET ADDRESS:", address, "ASSETS:", walletAssets);
+                // Calculate dormant funds SPECIFICALLY for this wallet
                 // We must look at the RAW assets array, filter by this address, and check balanceUsd
                 const thisWalletHasDormantFunds = assets
-                    .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
-                    .some(a => Number(a.balanceUsd) > 0.01);
+                  .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
+                  .some(a => Number(a.balanceUsd) > 0.01);
 
                 return (
                   <div key={address} className={styles.section}>
@@ -488,14 +495,14 @@ const MyYieldsPage: React.FC = () => {
                             {thisWalletHasDormantFunds ? (
                               <>
                                 <p>You have dormant assets in your wallet that could be earning yield.</p>
-                                <button onClick={() => navigate("/")} className={styles.exploreButton}>
+                                <button onClick={() => handleRedirect("/")} className={styles.exploreButton}>
                                   View Wallet Options
                                 </button>
                               </>
                             ) : (
                               <>
                                 <p>You don't have any assets currently earning yield.</p>
-                                <button onClick={() => navigate("/explore")} className={styles.exploreButton}>
+                                <button onClick={() => handleRedirect("/explore")} className={styles.exploreButton}>
                                   Explore Yield Opportunities
                                 </button>
                               </>
@@ -560,14 +567,14 @@ const MyYieldsPage: React.FC = () => {
                   {globalState.hasDormantFunds ? (
                     <>
                       <p>You have dormant assets in your wallet that could be earning yield.</p>
-                      <button onClick={() => navigate("/")} className={styles.exploreButton}>
+                      <button onClick={() => handleRedirect("/")} className={styles.exploreButton}>
                         View Wallet Options
                       </button>
                     </>
                   ) : (
                     <>
                       <p>You don't have any assets currently earning yield.</p>
-                      <button onClick={() => navigate("/explore")} className={styles.exploreButton}>
+                      <button onClick={() => handleRedirect("/explore")} className={styles.exploreButton}>
                         Explore Yield Opportunities
                       </button>
                     </>

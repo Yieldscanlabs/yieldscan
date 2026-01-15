@@ -20,7 +20,7 @@ import PageHeader from '../../components/PageHeader';
 import { useManualWalletStore } from '../../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import { shortenAddress } from '../../utils/helpers';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import EmptyStateCard from '../../components/wallet-page/EmptyWalletStateCard';
 import { WalletSkeletonLoader } from '../../components/loaders/WalletSkeletonLoader';
 
@@ -40,6 +40,7 @@ interface WalletState {
 
 function Wallet() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,24 @@ function Wallet() {
 
   const { yieldOptions } = useYieldOptions(state.selectedAsset);
 
+  // Update initial state or useEffect to apply filter
+  useEffect(() => {
+    // Typecast the location state safely
+    const navigationState = location.state as { filterNetwork?: number | 'all' } | null;
+
+    // Check if filterNetwork is actually defined (not null or undefined)
+    if (navigationState && navigationState.filterNetwork !== undefined) {
+      setState(prev => ({
+        ...prev,
+        // Force the type since we verified it's not undefined
+        selectedNetwork: navigationState.filterNetwork! 
+      }));
+
+      // Clear the state so it doesn't persist on refresh/back navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 900 && viewType !== 'cards') {
@@ -69,6 +88,13 @@ function Wallet() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [viewType, setViewType]);
+
+  // Navigation Helper: Pass Filters to Next Page
+  const handleRedirect = (path: string) => {
+    // If a specific network is selected, pass it in state
+    const navigationState = state?.selectedNetwork !== 'all' ? { filterNetwork: state?.selectedNetwork } : undefined;
+    navigate(path, { state: navigationState });
+  };
 
   const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
     setState(prev => ({
@@ -244,7 +270,7 @@ function Wallet() {
                         </div>
                       ) : (
                         <div className={viewType === 'cards' ? styles.assetGrid : ''}>
-                          <EmptyStateCard onClick={() => navigate('/explore')} walletAddress={address} />
+                          <EmptyStateCard onClick={() => handleRedirect('/explore')} walletAddress={address} />
                         </div>
                       )
                     )}
@@ -314,7 +340,7 @@ function Wallet() {
                 </div>
               ) : (
                 <div className={viewType === 'cards' ? styles.assetGrid : ''}>
-                  <EmptyStateCard onClick={() => navigate('/explore')} />
+                  <EmptyStateCard onClick={() => handleRedirect('/explore')} />
                 </div>
               )
             )}
