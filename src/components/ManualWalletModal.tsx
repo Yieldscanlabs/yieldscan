@@ -14,7 +14,7 @@ function isValidAddress(address: string): boolean {
 }
 
 const ManualWalletModal: React.FC<ManualWalletModalProps> = ({ isOpen, onClose }) => {
-  const { manualAddresses, addManualAddress, removeManualAddress } = useManualWalletStore();
+  const { manualAddresses, addManualAddress, removeManualAddress, setActiveManualAddress } = useManualWalletStore();
   const [input, setInput] = useState<string>('');
   const [error, setError] = useState<string>('');
   const { address: metamaskAddress, isConnected } = useAccount();
@@ -55,6 +55,13 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({ isOpen, onClose }
 
     try {
       addManualAddress(input.trim());
+
+      // Set the newly added wallet as active
+      // Since it's pushed to the end, its index is the length of the array *before* the UI re-renders with the new list.
+      // However, Zustand updates immediately, so using manualAddresses.length works because we just called addManualAddress.
+      // Wait, let's be safer: The index of the new item will be the current length.
+      setActiveManualAddress(manualAddresses.length);
+      
       setInput('');
       setError('');
       onClose();
