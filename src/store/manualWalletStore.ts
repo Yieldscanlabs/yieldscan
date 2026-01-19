@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
 
 interface ManualWalletState {
   manualAddresses: string[];
@@ -65,6 +66,9 @@ export const useManualWalletStore = create<ManualWalletState>()(
           throw new Error('Cannot remove active wallet. Please switch to another wallet first.');
         }
 
+        // Capture the address BEFORE removing it from the array
+        const addressToRemove = state.manualAddresses[index];
+
         const newAddresses = state.manualAddresses.filter((_, i) => i !== index);
         let newActiveIndex = state.activeManualAddressIndex;
 
@@ -82,6 +86,12 @@ export const useManualWalletStore = create<ManualWalletState>()(
           manualAddresses: newAddresses,
           activeManualAddressIndex: newActiveIndex,
         });
+
+        // Trigger the cleanup in the Activity Store
+        // We use .getState() to call the action outside of a React component
+        if (addressToRemove) {
+          useDepositsAndWithdrawalsStore.getState().removeUserActivity(addressToRemove);
+        }
       },
       setActiveManualAddress: (index: number | null) => {
         const state = get();
@@ -111,7 +121,7 @@ export const useManualWalletStore = create<ManualWalletState>()(
         manualAddresses: state.manualAddresses,
         activeManualAddressIndex: state.activeManualAddressIndex,
         isConsolidated: state.isConsolidated,
-      }), 
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       }
