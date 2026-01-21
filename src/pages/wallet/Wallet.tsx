@@ -286,7 +286,8 @@ function Wallet() {
     // --- SINGLE VIEW ---
     const filteredAssets = assets.filter(filterAsset);
     const hasAnyTotal = hasAnyAssets(assets);
-
+    console.log('Filtered Assets:', filteredAssets);
+    console.log('Has Any Total Assets:hasAnyTotal:', hasAnyTotal);
     return (
       <div className={styles.assetViewContainer}>
         <PageHeader

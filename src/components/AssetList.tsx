@@ -79,6 +79,7 @@ const AssetList: React.FC<AssetListProps> = ({
             const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
             const yieldInfo = assetYields[assetKey];
             const price = getPrice(asset.token.toLowerCase());
+
             return (
               <AssetComponent
                 key={assetKey}
