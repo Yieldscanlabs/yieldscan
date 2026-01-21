@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4023';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||"https://api.yieldscan.io"|| 'http://localhost:4023' ;
 
 export const CHAIN_NAMES = {
   ETH: 'Ethereum',
