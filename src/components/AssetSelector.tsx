@@ -54,6 +54,7 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
     ? assets.find(asset => asset.token === selectedAsset)
     : null;
 
+    console.log("Assetes list in AssetSelector: ", assets);
   return (
     <div className={`${styles.dropdown} ${className || ''}`} ref={dropdownRef}>
       <button

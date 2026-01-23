@@ -218,6 +218,12 @@
 .controlsRow>* {
   flex-shrink: 0;
 }
+.filterControls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
 .searchAndViewGroup {
   display: flex;
@@ -231,6 +237,62 @@
   max-width: 400px;
   min-width: 200px;
 }
+
+
+.filteredEmptyState {
+ background-color: var(--surface-dark); /* Keeps your original dark theme support */
+  border: 1px solid var(--border-color); /* Keeps your original border */
+  border-radius: var(--radius-md);       /* Keeps your original radius */
+  padding: 3rem 2rem;                    /* Increased padding for better spacing */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;                     /* Ensures it looks like a substantial card */
+  transition: all 0.2s ease;
+  grid-column: 1 / -1;        
+}
+
+.filteredEmptyContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 450px;
+  padding: 1rem;
+}
+
+.filteredEmptyIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.filteredEmptyText h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.filteredEmptyText p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.resetFiltersButton {
+  padding: 8px 16px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.resetFiltersButton:hover {
+  background-color: var(--primary-hover);
+}
+
 
 /* Responsive design for controls */
 @media (max-width: 1024px) {

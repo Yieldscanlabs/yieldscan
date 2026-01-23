@@ -3,6 +3,7 @@ import type { Asset, YieldOption } from '../types';
 import AssetComponent from './AssetComponent';
 import styles from './AssetList.module.css';
 import { usePriceStore } from '../store/priceStore';
+import { MIN_ALLOWED_BALANCE } from '../utils/constants';
 
 interface AssetListProps {
   assets: Asset[];
@@ -74,7 +75,7 @@ const AssetList: React.FC<AssetListProps> = ({
     <div className={styles['asset-list']}>
       <div className={styles['asset-grid']}>
         {assets
-          .filter(asset => Number(asset.balance) > 0)
+          .filter(asset => Number(asset.balance) > MIN_ALLOWED_BALANCE)
           .map((asset) => {
             const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
             const yieldInfo = assetYields[assetKey];

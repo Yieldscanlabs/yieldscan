@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import styles from './Wallet.module.css';
 import WalletModal from '../../components/WalletModal';
 import AssetList from '../../components/AssetList';
@@ -6,6 +6,7 @@ import AssetTable from '../../components/AssetTable';
 import ViewToggle from '../../components/ViewToggle';
 import { useUserPreferencesStore, type ViewType } from '../../store/userPreferencesStore';
 import NetworkSelector from '../../components/NetworkSelector';
+import AssetSelector from '../../components/AssetSelector';
 import DepositForm from '../../components/DepositForm';
 import DepositSuccess from '../../components/DepositSuccess';
 import SearchBar from '../../components/SearchBar';
@@ -23,6 +24,7 @@ import { shortenAddress } from '../../utils/helpers';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EmptyStateCard from '../../components/wallet-page/EmptyWalletStateCard';
 import { WalletSkeletonLoader } from '../../components/loaders/WalletSkeletonLoader';
+import { MIN_ALLOWED_BALANCE } from '../../utils/constants';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -30,6 +32,7 @@ interface WalletState {
   showDepositForm: boolean;
   showDepositSuccess: boolean;
   selectedNetwork: number | 'all';
+  selectedAssetFilter: string | 'all';
   searchQuery: string;
   depositData: {
     amount: string;
@@ -54,6 +57,7 @@ function Wallet() {
     showDepositForm: false,
     showDepositSuccess: false,
     selectedNetwork: 'all',
+    selectedAssetFilter: 'all',
     searchQuery: '',
     depositData: { amount: '0', dailyYield: '0', yearlyYield: '0' }
   });
@@ -62,18 +66,13 @@ function Wallet() {
 
   // Update initial state or useEffect to apply filter
   useEffect(() => {
-    // Typecast the location state safely
     const navigationState = location.state as { filterNetwork?: number | 'all' } | null;
 
-    // Check if filterNetwork is actually defined (not null or undefined)
     if (navigationState && navigationState.filterNetwork !== undefined) {
       setState(prev => ({
         ...prev,
-        // Force the type since we verified it's not undefined
-        selectedNetwork: navigationState.filterNetwork! 
+        selectedNetwork: navigationState.filterNetwork!
       }));
-
-      // Clear the state so it doesn't persist on refresh/back navigation
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -89,9 +88,7 @@ function Wallet() {
     return () => window.removeEventListener('resize', handleResize);
   }, [viewType, setViewType]);
 
-  // Navigation Helper: Pass Filters to Next Page
   const handleRedirect = (path: string) => {
-    // If a specific network is selected, pass it in state
     const navigationState = state?.selectedNetwork !== 'all' ? { filterNetwork: state?.selectedNetwork } : undefined;
     navigate(path, { state: navigationState });
   };
@@ -133,12 +130,16 @@ function Wallet() {
     setState(prev => ({ ...prev, selectedNetwork }));
   };
 
+  const handleAssetFilterChange = (assetToken: string | 'all') => {
+    setState(prev => ({ ...prev, selectedAssetFilter: assetToken }));
+  };
+
   const handleSearchChange = (query: string) => {
     setState(prev => ({ ...prev, searchQuery: query }));
   };
 
   const handleResetFilters = () => {
-    setState(prev => ({ ...prev, selectedNetwork: 'all', searchQuery: '' }));
+    setState(prev => ({ ...prev, selectedNetwork: 'all', selectedAssetFilter: 'all', searchQuery: '' }));
   };
 
   const getSelectedYieldOption = (): YieldOption => {
@@ -166,18 +167,61 @@ function Wallet() {
     };
   };
 
-  const renderAssetView = () => {
+  // --- FIXED LOGIC START ---
+  // Compute unique assets for the selector based on wallet holdings
+  const uniqueAssetsForSelector = useMemo(() => {
+    const assetMap = new Map();
+    // Use a fallback of 0 if MIN_ALLOWED_BALANCE is undefined
+    const minBalance = MIN_ALLOWED_BALANCE || 0;
 
-    // Filter logic
+    assets.forEach(asset => {
+      // 1. Strict Balance Check: Ensure balance is strictly greater than minBalance
+      const balance = Number(asset.balance);
+      if (isNaN(balance) || balance <= minBalance) return;
+
+      // 2. Strict Network Check:
+      // Ensure we compare numbers to numbers if asset.chainId is numeric
+      if (state.selectedNetwork !== 'all') {
+        if (Number(asset.chainId) !== Number(state.selectedNetwork)) return;
+      }
+
+      // 3. Deduplicate by token symbol
+      // Only adds the first valid instance found (e.g., if USDT is on multiple valid chains, picks the first)
+      if (!assetMap.has(asset.token)) {
+        assetMap.set(asset.token, {
+          token: asset.token,
+          icon: asset.icon,
+          chainId: asset.chainId,
+          hasHoldings: true,
+          balance: asset.balance // Optional: Useful for debugging
+        });
+      }
+    });
+
+    return Array.from(assetMap.values());
+  }, [assets, state.selectedNetwork]);
+  // --- FIXED LOGIC END ---
+
+  const renderAssetView = () => {
+    const minBalance = MIN_ALLOWED_BALANCE || 0;
+
     const filterAsset = (asset: Asset) => {
-      const matchesNetwork = state.selectedNetwork === 'all' || asset.chainId === state.selectedNetwork;
-      const matchesSearch = state.searchQuery === '' || asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
-      const hasBalance = Number(asset.balance) > 0;
-      return matchesNetwork && matchesSearch && hasBalance;
+      // Case-insensitive network check
+      const matchesNetwork = state.selectedNetwork === 'all' || Number(asset.chainId) === Number(state.selectedNetwork);
+      
+      const matchesAssetFilter = state.selectedAssetFilter === 'all' || 
+        asset.token.toLowerCase() === state.selectedAssetFilter.toLowerCase();
+      
+      const matchesSearch = state.searchQuery === '' || 
+        asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
+      
+      const hasBalance = Number(asset.balance) > minBalance;
+
+      return matchesNetwork && matchesAssetFilter && matchesSearch && hasBalance;
     };
 
     const hasAnyAssets = (walletAssets: Asset[]) => {
-      return walletAssets.some(asset => Number(asset.balance) > 0);
+      return walletAssets.some(asset => Number(asset.balance) > minBalance);
     }
 
     const commonProps = {
@@ -209,12 +253,19 @@ function Wallet() {
             subtitle="Only showing assets that can earn yield with the best APY"
           />
           <div className={styles.controlsRow}>
-            <NetworkSelector
-              selectedNetwork={state.selectedNetwork}
-              networks={AVAILABLE_NETWORKS}
-              //@ts-ignore
-              onChange={handleNetworkChange}
-            />
+            <div className={styles.filterControls}>
+              <NetworkSelector
+                selectedNetwork={state.selectedNetwork}
+                networks={AVAILABLE_NETWORKS}
+                //@ts-ignore
+                onChange={handleNetworkChange}
+              />
+              <AssetSelector
+                selectedAsset={state.selectedAssetFilter}
+                assets={uniqueAssetsForSelector}
+                onChange={handleAssetFilterChange}
+              />
+            </div>
             <div className={styles.searchAndViewGroup}>
               <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
               <SearchBar
@@ -241,8 +292,6 @@ function Wallet() {
                   {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
                 </div>
 
-                {/* Consolidate View Skeleton */}
-
                 {assetsLoading ? (
                   <WalletSkeletonLoader viewType={viewType} />
                 ) : (
@@ -254,7 +303,6 @@ function Wallet() {
                         <AssetTable {...commonProps} assets={filteredAssets} />
                       )
                     ) : (
-                      // Empty State Logic
                       walletHasAnyAssets ? (
                         <div className={styles.filteredEmptyState}>
                           <div className={styles.filteredEmptyContent}>
@@ -286,8 +334,7 @@ function Wallet() {
     // --- SINGLE VIEW ---
     const filteredAssets = assets.filter(filterAsset);
     const hasAnyTotal = hasAnyAssets(assets);
-    console.log('Filtered Assets:', filteredAssets);
-    console.log('Has Any Total Assets:hasAnyTotal:', hasAnyTotal);
+
     return (
       <div className={styles.assetViewContainer}>
         <PageHeader
@@ -295,12 +342,19 @@ function Wallet() {
           subtitle="Only showing assets that can earn yield with the best APY"
         />
         <div className={styles.controlsRow}>
-          <NetworkSelector
-            selectedNetwork={state.selectedNetwork}
-            networks={AVAILABLE_NETWORKS}
-            //@ts-ignore
-            onChange={handleNetworkChange}
-          />
+          <div className={styles.filterControls}>
+            <NetworkSelector
+              selectedNetwork={state.selectedNetwork}
+              networks={AVAILABLE_NETWORKS}
+              //@ts-ignore
+              onChange={handleNetworkChange}
+            />
+            <AssetSelector
+              selectedAsset={state.selectedAssetFilter}
+              assets={uniqueAssetsForSelector}
+              onChange={handleAssetFilterChange}
+            />
+          </div>
           <div className={styles.searchAndViewGroup}>
             <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
             <SearchBar
@@ -313,7 +367,6 @@ function Wallet() {
           </div>
         </div>
 
-        {/* Single View Skeleton */}
         {assetsLoading ? (
           <WalletSkeletonLoader viewType={viewType} />
         ) : (
@@ -325,7 +378,6 @@ function Wallet() {
                 <AssetTable {...commonProps} assets={filteredAssets} />
               )
             ) : (
-              // Empty State Logic
               hasAnyTotal ? (
                 <div className={styles.filteredEmptyState}>
                   <div className={styles.filteredEmptyContent}>
