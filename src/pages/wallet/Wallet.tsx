@@ -24,6 +24,7 @@ import { shortenAddress } from '../../utils/helpers';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EmptyStateCard from '../../components/wallet-page/EmptyWalletStateCard';
 import { WalletSkeletonLoader } from '../../components/loaders/WalletSkeletonLoader';
+// Fallback if import fails
 import { MIN_ALLOWED_BALANCE } from '../../utils/constants';
 
 interface WalletState {
@@ -167,54 +168,64 @@ function Wallet() {
     };
   };
 
-  // --- FIXED LOGIC START ---
+  // --- STRICT LOGIC IMPLEMENTATION ---
   // Compute unique assets for the selector based on wallet holdings
   const uniqueAssetsForSelector = useMemo(() => {
     const assetMap = new Map();
-    // Use a fallback of 0 if MIN_ALLOWED_BALANCE is undefined
-    const minBalance = MIN_ALLOWED_BALANCE || 0;
+    const minBalance = typeof MIN_ALLOWED_BALANCE !== 'undefined' ? MIN_ALLOWED_BALANCE : 0;
 
     assets.forEach(asset => {
-      // 1. Strict Balance Check: Ensure balance is strictly greater than minBalance
+      // 1. Strict Validation: Check existence of critical fields
+      // We ensure token symbol and address are valid strings to avoid ghost assets
+      if (!asset.token || typeof asset.token !== 'string') return;
+      if (!asset.address || typeof asset.address !== 'string') return;
+      
+      // 2. Strict Balance Check
       const balance = Number(asset.balance);
       if (isNaN(balance) || balance <= minBalance) return;
 
-      // 2. Strict Network Check:
-      // Ensure we compare numbers to numbers if asset.chainId is numeric
+      // 3. Strict Network Comparison
       if (state.selectedNetwork !== 'all') {
+        // Compare as numbers to avoid string/number mismatch
         if (Number(asset.chainId) !== Number(state.selectedNetwork)) return;
       }
 
-      // 3. Deduplicate by token symbol
-      // Only adds the first valid instance found (e.g., if USDT is on multiple valid chains, picks the first)
-      if (!assetMap.has(asset.token)) {
-        assetMap.set(asset.token, {
-          token: asset.token,
+      // 4. Deduplicate logic
+      // We use the token symbol as the key for the dropdown.
+      // If the map already has this token, we skip it to prevent duplicates in the UI.
+      // Note: This relies on the FIRST valid asset found being the representative one.
+      const mapKey = asset.token.trim().toUpperCase(); 
+      
+      if (!assetMap.has(mapKey)) {
+        assetMap.set(mapKey, {
+          token: asset.token, // Keep original casing for display
           icon: asset.icon,
           chainId: asset.chainId,
-          hasHoldings: true,
-          balance: asset.balance // Optional: Useful for debugging
+          hasHoldings: true
         });
       }
     });
 
     return Array.from(assetMap.values());
   }, [assets, state.selectedNetwork]);
-  // --- FIXED LOGIC END ---
+  // --- END STRICT LOGIC ---
 
   const renderAssetView = () => {
-    const minBalance = MIN_ALLOWED_BALANCE || 0;
+    const minBalance = typeof MIN_ALLOWED_BALANCE !== 'undefined' ? MIN_ALLOWED_BALANCE : 0;
 
     const filterAsset = (asset: Asset) => {
-      // Case-insensitive network check
+      // Strict Network Check
       const matchesNetwork = state.selectedNetwork === 'all' || Number(asset.chainId) === Number(state.selectedNetwork);
       
+      // Strict Asset Filter Check (Case Insensitive)
       const matchesAssetFilter = state.selectedAssetFilter === 'all' || 
-        asset.token.toLowerCase() === state.selectedAssetFilter.toLowerCase();
+        (asset.token && asset.token.toLowerCase() === state.selectedAssetFilter.toLowerCase());
       
+      // Strict Search Check
       const matchesSearch = state.searchQuery === '' || 
-        asset.token.toLowerCase().includes(state.searchQuery.toLowerCase());
+        (asset.token && asset.token.toLowerCase().includes(state.searchQuery.toLowerCase()));
       
+      // Strict Balance Check
       const hasBalance = Number(asset.balance) > minBalance;
 
       return matchesNetwork && matchesAssetFilter && matchesSearch && hasBalance;
