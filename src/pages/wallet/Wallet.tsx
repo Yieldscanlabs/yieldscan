@@ -168,43 +168,61 @@ function Wallet() {
     };
   };
 
+  // --- HELPER: DEDUPLICATION ---
+  // This helper groups assets by Token+Chain and returns only one instance per group.
+  const deduplicateAssets = (assetList: Asset[]): Asset[] => {
+    const seenMap = new Map<string, boolean>();
+    return assetList.filter(asset => {
+      // Create a unique key for the asset (e.g., "USDT-56")
+      const key = `${asset.token.toUpperCase()}-${asset.chainId}`;
+
+      if (seenMap.has(key)) {
+        return false; // Skip duplicate
+      }
+
+      seenMap.set(key, true);
+      return true; // Keep unique
+    });
+  };
+
   // --- STRICT LOGIC IMPLEMENTATION ---
   // Compute unique assets for the selector based on wallet holdings
   const uniqueAssetsForSelector = useMemo(() => {
     const assetMap = new Map();
     const minBalance = typeof MIN_ALLOWED_BALANCE !== 'undefined' ? MIN_ALLOWED_BALANCE : 0;
-
+    const usdtToken = new Map();
     assets.forEach(asset => {
       // 1. Strict Validation: Check existence of critical fields
-      // We ensure token symbol and address are valid strings to avoid ghost assets
       if (!asset.token || typeof asset.token !== 'string') return;
       if (!asset.address || typeof asset.address !== 'string') return;
-      
+
+      if (asset.token.toLowerCase() === 'usdt') {
+        const key = `${asset.token.trim().toUpperCase()}-${asset.protocol}-${asset.chain}-${asset.chainId}`;
+        usdtToken.set(key, asset.balance);
+
+      }
       // 2. Strict Balance Check
       const balance = Number(asset.balance);
       if (isNaN(balance) || balance <= minBalance) return;
 
       // 3. Strict Network Comparison
       if (state.selectedNetwork !== 'all') {
-        // Compare as numbers to avoid string/number mismatch
         if (Number(asset.chainId) !== Number(state.selectedNetwork)) return;
       }
 
-      // 4. Deduplicate logic
-      // We use the token symbol as the key for the dropdown.
-      // If the map already has this token, we skip it to prevent duplicates in the UI.
-      // Note: This relies on the FIRST valid asset found being the representative one.
-      const mapKey = asset.token.trim().toUpperCase(); 
-      
+      // 4. Deduplicate logic for Selector
+      const mapKey = asset.token.trim().toUpperCase();
+
       if (!assetMap.has(mapKey)) {
         assetMap.set(mapKey, {
-          token: asset.token, // Keep original casing for display
+          token: asset.token,
           icon: asset.icon,
           chainId: asset.chainId,
           hasHoldings: true
         });
       }
     });
+    console.log("usdtTokens: ", usdtToken)
 
     return Array.from(assetMap.values());
   }, [assets, state.selectedNetwork]);
@@ -216,15 +234,15 @@ function Wallet() {
     const filterAsset = (asset: Asset) => {
       // Strict Network Check
       const matchesNetwork = state.selectedNetwork === 'all' || Number(asset.chainId) === Number(state.selectedNetwork);
-      
+
       // Strict Asset Filter Check (Case Insensitive)
-      const matchesAssetFilter = state.selectedAssetFilter === 'all' || 
+      const matchesAssetFilter = state.selectedAssetFilter === 'all' ||
         (asset.token && asset.token.toLowerCase() === state.selectedAssetFilter.toLowerCase());
-      
+
       // Strict Search Check
-      const matchesSearch = state.searchQuery === '' || 
+      const matchesSearch = state.searchQuery === '' ||
         (asset.token && asset.token.toLowerCase().includes(state.searchQuery.toLowerCase()));
-      
+
       // Strict Balance Check
       const hasBalance = Number(asset.balance) > minBalance;
 
@@ -291,7 +309,13 @@ function Wallet() {
 
           {allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
-            const filteredAssets = walletAssets.filter(filterAsset);
+
+            // 1. FILTER
+            const rawFilteredAssets = walletAssets.filter(filterAsset);
+
+            // 2. DEDUPLICATE [!code ++]
+            const filteredAssets = deduplicateAssets(rawFilteredAssets);
+
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
             const walletName = shortenAddress(address);
             const walletHasAnyAssets = hasAnyAssets(walletAssets);
@@ -343,7 +367,12 @@ function Wallet() {
     }
 
     // --- SINGLE VIEW ---
-    const filteredAssets = assets.filter(filterAsset);
+    // 1. FILTER
+    const rawFilteredAssets = assets.filter(filterAsset);
+
+    // 2. DEDUPLICATE [!code ++]
+    const filteredAssets = deduplicateAssets(rawFilteredAssets);
+
     const hasAnyTotal = hasAnyAssets(assets);
 
     return (

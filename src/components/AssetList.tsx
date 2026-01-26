@@ -42,7 +42,7 @@ const AssetList: React.FC<AssetListProps> = ({
     }> = {};
 
     assets.forEach(asset => {
-      const assetKey = `${asset.token}-${asset.chain}`;
+      const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
       initialYieldState[assetKey] = {
         loading: true,
         yearlyYieldUsd: '0.00'
