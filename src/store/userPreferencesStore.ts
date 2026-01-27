@@ -42,6 +42,7 @@ export const useUserPreferencesStore = create<UserPreferencesState>()(
       partialize: (state) => ({
         yieldsPageView: state.yieldsPageView,
         walletPageView: state.walletPageView,
+        hideLowValues: state.hideLowValues,
       }),
     }
   )

@@ -102,8 +102,10 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
         set((state) => {
           const normalizedAddress = walletAddress.toLowerCase();
+          // Create a copy of the data
           const newActivityData = { ...state.activityData };
 
+          // Delete the specific wallet's data
           if (newActivityData[normalizedAddress]) {
             delete newActivityData[normalizedAddress];
           }
@@ -137,8 +139,11 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         const normalizedAddress = walletAddress.toLowerCase();
         const currentController = new AbortController();
         activeAbortController = currentController;
-
+        console.log("get().activityData: ", get().activityData)
+        // Smart Check: Only show full progress bar for NEW wallets
         const hasExistingData = !!get().activityData[normalizedAddress];
+        console.log("hasExistingData: ", hasExistingData);
+
         const shouldShowProgressBar = showLoading && !hasExistingData;
 
         // Basic loading state (for spinners)
@@ -185,7 +190,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             };
           }
 
-          // 3. API Request (Initiates the scan)
+          // 3. API Request
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
           url.searchParams.set("requestId", requestId);
 
@@ -193,14 +198,17 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
           if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
-          const initialData = await response.json();
+          const data = await response.json();
 
           let normalizedData: ActivityDataType = {};
-          normalizedData[normalizedAddress] = initialData;
+          if (data.transactions && Object.keys(data.transactions).length > 0) {
+            normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
+          } else {
+            normalizedData[normalizedAddress] = data;
+          }
 
           // 4. Success Handling
           if (!currentController.signal.aborted) {
-            // Update with whatever we got initially
             set(state => ({
               activityData: { ...state.activityData, ...normalizedData },
               isLoading: false,
@@ -210,26 +218,10 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             if (shouldShowProgressBar) {
               set({ progress: 100, scanStatus: 'Scan Complete!' });
 
-              // 🟢 THE FIX: Re-fetch data silently to ensure UI has the final DB results
-              try {
-                // We fetch again without a requestId (or same ID) just to read from DB
-                const refetchResponse = await fetch(url, { signal: currentController.signal });
-                const finalData = await refetchResponse.json();
-                
-                // Update store with the FINAL data
-                let finalNormalizedData: ActivityDataType = {};
-                finalNormalizedData[normalizedAddress] = finalData;
-                
-                set(state => ({
-                    activityData: { ...state.activityData, ...finalNormalizedData },
-                    lastUpdated: Date.now()
-                }));
-              } catch (refetchError) {
-                  console.warn("Silent re-fetch failed:", refetchError);
-              }
-
-              // Close the bar
+              // FIXED: Removed the check that was failing (activeAbortController === currentController)
+              // We rely on the closure variable `currentController` to ensure we don't close a *newer* request
               setTimeout(() => {
+                // Only reset if we haven't started a NEW request in the meantime
                 if (!currentController.signal.aborted) {
                   get().resetProgress();
                 }
@@ -244,11 +236,13 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false,
+            // Force reset on error
             isScanning: false,
             progress: 0
           });
         } finally {
           if (activeAbortController === currentController) {
+            // Clear Timer & Event Source
             if (activeProgressTimer) {
               clearInterval(activeProgressTimer);
               activeProgressTimer = null;
@@ -257,6 +251,9 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
               activeEventSource.close();
               activeEventSource = null;
             }
+
+            // Just release the controller reference, DO NOT abort it.
+            // If we abort here, the setTimeout check above will fail.
             activeAbortController = null;
           }
         }

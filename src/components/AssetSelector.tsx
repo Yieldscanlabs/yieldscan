@@ -54,7 +54,7 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
     ? assets.find(asset => asset.token === selectedAsset)
     : null;
 
-    console.log("Assetes list in AssetSelector: ", assets);
+    // console.log("Assetes list in AssetSelector: ", assets);
   return (
     <div className={`${styles.dropdown} ${className || ''}`} ref={dropdownRef}>
       <button
@@ -109,8 +109,8 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
                   />
                 </span>
                 <span>{asset.token}</span>
-                {/* Optional: You can still show a visual indicator if they hold it, without blocking the click */}
-                {asset.hasHoldings && <span className={styles.holdingsIndicator}>•</span>}
+                {/* we can still show a visual indicator if they hold it, without blocking the click */}
+                {/* {asset.hasHoldings && <span className={styles.holdingsIndicator}>•</span>} */}
               </div>
             );
           })}
