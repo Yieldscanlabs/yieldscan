@@ -409,7 +409,14 @@ const MyYieldsPage: React.FC = () => {
                       viewType === 'cards' ? (
                         <div className={styles.yieldGrid}>
                           {walletAssets.map((asset) => (
-                            <YieldCard key={`${asset.token}-${asset.chainId}-${asset.protocol}-${address}`} asset={asset} optimizationData={getOptimizationDataForAsset(asset)} onOptimize={() => { }} />
+                            <div>
+                              <div>Asset: {asset.token} - ({asset.chainId}) - ({asset.chain})</div>
+                              <div>Protocol: {asset.protocol}</div>
+                              <div>Balance: {asset.balance}</div>
+                              <div>BalanceUSD: {asset.balanceUsd}</div>
+                              <div>Balance In Protocol USD: {asset.currentBalanceInProtocolUsd}</div>
+                              <YieldCard key={`${asset.token}-${asset.chainId}-${asset.protocol}-${address}`} asset={asset} optimizationData={getOptimizationDataForAsset(asset)} onOptimize={() => { }} />
+                            </div>
                           ))}
                         </div>
                       ) : <YieldsTable assets={walletAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />

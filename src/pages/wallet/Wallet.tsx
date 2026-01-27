@@ -249,8 +249,8 @@ function Wallet() {
             </div>
             <div className={styles.searchAndViewGroup}>
               {/*  Global Checkbox in Controls Row */}
-              <LowValueFilterCheckbox checked={hideLowValues} onChange={setHideLowValues} style={{ marginRight: '16px' }} />
 
+              <LowValueFilterCheckbox checked={hideLowValues} onChange={setHideLowValues} style={{ marginRight: '16px' }} />
               <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
               <SearchBar ref={searchInputRef} placeholder="Search coins ..." value={state.searchQuery} onChange={handleSearchChange} showKeybind={true} />
             </div>

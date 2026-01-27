@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { MyYieldSkeletonLoader, MyYieldSummaryCardsSkeleton } from '../components/loaders/MyYieldSkeletonLoader';
 
 // NEW: Import persistent filter logic
-import { HARD_MIN_USD, useLowValueFilter } from '../hooks/useLowValueFilter';
+import { useLowValueFilter } from '../hooks/useLowValueFilter';
 import LowValueFilterCheckbox from '../components/common/LowValueFilterCheckbox';
 import FilteredEmptyState from '../components/wallet-page/FilteredEmptyState';
 
@@ -38,7 +38,7 @@ const MyYieldsPage: React.FC = () => {
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
 
   // NEW: Persistent Filter Integration
-  const { hideLowValues, setHideLowValues, shouldShowAsset, isAboveHardDust, isAboveHardYieldDust } = useLowValueFilter();
+  const { hideLowValues, setHideLowValues, shouldShowAsset, isAboveHardDust } = useLowValueFilter();
 
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
   const [selectedProtocol, setSelectedProtocol] = useState<string | 'all'>('all');
@@ -324,7 +324,7 @@ const MyYieldsPage: React.FC = () => {
 
       <div className={styles.filtersContainer}>
         {/*  row1  */}
-
+        
         <div className={styles.filterItem}>
           <NetworkSelector selectedNetwork={selectedNetwork} networks={uniqueChainIds}
             /* @ts-ignore */
@@ -377,22 +377,14 @@ const MyYieldsPage: React.FC = () => {
             assetsByWallet.get(walletAddr)!.push(asset);
           });
 
-          console.log("assetsByWallet: ", assetsByWallet)
           return allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
-            console.log("==================\n=>Rendering wallet address: ", address);
-            console.log("=>Wallet assets: ", walletAssets);
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
 
             // Local check for dormant funds
-            const hasWalletBalance = assets
+            const walletHasAnyAssets = assets
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
               .some(a => isAboveHardDust(a));
-            console.log("Wallet has any assets (dormant or active): ", hasWalletBalance);
-            const walletHasYieldingPositions = allYieldAssets
-              .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
-              .some(a => parseFloat(a.currentBalanceInProtocolUsd || '0') >= HARD_MIN_USD);
-            console.log("Wallet has any assets (workging/yield capital): ", walletHasYieldingPositions);
 
             return (
               <div key={address} className={styles.section}>
@@ -413,18 +405,8 @@ const MyYieldsPage: React.FC = () => {
                           ))}
                         </div>
                       ) : <YieldsTable assets={walletAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
-                    ) : walletHasYieldingPositions ? <FilteredEmptyState onReset={handleResetFilters} /> : (
-                      <NoYieldEmptyState
-                        subtext={
-                          hasWalletBalance
-                            ? "You have idle assets ready to earn yield."
-                            : "You don’t have any assets yet. Explore yield opportunities to get started."
-                        }
-                        btnText={hasWalletBalance ? "View Wallet Options" : "Explore Yiled Options"}
-                        onRedirect={() =>
-                          handleRedirect(hasWalletBalance ? "/" : "/explore")
-                        }
-                      />
+                    ) : walletHasAnyAssets ? <FilteredEmptyState onReset={handleResetFilters} /> : (
+                      <NoYieldEmptyState onRedirect={() => handleRedirect("/")} subtext='You have idle assets ready to earn yield.' />
                     )}
                   </>
                 )}
@@ -447,7 +429,7 @@ const MyYieldsPage: React.FC = () => {
               ) : globalState.hasDormantFunds ? (
                 <FilteredEmptyState onReset={handleResetFilters} />
               ) : (
-                <NoYieldEmptyState onRedirect={() => handleRedirect("/explore")} subtext='You don’t have any assets yet. Explore yield opportunities to get started.' />
+                <NoYieldEmptyState onRedirect={() => handleRedirect("/explore")} subtext='You don’t have any assets yet. Explore yield opportunities to get started.'/>
               )}
             </>
           )}
@@ -461,24 +443,23 @@ export default MyYieldsPage;
 
 
 interface NoYieldEmptyStateProps {
-  onRedirect: () => void;
-  subtext?: string;
-  btnText?: string;
+    onRedirect: () => void;
+    subtext?: string;
 }
 
-const NoYieldEmptyState: React.FC<NoYieldEmptyStateProps> = ({ onRedirect, subtext, btnText }) => {
-  return (
-    <div className={styles.emptyState}>
-      <h3>You have not yet started yielding</h3>
-      <div className={styles.emptyTextWrapper}>
-        {subtext || "Go ahead and explore yield opportunities to get started."}
-      </div>
-      <button
-        className={styles.exploreButton}
-        onClick={onRedirect}
-      >
-        {btnText ?? "View Options"}
-      </button>
-    </div>
-  );
+const NoYieldEmptyState: React.FC<NoYieldEmptyStateProps> = ({ onRedirect, subtext }) => {
+    return (
+        <div className={styles.emptyState}>
+            <h3>You have not yet started yielding</h3>
+            <div className={styles.emptyTextWrapper}>
+                {subtext || "Go ahead and explore yield opportunities to get started."}
+            </div>
+            <button
+                className={styles.exploreButton}
+                onClick={onRedirect}
+            >
+                View Wallet Options
+            </button>
+        </div>
+    );
 };
