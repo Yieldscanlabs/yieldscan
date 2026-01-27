@@ -24,8 +24,11 @@ import { shortenAddress } from '../../utils/helpers';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EmptyStateCard from '../../components/wallet-page/EmptyWalletStateCard';
 import { WalletSkeletonLoader } from '../../components/loaders/WalletSkeletonLoader';
-// Fallback if import fails
+import { useLowValueFilter } from '../../hooks/useLowValueFilter';
+import { useApyStore } from '../../store/apyStore';
+import { getBestYield } from '../../utils/getBestYield';
 import { MIN_ALLOWED_BALANCE } from '../../utils/constants';
+import LowValueFilterCheckbox from '../../components/common/LowValueFilterCheckbox';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -47,10 +50,15 @@ function Wallet() {
   const location = useLocation();
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
   const { assets, isLoading: assetsLoading } = useAssetStore();
+  const { apyData } = useApyStore();
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { manualAddresses, isConsolidated } = useManualWalletStore();
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
+
+  //  Uses Global Store via Hook (Persisted & Shared)
+  const { hideLowValues, setHideLowValues, shouldShowAsset, isAboveHardDust } = useLowValueFilter();
 
   const [state, setState] = useState<WalletState>({
     selectedAsset: null,
@@ -65,24 +73,17 @@ function Wallet() {
 
   const { yieldOptions } = useYieldOptions(state.selectedAsset);
 
-  // Update initial state or useEffect to apply filter
   useEffect(() => {
     const navigationState = location.state as { filterNetwork?: number | 'all' } | null;
-
     if (navigationState && navigationState.filterNetwork !== undefined) {
-      setState(prev => ({
-        ...prev,
-        selectedNetwork: navigationState.filterNetwork!
-      }));
+      setState(prev => ({ ...prev, selectedNetwork: navigationState.filterNetwork! }));
       window.history.replaceState({}, document.title);
     }
   }, [location]);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 900 && viewType !== 'cards') {
-        setViewType('cards');
-      }
+      if (window.innerWidth <= 900 && viewType !== 'cards') setViewType('cards');
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -95,52 +96,21 @@ function Wallet() {
   };
 
   const handleSelectAsset = (asset: Asset, apyData?: BestApyResult) => {
-    setState(prev => ({
-      ...prev,
-      selectedAsset: asset,
-      bestApyData: apyData || null,
-      showDepositForm: true,
-      showDepositSuccess: false,
-    }));
+    setState(prev => ({ ...prev, selectedAsset: asset, bestApyData: apyData || null, showDepositForm: true, showDepositSuccess: false }));
   };
-
   const handleBackToAssets = () => {
-    setState(prev => ({
-      ...prev,
-      selectedAsset: null,
-      bestApyData: null,
-      showDepositForm: false,
-      showDepositSuccess: false,
-    }));
+    setState(prev => ({ ...prev, selectedAsset: null, bestApyData: null, showDepositForm: false, showDepositSuccess: false }));
   };
-
   const handleDeposit = ({ amount, dailyYield, yearlyYield }: { amount: string; dailyYield: string; yearlyYield: string }) => {
-    setState(prev => ({
-      ...prev,
-      depositData: { amount, dailyYield, yearlyYield },
-      showDepositForm: false,
-      showDepositSuccess: true,
-    }));
+    setState(prev => ({ ...prev, depositData: { amount, dailyYield, yearlyYield }, showDepositForm: false, showDepositSuccess: true }));
   };
-
-  const handleViewChange = (newViewType: ViewType) => {
-    setViewType(newViewType);
-  };
-
-  const handleNetworkChange = (selectedNetwork: number | 'all') => {
-    setState(prev => ({ ...prev, selectedNetwork }));
-  };
-
-  const handleAssetFilterChange = (assetToken: string | 'all') => {
-    setState(prev => ({ ...prev, selectedAssetFilter: assetToken }));
-  };
-
-  const handleSearchChange = (query: string) => {
-    setState(prev => ({ ...prev, searchQuery: query }));
-  };
-
-  const handleResetFilters = () => {
-    setState(prev => ({ ...prev, selectedNetwork: 'all', selectedAssetFilter: 'all', searchQuery: '' }));
+  const handleViewChange = (newViewType: ViewType) => { setViewType(newViewType); };
+  const handleNetworkChange = (selectedNetwork: number | 'all') => { setState(prev => ({ ...prev, selectedNetwork })); };
+  const handleAssetFilterChange = (assetToken: string | 'all') => { setState(prev => ({ ...prev, selectedAssetFilter: assetToken })); };
+  const handleSearchChange = (query: string) => { setState(prev => ({ ...prev, searchQuery: query })); };
+  const handleResetFilters = () => { 
+    setState(prev => ({ ...prev, selectedNetwork: 'all', selectedAssetFilter: 'all', searchQuery: '' })); 
+    setHideLowValues(false);
   };
 
   const getSelectedYieldOption = (): YieldOption => {
@@ -168,51 +138,34 @@ function Wallet() {
     };
   };
 
-  // --- HELPER: DEDUPLICATION ---
-  // This helper groups assets by Token+Chain and returns only one instance per group.
   const deduplicateAssets = (assetList: Asset[]): Asset[] => {
     const seenMap = new Map<string, boolean>();
     return assetList.filter(asset => {
-      // Create a unique key for the asset (e.g., "USDT-56")
       const key = `${asset.token.toUpperCase()}-${asset.chainId}`;
-
-      if (seenMap.has(key)) {
-        return false; // Skip duplicate
-      }
-
+      if (seenMap.has(key)) return false;
       seenMap.set(key, true);
-      return true; // Keep unique
+      return true;
     });
   };
 
-  // --- STRICT LOGIC IMPLEMENTATION ---
-  // Compute unique assets for the selector based on wallet holdings
   const uniqueAssetsForSelector = useMemo(() => {
     const assetMap = new Map();
     const minBalance = typeof MIN_ALLOWED_BALANCE !== 'undefined' ? MIN_ALLOWED_BALANCE : 0;
-    const usdtToken = new Map();
+
     assets.forEach(asset => {
-      // 1. Strict Validation: Check existence of critical fields
       if (!asset.token || typeof asset.token !== 'string') return;
       if (!asset.address || typeof asset.address !== 'string') return;
 
-      if (asset.token.toLowerCase() === 'usdt') {
-        const key = `${asset.token.trim().toUpperCase()}-${asset.protocol}-${asset.chain}-${asset.chainId}`;
-        usdtToken.set(key, asset.balance);
-
-      }
-      // 2. Strict Balance Check
       const balance = Number(asset.balance);
       if (isNaN(balance) || balance <= minBalance) return;
 
-      // 3. Strict Network Comparison
       if (state.selectedNetwork !== 'all') {
         if (Number(asset.chainId) !== Number(state.selectedNetwork)) return;
       }
 
-      // 4. Deduplicate logic for Selector
-      const mapKey = asset.token.trim().toUpperCase();
+      if (!isAboveHardDust(asset)) return;
 
+      const mapKey = asset.token.trim().toUpperCase();
       if (!assetMap.has(mapKey)) {
         assetMap.set(mapKey, {
           token: asset.token,
@@ -222,35 +175,37 @@ function Wallet() {
         });
       }
     });
-    console.log("usdtTokens: ", usdtToken)
 
     return Array.from(assetMap.values());
-  }, [assets, state.selectedNetwork]);
-  // --- END STRICT LOGIC ---
+  }, [assets, state.selectedNetwork, isAboveHardDust]);
+
+  const enrichAssetsWithApy = (assetList: Asset[]) => {
+    return assetList.map(asset => {
+      const { bestApy, bestProtocol } = getBestYield(apyData, asset.chainId, asset.address);
+      return {
+        ...asset,
+        apy: bestApy,
+        protocol: bestProtocol || asset.protocol
+      };
+    });
+  };
 
   const renderAssetView = () => {
-    const minBalance = typeof MIN_ALLOWED_BALANCE !== 'undefined' ? MIN_ALLOWED_BALANCE : 0;
-
-    const filterAsset = (asset: Asset) => {
-      // Strict Network Check
+    const baseFilterMatch = (asset: Asset) => {
       const matchesNetwork = state.selectedNetwork === 'all' || Number(asset.chainId) === Number(state.selectedNetwork);
-
-      // Strict Asset Filter Check (Case Insensitive)
       const matchesAssetFilter = state.selectedAssetFilter === 'all' ||
         (asset.token && asset.token.toLowerCase() === state.selectedAssetFilter.toLowerCase());
-
-      // Strict Search Check
       const matchesSearch = state.searchQuery === '' ||
         (asset.token && asset.token.toLowerCase().includes(state.searchQuery.toLowerCase()));
 
-      // Strict Balance Check
-      const hasBalance = Number(asset.balance) > minBalance;
+      const { bestApy } = getBestYield(apyData, asset.chainId, asset.address);
+      const hasYield = bestApy !== null;
 
-      return matchesNetwork && matchesAssetFilter && matchesSearch && hasBalance;
+      return matchesNetwork && matchesAssetFilter && matchesSearch && hasYield;
     };
 
     const hasAnyAssets = (walletAssets: Asset[]) => {
-      return walletAssets.some(asset => Number(asset.balance) > minBalance);
+      return walletAssets.some(asset => isAboveHardDust(asset));
     }
 
     const commonProps = {
@@ -259,83 +214,74 @@ function Wallet() {
       selectedAsset: state.selectedAsset
     };
 
-    // --- CONSOLIDATED VIEW ---
+    //  Shared Filter & Deduplication Logic using Global Checkbox
+    // Applies to both consolidated and single views
+    const processWalletAssets = (walletAssets: Asset[]) => {
+      const filtered = walletAssets.filter(asset => baseFilterMatch(asset) && shouldShowAsset(asset));
+      const deduped = deduplicateAssets(filtered);
+      return enrichAssetsWithApy(deduped); // Enrich for table view
+    };
+
     if (isConsolidated) {
       const allAddresses = [...manualAddresses];
-      if (isMetamaskConnected && metamaskAddress) {
-        allAddresses.push(metamaskAddress);
-      }
+      if (isMetamaskConnected && metamaskAddress) allAddresses.push(metamaskAddress);
 
       const assetsByWallet = new Map<string, Asset[]>();
       assets.forEach(asset => {
         const walletAddr = asset.walletAddress?.toLowerCase() || '';
-        if (!assetsByWallet.has(walletAddr)) {
-          assetsByWallet.set(walletAddr, []);
-        }
+        if (!assetsByWallet.has(walletAddr)) assetsByWallet.set(walletAddr, []);
         assetsByWallet.get(walletAddr)!.push(asset);
       });
 
       return (
         <div className={styles.assetViewContainer}>
-          <PageHeader
-            title="Wallet"
-            subtitle="Only showing assets that can earn yield with the best APY"
-          />
+          <PageHeader title="Wallet" subtitle="Only showing assets that can earn yield with the best APY" />
           <div className={styles.controlsRow}>
             <div className={styles.filterControls}>
               <NetworkSelector
                 selectedNetwork={state.selectedNetwork}
                 networks={AVAILABLE_NETWORKS}
-                //@ts-ignore
+                /* @ts-ignore */
                 onChange={handleNetworkChange}
               />
-              <AssetSelector
-                selectedAsset={state.selectedAssetFilter}
-                assets={uniqueAssetsForSelector}
-                onChange={handleAssetFilterChange}
-              />
+              <AssetSelector selectedAsset={state.selectedAssetFilter} assets={uniqueAssetsForSelector} onChange={handleAssetFilterChange} />
             </div>
             <div className={styles.searchAndViewGroup}>
+              {/*  Global Checkbox in Controls Row */}
+              <LowValueFilterCheckbox checked={hideLowValues} onChange={setHideLowValues} style={{ marginRight: '16px' }} />
+
               <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
-              <SearchBar
-                ref={searchInputRef}
-                placeholder="Search coins ..."
-                value={state.searchQuery}
-                onChange={handleSearchChange}
-                showKeybind={true}
-              />
+              <SearchBar ref={searchInputRef} placeholder="Search coins ..." value={state.searchQuery} onChange={handleSearchChange} showKeybind={true} />
             </div>
           </div>
 
           {allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
-
-            // 1. FILTER
-            const rawFilteredAssets = walletAssets.filter(filterAsset);
-
-            // 2. DEDUPLICATE [!code ++]
-            const filteredAssets = deduplicateAssets(rawFilteredAssets);
-
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
             const walletName = shortenAddress(address);
+
+            //  Use shared processor with Global Checkbox state
+            const finalAssets = processWalletAssets(walletAssets);
             const walletHasAnyAssets = hasAnyAssets(walletAssets);
 
             return (
               <div key={address} className={styles.walletSection}>
                 <div className={styles.walletSectionHeader}>
-                  <h3>Wallet: {walletName}</h3>
-                  {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
+                  <div className={styles.headerLeft}>
+                    <h3>Wallet: {walletName}</h3>
+                    {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
+                  </div>
                 </div>
 
                 {assetsLoading ? (
                   <WalletSkeletonLoader viewType={viewType} />
                 ) : (
                   <>
-                    {filteredAssets.length > 0 ? (
+                    {finalAssets.length > 0 ? (
                       viewType === 'cards' ? (
-                        <AssetList {...commonProps} assets={filteredAssets} />
+                        <AssetList {...commonProps} assets={finalAssets} />
                       ) : (
-                        <AssetTable {...commonProps} assets={filteredAssets} />
+                        <AssetTable {...commonProps} assets={finalAssets} />
                       )
                     ) : (
                       walletHasAnyAssets ? (
@@ -344,11 +290,9 @@ function Wallet() {
                             <div className={styles.filteredEmptyIcon}>🔍</div>
                             <div className={styles.filteredEmptyText}>
                               <h3>No matching assets found</h3>
-                              <p>No assets match your current filters in this wallet.</p>
+                              <p>No assets match your current filters.</p>
                             </div>
-                            <button className={styles.resetFiltersButton} onClick={handleResetFilters}>
-                              Reset Filters
-                            </button>
+                            <button className={styles.resetFiltersButton} onClick={handleResetFilters}>Reset Filters</button>
                           </div>
                         </div>
                       ) : (
@@ -367,43 +311,26 @@ function Wallet() {
     }
 
     // --- SINGLE VIEW ---
-    // 1. FILTER
-    const rawFilteredAssets = assets.filter(filterAsset);
-
-    // 2. DEDUPLICATE [!code ++]
-    const filteredAssets = deduplicateAssets(rawFilteredAssets);
-
+    const finalAssets = processWalletAssets(assets);
     const hasAnyTotal = hasAnyAssets(assets);
 
     return (
       <div className={styles.assetViewContainer}>
-        <PageHeader
-          title="Wallet"
-          subtitle="Only showing assets that can earn yield with the best APY"
-        />
+        <PageHeader title="Wallet" subtitle="Only showing assets that can earn yield with the best APY" />
         <div className={styles.controlsRow}>
           <div className={styles.filterControls}>
             <NetworkSelector
               selectedNetwork={state.selectedNetwork}
-              networks={AVAILABLE_NETWORKS}
-              //@ts-ignore
+              networks={AVAILABLE_NETWORKS} 
+              /* @ts-ignore */
               onChange={handleNetworkChange}
             />
-            <AssetSelector
-              selectedAsset={state.selectedAssetFilter}
-              assets={uniqueAssetsForSelector}
-              onChange={handleAssetFilterChange}
-            />
+            <AssetSelector selectedAsset={state.selectedAssetFilter} assets={uniqueAssetsForSelector} onChange={handleAssetFilterChange} />
           </div>
           <div className={styles.searchAndViewGroup}>
+            <LowValueFilterCheckbox checked={hideLowValues} onChange={setHideLowValues} style={{ marginRight: '16px' }} />
             <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
-            <SearchBar
-              ref={searchInputRef}
-              placeholder="Search coins..."
-              value={state.searchQuery}
-              onChange={handleSearchChange}
-              showKeybind={true}
-            />
+            <SearchBar ref={searchInputRef} placeholder="Search coins..." value={state.searchQuery} onChange={handleSearchChange} showKeybind={true} />
           </div>
         </div>
 
@@ -411,11 +338,11 @@ function Wallet() {
           <WalletSkeletonLoader viewType={viewType} />
         ) : (
           <>
-            {filteredAssets.length > 0 ? (
+            {finalAssets.length > 0 ? (
               viewType === 'cards' ? (
-                <AssetList {...commonProps} assets={filteredAssets} />
+                <AssetList {...commonProps} assets={finalAssets} />
               ) : (
-                <AssetTable {...commonProps} assets={filteredAssets} />
+                <AssetTable {...commonProps} assets={finalAssets} />
               )
             ) : (
               hasAnyTotal ? (
@@ -426,9 +353,7 @@ function Wallet() {
                       <h3>No matching assets found</h3>
                       <p>No assets match your current filters.</p>
                     </div>
-                    <button className={styles.resetFiltersButton} onClick={handleResetFilters}>
-                      Reset Filters
-                    </button>
+                    <button className={styles.resetFiltersButton} onClick={handleResetFilters}>Reset Filters</button>
                   </div>
                 </div>
               ) : (
@@ -444,55 +369,20 @@ function Wallet() {
   };
 
   const renderContent = () => {
-    if (!wallet.isConnected && manualAddresses.length === 0) {
-      return <WalletWelcome onConnect={openConnectModal} />;
-    }
+    if (!wallet.isConnected && manualAddresses.length === 0) return <WalletWelcome onConnect={openConnectModal} />;
 
     if (state.selectedAsset && state.showDepositSuccess) {
       const protocol = state.bestApyData?.bestProtocol || yieldOptions[0]?.protocol || 'Unknown';
       const usdPrice = parseFloat(state.selectedAsset.balanceUsd) / parseFloat(state.selectedAsset.balance);
       const amountUsd = (parseFloat(state.depositData.amount) * usdPrice).toFixed(2);
-      return (
-        <div className={styles.stepContainer}>
-          <div className={styles.depositContainer}>
-            <DepositSuccess
-              asset={state.selectedAsset}
-              amount={state.depositData.amount}
-              amountUsd={amountUsd}
-              dailyYieldUsd={state.depositData.dailyYield}
-              yearlyYieldUsd={state.depositData.yearlyYield}
-              protocol={protocol}
-              onReturn={handleBackToAssets}
-            />
-          </div>
-        </div>
-      );
+      return <div className={styles.stepContainer}><div className={styles.depositContainer}><DepositSuccess asset={state.selectedAsset} amount={state.depositData.amount} amountUsd={amountUsd} dailyYieldUsd={state.depositData.dailyYield} yearlyYieldUsd={state.depositData.yearlyYield} protocol={protocol} onReturn={handleBackToAssets} /></div></div>;
     }
 
     if (state.selectedAsset && state.showDepositForm) {
-      return (
-        <div className={styles.stepContainer}>
-          <div className={styles.depositContainer}>
-            <DepositForm
-              asset={state.selectedAsset}
-              yieldOption={getSelectedYieldOption()}
-              onDeposit={handleDeposit}
-              onBack={handleBackToAssets}
-              usdPrice={parseFloat(state.selectedAsset.balanceUsd) / parseFloat(state.selectedAsset.balance)}
-              bestApyData={state.bestApyData || undefined}
-            />
-          </div>
-        </div>
-      );
+      return <div className={styles.stepContainer}><div className={styles.depositContainer}><DepositForm asset={state.selectedAsset} yieldOption={getSelectedYieldOption()} onDeposit={handleDeposit} onBack={handleBackToAssets} usdPrice={parseFloat(state.selectedAsset.balanceUsd) / parseFloat(state.selectedAsset.balance)} bestApyData={state.bestApyData || undefined} /></div></div>;
     }
 
-    return (
-      <div className={styles.stepContainer}>
-        <div className={styles.assetsWithYieldContainer}>
-          {renderAssetView()}
-        </div>
-      </div>
-    );
+    return <div className={styles.stepContainer}><div className={styles.assetsWithYieldContainer}>{renderAssetView()}</div></div>;
   };
 
   useEffect(() => {
@@ -513,10 +403,7 @@ function Wallet() {
     <div className={styles.appWrapper}>
       <div className={styles.appContainer}>
         {renderContent()}
-        <WalletModal
-          isOpen={isModalOpen}
-          onClose={closeConnectModal}
-        />
+        <WalletModal isOpen={isModalOpen} onClose={closeConnectModal} />
       </div>
     </div>
   );
