@@ -51,9 +51,9 @@ const MyYieldsPage: React.FC = () => {
   const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
   const [totalEarned, setTotalEarned] = useState<number>(0);
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
-  const [currentBalance, setCurrentBalance] = useState<number>(0);
   const [currentDeposit, setCurrentDeposit] = useState<number>(0);
   const [currentEarned, setCurrentEarned] = useState<number>(0);
+  const [totalEarnedValue, setTotalEarnedValue] = useState<number>(0);
 
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
   const { getBestApy, apyData } = useApyStore();
@@ -69,7 +69,6 @@ const MyYieldsPage: React.FC = () => {
     const assetMap = new Map<string, UniqueAsset>();
 
     allYieldAssets.forEach(asset => {
-      // Respect hard dust limit in dropdown list
       if (!isAboveHardDust(asset)) return;
 
       const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
@@ -122,7 +121,6 @@ const MyYieldsPage: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // NEW: Updated Base Filter Match Helper
   const baseFilterMatch = (asset: Asset) => {
     if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
     if (selectedProtocol !== 'all' && asset.protocol?.toLowerCase() !== selectedProtocol.toLowerCase()) return false;
@@ -132,17 +130,22 @@ const MyYieldsPage: React.FC = () => {
       const matchesProtocol = asset.protocol?.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesToken && !matchesProtocol) return false;
     }
-
-    // Apply Global Persistent Logic Filter
     return shouldShowAsset(asset);
   };
 
   const filteredYieldAssets = useMemo(() => {
     return allYieldAssets
-      .filter(baseFilterMatch)
+      .filter(asset => {
+        // Essential: Filter by UI inputs and persistent Low Value Logic
+        if (!baseFilterMatch(asset)) return false;
+        
+        // Critical: Only include assets that have a positive protocol balance 
+        // to prevent empty gaps in the grid/table
+        return Number(asset.currentBalanceInProtocolUsd || HARD_MIN_USD) > 0;
+      })
       .map(asset => {
-        let totalDeposited = 0;
-        let totalDepositedUsd = "";
+        let totalDepositedVal = 0;
+        let totalDepositedUsdVal = "";
         const activityAddress = (asset.walletAddress || wallet.address || "");
         const userData = getUserActivity(activityAddress);
         if (userData) {
@@ -160,13 +163,13 @@ const MyYieldsPage: React.FC = () => {
                 const withdrawalsBigInt = BigInt(tokenData.totalWithdraw || "0");
                 const depositsFormatted = Number(depositsBigInt / divisor) + Number(depositsBigInt % divisor) / Number(divisor);
                 const withdrawalsFormatted = Number(withdrawalsBigInt / divisor) + Number(withdrawalsBigInt % divisor) / Number(divisor);
-                totalDeposited = depositsFormatted - withdrawalsFormatted;
-                totalDepositedUsd = (totalDeposited * asset.usd).toString();
+                totalDepositedVal = depositsFormatted - withdrawalsFormatted;
+                totalDepositedUsdVal = (totalDepositedVal * asset.usd).toString();
               }
             }
           }
         }
-        return { ...asset, totalDeposited, totalDepositedUsd };
+        return { ...asset, totalDeposited: totalDepositedVal, totalDepositedUsd: totalDepositedUsdVal };
       });
   }, [allYieldAssets, selectedNetwork, selectedProtocol, selectedAsset, searchQuery, wallet.address, getUserActivity, hideLowValues]);
 
@@ -229,7 +232,7 @@ const MyYieldsPage: React.FC = () => {
     });
     supportedAssets.forEach(asset => {
       const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
-      if (isNaN(balanceValue) || balanceValue === 0) return;
+      if (isNaN(balanceValue) || balanceValue === HARD_MIN_USD) return;
       let assetApy = 0;
       if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
         const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
@@ -269,25 +272,25 @@ const MyYieldsPage: React.FC = () => {
         totalWithdrawn: userData.totalWithdrawals
       }
     });
-    let currentDeposits = 0, totalDeposits = 0, currentEarnedLocal = 0, totalEarnedLocal = 0, totalWithdrawls = 0;
+    let cDeposit = 0, tDeposit = 0, cEarned = 0, tEarned = 0, tWithdrawals = 0;
     Object.values(userCalculatedData).forEach((data: any) => {
-      currentDeposits += data.currentDeposit;
-      totalDeposits += data.totalDeposit;
-      currentEarnedLocal += data.currentEarnings;
-      totalEarnedLocal += data.totalEarnings;
-      totalWithdrawls += data.totalWithdrawn;
+      cDeposit += data.currentDeposit;
+      tDeposit += data.totalDeposit;
+      cEarned += data.currentEarnings;
+      tEarned += data.totalEarnings;
+      tWithdrawals += data.totalWithdrawn;
     })
-    setLiveTotalEarned(totalEarnedLocal);
-    setTotalDeposited(totalDeposits);
-    setTotalWithdrawn(totalWithdrawls);
-    setCurrentDeposit(currentDeposits);
-    setCurrentEarned(currentEarnedLocal);
-    setTotalEarned(totalEarnedLocal);
+    setLiveTotalEarned(tEarned);
+    setTotalDeposited(tDeposit);
+    setTotalWithdrawn(tWithdrawals);
+    setCurrentDeposit(cDeposit);
+    setCurrentEarned(cEarned);
+    setTotalEarnedValue(tEarned);
   }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, getUserActivity, allYieldAssets, selectedNetwork]);
 
   useEffect(() => {
-    if (!wallet.address || totalEarned <= 0 || currentEarned <= 0) return;
-    setLiveTotalEarned(totalEarned);
+    if (!wallet.address || totalEarnedValue <= 0 || currentEarned <= 0) return;
+    setLiveTotalEarned(totalEarnedValue);
     const weightedApy = calculateWeightedApy();
     const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
     const timer = setInterval(() => {
@@ -301,7 +304,7 @@ const MyYieldsPage: React.FC = () => {
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
+  }, [totalEarnedValue, wallet.address, allYieldAssets, apyData, selectedNetwork]);
 
   const formatLiveValue = (value: number): string => {
     if (typeof value !== 'number' || isNaN(value)) return '0.000000000000000000';
@@ -323,8 +326,6 @@ const MyYieldsPage: React.FC = () => {
       <PageHeader title="My Yields" subtitle="Track and optimize your yield-bearing positions" />
 
       <div className={styles.filtersContainer}>
-        {/*  row1  */}
-
         <div className={styles.filterItem}>
           <NetworkSelector selectedNetwork={selectedNetwork} networks={uniqueChainIds}
             /* @ts-ignore */
@@ -332,14 +333,11 @@ const MyYieldsPage: React.FC = () => {
         </div>
 
         <div className={styles.protocolSearchViewGroup}>
-          {/* NEW: Global Filter Checkbox in Controls Row */}
-
           <ViewToggle currentView={viewType} onViewChange={setViewType} />
           <SearchBar ref={searchInputRef} placeholder="Search yields..." value={searchQuery} onChange={setSearchQuery} showKeybind={true} />
           <ProtocolSelector selectedProtocol={selectedProtocol} protocols={protocols} onChange={setSelectedProtocol} className={styles.protocolSelector} />
           <AssetSelector selectedAsset={selectedAsset} assets={uniqueAssets} onChange={setSelectedAsset} className={styles.assetSelector} />
         </div>
-        {/*  row2  */}
         <div className={styles.lowAmountFilterContainer}>
           <LowValueFilterCheckbox checked={hideLowValues} onChange={setHideLowValues} style={{ marginRight: '16px' }} />
         </div>
@@ -377,30 +375,23 @@ const MyYieldsPage: React.FC = () => {
             assetsByWallet.get(walletAddr)!.push(asset);
           });
 
-          console.log("assetsByWallet: ", assetsByWallet)
           return allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
-            console.log("==================\n=>Rendering wallet address: ", address);
-            console.log("=>Wallet assets: ", walletAssets);
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
 
-            // Local check for dormant funds
             const hasWalletBalance = assets
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
               .some(a => isAboveHardDust(a));
-            console.log("Wallet has any assets (dormant or active): ", hasWalletBalance);
+            
             const walletHasYieldingPositions = allYieldAssets
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
-              .some(a => parseFloat(a.currentBalanceInProtocolUsd || '0') >= HARD_MIN_USD);
-            console.log("Wallet has any assets (workging/yield capital): ", walletHasYieldingPositions);
+              .some(a => isAboveHardYieldDust(a));
 
             return (
               <div key={address} className={styles.section}>
                 <div className={styles.walletSectionHeader}>
-                  <div className={styles.headerLeft}>
                     <h3>Wallet: {shortenAddress(address)}</h3>
                     {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
-                  </div>
                 </div>
 
                 {loading ? <MyYieldSkeletonLoader viewType={viewType} /> : (
@@ -409,7 +400,12 @@ const MyYieldsPage: React.FC = () => {
                       viewType === 'cards' ? (
                         <div className={styles.yieldGrid}>
                           {walletAssets.map((asset) => (
-                            <YieldCard key={`${asset.token}-${asset.chainId}-${asset.protocol}-${address}`} asset={asset} optimizationData={getOptimizationDataForAsset(asset)} onOptimize={() => { }} />
+                            <YieldCard 
+                              key={`${asset.token}-${asset.chainId}-${asset.protocol}-${address}`} 
+                              asset={asset} 
+                              optimizationData={getOptimizationDataForAsset(asset)} 
+                              onOptimize={() => { }} 
+                            />
                           ))}
                         </div>
                       ) : <YieldsTable assets={walletAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
@@ -420,7 +416,7 @@ const MyYieldsPage: React.FC = () => {
                             ? "You have idle assets ready to earn yield."
                             : "You don’t have any assets yet. Explore yield opportunities to get started."
                         }
-                        btnText={hasWalletBalance ? "View Wallet Options" : "Explore Yiled Options"}
+                        btnText={hasWalletBalance ? "View Wallet Options" : "Explore Yield Options"}
                         onRedirect={() =>
                           handleRedirect(hasWalletBalance ? "/" : "/explore")
                         }
@@ -440,7 +436,12 @@ const MyYieldsPage: React.FC = () => {
                 viewType === 'cards' ? (
                   <div className={styles.yieldGrid}>
                     {filteredYieldAssets.map((asset) => (
-                      <YieldCard key={`${asset.token}-${asset.chainId}-${asset.protocol}`} asset={asset} optimizationData={getOptimizationDataForAsset(asset)} onOptimize={() => { }} />
+                      <YieldCard 
+                        key={`${asset.token}-${asset.chainId}-${asset.protocol}`} 
+                        asset={asset} 
+                        optimizationData={getOptimizationDataForAsset(asset)} 
+                        onOptimize={() => { }} 
+                      />
                     ))}
                   </div>
                 ) : <YieldsTable assets={filteredYieldAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
@@ -457,8 +458,6 @@ const MyYieldsPage: React.FC = () => {
   );
 };
 export default MyYieldsPage;
-
-
 
 interface NoYieldEmptyStateProps {
   onRedirect: () => void;
