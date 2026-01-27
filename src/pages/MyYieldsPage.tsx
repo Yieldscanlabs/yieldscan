@@ -429,8 +429,10 @@ const MyYieldsPage: React.FC = () => {
           })
         })()
       ) : (
-        <div className={styles.section}>
-          {loading ? <MyYieldSkeletonLoader viewType={viewType} /> : (
+       <div className={styles.section}>
+          {loading ? (
+            <MyYieldSkeletonLoader viewType={viewType} />
+          ) : (
             <>
               {filteredYieldAssets.length > 0 ? (
                 viewType === 'cards' ? (
@@ -444,11 +446,37 @@ const MyYieldsPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                ) : <YieldsTable assets={filteredYieldAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
-              ) : globalState.hasDormantFunds ? (
-                <FilteredEmptyState onReset={handleResetFilters} />
+                ) : (
+                  <YieldsTable 
+                    assets={filteredYieldAssets} 
+                    loading={loading} 
+                    getOptimizationDataForAsset={getOptimizationDataForAsset} 
+                  />
+                )
               ) : (
-                <NoYieldEmptyState onRedirect={() => handleRedirect("/explore")} subtext='You don’t have any assets yet. Explore yield opportunities to get started.' />
+                /* LOGIC FIX: Apply the same multi-state check as consolidated view.
+                   We use 'globalState' which checks the current connected wallet or all assets.
+                */
+                (() => {
+                  // Check if there are yielding assets that might be hidden by search/network/low-value filters
+                  const hasYieldingPositions = allYieldAssets.some(a => isAboveHardYieldDust(a));
+
+                  if (hasYieldingPositions) {
+                    return <FilteredEmptyState onReset={handleResetFilters} />;
+                  } else {
+                    return (
+                      <NoYieldEmptyState 
+                        onRedirect={() => handleRedirect(globalState.hasDormantFunds ? "/" : "/explore")} 
+                        subtext={
+                          globalState.hasDormantFunds 
+                            ? "You have idle assets ready to earn yield." 
+                            : "You don’t have any assets yet. Explore yield opportunities to get started."
+                        }
+                        btnText={globalState.hasDormantFunds ? "View Wallet Options" : "Explore Yield Options"}
+                      />
+                    );
+                  }
+                })()
               )}
             </>
           )}

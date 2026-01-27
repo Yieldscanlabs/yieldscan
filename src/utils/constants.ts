@@ -1,5 +1,5 @@
-// export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.yieldscan.io';
-export const API_BASE_URL = 'https://api.yieldscan.io';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.yieldscan.io';
+// export const API_BASE_URL = 'https://api.yieldscan.io';
 
 export const MIN_ALLOWED_BALANCE = 0;
 export const CHAIN_NAMES = {
