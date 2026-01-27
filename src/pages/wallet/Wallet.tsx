@@ -29,6 +29,7 @@ import { useApyStore } from '../../store/apyStore';
 import { getBestYield } from '../../utils/getBestYield';
 import { MIN_ALLOWED_BALANCE } from '../../utils/constants';
 import LowValueFilterCheckbox from '../../components/common/LowValueFilterCheckbox';
+import FilteredEmptyState from '../../components/wallet-page/FilteredEmptyState';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -285,16 +286,7 @@ function Wallet() {
                       )
                     ) : (
                       walletHasAnyAssets ? (
-                        <div className={styles.filteredEmptyState}>
-                          <div className={styles.filteredEmptyContent}>
-                            <div className={styles.filteredEmptyIcon}>🔍</div>
-                            <div className={styles.filteredEmptyText}>
-                              <h3>No matching assets found</h3>
-                              <p>No assets match your current filters.</p>
-                            </div>
-                            <button className={styles.resetFiltersButton} onClick={handleResetFilters}>Reset Filters</button>
-                          </div>
-                        </div>
+                        <FilteredEmptyState onReset={handleResetFilters} />
                       ) : (
                         <div className={viewType === 'cards' ? styles.assetGrid : ''}>
                           <EmptyStateCard onClick={() => handleRedirect('/explore')} walletAddress={address} />
@@ -346,16 +338,7 @@ function Wallet() {
               )
             ) : (
               hasAnyTotal ? (
-                <div className={styles.filteredEmptyState}>
-                  <div className={styles.filteredEmptyContent}>
-                    <div className={styles.filteredEmptyIcon}>🔍</div>
-                    <div className={styles.filteredEmptyText}>
-                      <h3>No matching assets found</h3>
-                      <p>No assets match your current filters.</p>
-                    </div>
-                    <button className={styles.resetFiltersButton} onClick={handleResetFilters}>Reset Filters</button>
-                  </div>
-                </div>
+                <FilteredEmptyState onReset={handleResetFilters} />
               ) : (
                 <div className={viewType === 'cards' ? styles.assetGrid : ''}>
                   <EmptyStateCard onClick={() => handleRedirect('/explore')} />

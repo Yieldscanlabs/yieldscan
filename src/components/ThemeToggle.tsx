@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './ThemeToggle.module.css';
-import { useTheme, type ThemeOption } from '../hooks/useTheme';
+import { useTheme } from '../hooks/useTheme';
 
 interface ThemeToggleProps {
   className?: string;
@@ -12,6 +12,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
   return (
     <div className={`${styles.themeSelector} ${className}`}>
       <div className={styles.themeSelectorLabel}>Theme</div>
+
       <div className={styles.segmentedControl}>
         <button
           onClick={(e) => {
@@ -24,6 +25,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
         >
           Light
         </button>
+
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -35,20 +37,9 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
         >
           Dark
         </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleThemeChange('system');
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-          className={`${styles.segment} ${activeTheme === 'system' ? styles.active : ''}`}
-          aria-label="System theme"
-        >
-          System
-        </button>
       </div>
     </div>
   );
 };
 
-export default ThemeToggle; 
+export default ThemeToggle;

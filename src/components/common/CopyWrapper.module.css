@@ -47,3 +47,15 @@
 .addressBadge:hover .copyIcon {
     opacity: 1;
 }
+
+
+/* LIGHT THEME – normal state only */
+[data-theme="light"] .addressBadge:not(.copied) {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+[data-theme="light"] .addressBadge:not(.copied) code {
+    background: #e2e8f0;
+    color: #0f172a;
+}

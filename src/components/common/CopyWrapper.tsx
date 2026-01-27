@@ -27,8 +27,7 @@ const CopyWrapper: React.FC<CopyWrapperProps> = ({ text, shortenText }) => {
         >
             <code>{shortenText ?? text}</code>
             {copied ? (
-                // <span className={styles.copyFeedback}>Copied!</span>
-                // ✅ TICK ICON (Success)
+                // TICK ICON (Success)
                 <svg
                     width="14"
                     height="14"
@@ -43,7 +42,7 @@ const CopyWrapper: React.FC<CopyWrapperProps> = ({ text, shortenText }) => {
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
             ) : (
-                // 📋 COPY ICON (Default)
+                // COPY ICON (Default)
                 <svg
                     width="14"
                     height="14"
