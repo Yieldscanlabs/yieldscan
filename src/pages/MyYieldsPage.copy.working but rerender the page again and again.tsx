@@ -46,12 +46,18 @@ const MyYieldsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Totals state
+  const [totalDeposited, setTotalDeposited] = useState<number>(0);
+  const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
+  const [totalEarned, setTotalEarned] = useState<number>(0);
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
+  const [currentDeposit, setCurrentDeposit] = useState<number>(0);
   const [currentEarned, setCurrentEarned] = useState<number>(0);
 
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
   const { getBestApy, apyData } = useApyStore();
-  const { getUserActivity, activityData } = useDepositsAndWithdrawalsStore();
+  const { getUserActivity } = useDepositsAndWithdrawalsStore();
 
   const allYieldAssets = useMemo(() =>
     assets.filter(asset => asset.yieldBearingToken),
@@ -135,6 +141,7 @@ const MyYieldsPage: React.FC = () => {
     return allYieldAssets
       .filter(baseFilterMatch)
       .map(asset => {
+        console.log("asset after base filter: ", asset)
         let totalDeposited = 0;
         let totalDepositedUsd = "";
         const activityAddress = (asset.walletAddress || wallet.address || "");
@@ -242,66 +249,67 @@ const MyYieldsPage: React.FC = () => {
     return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
   };
 
-  // 1. Calculate static totals via useMemo (Replaces the "culprit" useEffect)
-  const summaryTotals = useMemo(() => {
+  useEffect(() => {
     if (!wallet.address) {
-      return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0 };
+      setTotalDeposited(0);
+      setTotalWithdrawn(0);
+      setTotalEarned(0);
+      setLiveTotalEarned(0);
+      return;
     }
-
-    const addresses = isConsolidated
-      ? [...manualAddresses, ...(isMetamaskConnected && metamaskAddress ? [metamaskAddress] : [])]
-      : [wallet.address];
-
-    let currentD = 0, totalD = 0, totalW = 0, totalE = 0, currentE = 0;
-
+    const addresses: string[] = [];
+    if (isConsolidated) {
+      addresses.push(...manualAddresses);
+      if (isMetamaskConnected && metamaskAddress) addresses.push(metamaskAddress);
+      if (addresses.length === 0 && wallet.address) addresses.push(wallet.address);
+    } else {
+      addresses.push(wallet.address);
+    }
+    const userCalculatedData: Record<string, any> = {}
     addresses.forEach(addr => {
-      const userData = activityData[addr.toLowerCase()];
-      if (userData) {
-        currentD += userData.currentDeposit;
-        totalD += userData.totalDeposits;
-        totalW += userData.totalWithdrawals;
-        totalE += userData.totalEarnings;
-        currentE += userData.currentEarnings;
+      const userData = getUserActivity(addr);
+      if (!userData) return;
+      userCalculatedData[addr] = {
+        currentDeposit: userData.currentDeposit,
+        totalDeposit: userData.totalDeposits,
+        currentEarnings: userData.currentEarnings,
+        totalEarnings: userData.totalEarnings,
+        totalWithdrawn: userData.totalWithdrawals
       }
     });
+    let currentDeposits = 0, totalDeposits = 0, currentEarnedLocal = 0, totalEarnedLocal = 0, totalWithdrawls = 0;
+    Object.values(userCalculatedData).forEach((data: any) => {
+      currentDeposits += data.currentDeposit;
+      totalDeposits += data.totalDeposit;
+      currentEarnedLocal += data.currentEarnings;
+      totalEarnedLocal += data.totalEarnings;
+      totalWithdrawls += data.totalWithdrawn;
+    })
+    setLiveTotalEarned(totalEarnedLocal);
+    setTotalDeposited(totalDeposits);
+    setTotalWithdrawn(totalWithdrawls);
+    setCurrentDeposit(currentDeposits);
+    setCurrentEarned(currentEarnedLocal);
+    setTotalEarned(totalEarnedLocal);
+  }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, getUserActivity, allYieldAssets, selectedNetwork]);
 
-    return {
-      currentDeposit: currentD,
-      totalDeposited: totalD,
-      totalWithdrawn: totalW,
-      totalEarned: totalE,
-      currentEarned: currentE
-    };
-  }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, activityData]);
-  // Sync "Live" ticking values when the base data updates
   useEffect(() => {
-    console.log("summaryTotals:", summaryTotals)
-
-    // Only update the live counters. 
-    // The other values (deposits/withdrawals) are read directly from summaryTotals.
-    setCurrentEarned(summaryTotals.currentEarned);
-    setLiveTotalEarned(summaryTotals.totalEarned);
-  }, [summaryTotals.currentEarned, summaryTotals.totalEarned]);
-
-
-  // Live Earning Liestner
-  // useEffect(() => {
-  //   if (!wallet.address || summaryTotals.totalEarned <= 0 || currentEarned <= 0) return;
-  //   setLiveTotalEarned(summaryTotals.totalEarned);
-  //   const weightedApy = calculateWeightedApy();
-  //   const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
-  //   // const timer = setInterval(() => {
-  //   //   setLiveTotalEarned(prevValue => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevValue * growthRate;
-  //   //   });
-  //   //   setCurrentEarned(prevCurrent => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevCurrent * growthRate;
-  //   //   });
-  //   // }, 100);
-  //   // return () => clearInterval(timer);
-  // }, [wallet.address, allYieldAssets, apyData, selectedNetwork]);
+    if (!wallet.address || totalEarned <= 0 || currentEarned <= 0) return;
+    setLiveTotalEarned(totalEarned);
+    const weightedApy = calculateWeightedApy();
+    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
+    const timer = setInterval(() => {
+      setLiveTotalEarned(prevValue => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevValue * growthRate;
+      });
+      setCurrentEarned(prevCurrent => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevCurrent * growthRate;
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
 
   const formatLiveValue = (value: number): string => {
     if (typeof value !== 'number' || isNaN(value)) return '0.000000000000000000';
@@ -349,25 +357,22 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.summaryCards}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Deposit</div>
-            {/* DIRECT READ: No state needed */}
-            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
-            <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
+            <div className={styles.summaryAmount}>${formatNumber(currentDeposit, 10)}</div>
+            <div className={styles.summarySubtext}>Total Deposit ${formatNumber(totalDeposited, 10)}</div>
           </div>
-
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Earned</div>
-            {/* LIVE STATE: These use state because they animate */}
             <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
             <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
           </div>
-
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Total Withdrawn</div>
-            {/* DIRECT READ: No state needed */}
-            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.totalWithdrawn, 4)}</div>
+            <div className={styles.summaryAmount}>${formatNumber(totalWithdrawn, 4)}</div>
+            <div className={styles.summarySubtext}></div>
           </div>
         </div>
       )}
+
       {isConsolidated ? (
         (() => {
           const allAddresses = [...manualAddresses];

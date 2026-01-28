@@ -135,6 +135,7 @@ const MyYieldsPage: React.FC = () => {
     return allYieldAssets
       .filter(baseFilterMatch)
       .map(asset => {
+        console.log("asset after base filter: ", asset)
         let totalDeposited = 0;
         let totalDepositedUsd = "";
         const activityAddress = (asset.walletAddress || wallet.address || "");
@@ -284,24 +285,23 @@ const MyYieldsPage: React.FC = () => {
   }, [summaryTotals.currentEarned, summaryTotals.totalEarned]);
 
 
-  // Live Earning Liestner
-  // useEffect(() => {
-  //   if (!wallet.address || summaryTotals.totalEarned <= 0 || currentEarned <= 0) return;
-  //   setLiveTotalEarned(summaryTotals.totalEarned);
-  //   const weightedApy = calculateWeightedApy();
-  //   const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
-  //   // const timer = setInterval(() => {
-  //   //   setLiveTotalEarned(prevValue => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevValue * growthRate;
-  //   //   });
-  //   //   setCurrentEarned(prevCurrent => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevCurrent * growthRate;
-  //   //   });
-  //   // }, 100);
-  //   // return () => clearInterval(timer);
-  // }, [wallet.address, allYieldAssets, apyData, selectedNetwork]);
+  useEffect(() => {
+    if (!wallet.address || summaryTotals.totalEarned <= 0 || currentEarned <= 0) return;
+    setLiveTotalEarned(summaryTotals.totalEarned);
+    const weightedApy = calculateWeightedApy();
+    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
+    const timer = setInterval(() => {
+      setLiveTotalEarned(prevValue => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevValue * growthRate;
+      });
+      setCurrentEarned(prevCurrent => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevCurrent * growthRate;
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, [wallet.address, allYieldAssets, apyData, selectedNetwork]);
 
   const formatLiveValue = (value: number): string => {
     if (typeof value !== 'number' || isNaN(value)) return '0.000000000000000000';
@@ -370,6 +370,7 @@ const MyYieldsPage: React.FC = () => {
       )}
       {isConsolidated ? (
         (() => {
+          console.log("in consolidated view");
           const allAddresses = [...manualAddresses];
           if (isMetamaskConnected && metamaskAddress) allAddresses.push(metamaskAddress);
 

@@ -46,7 +46,13 @@ const MyYieldsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Totals state
+  const [totalDeposited, setTotalDeposited] = useState<number>(0);
+  const [totalWithdrawn, setTotalWithdrawn] = useState<number>(0);
+  const [totalEarned, setTotalEarned] = useState<number>(0);
   const [liveTotalEarned, setLiveTotalEarned] = useState<number>(0);
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
+  const [currentDeposit, setCurrentDeposit] = useState<number>(0);
   const [currentEarned, setCurrentEarned] = useState<number>(0);
 
   const { yieldsPageView: viewType, setYieldsPageView: setViewType } = useUserPreferencesStore();
@@ -135,6 +141,7 @@ const MyYieldsPage: React.FC = () => {
     return allYieldAssets
       .filter(baseFilterMatch)
       .map(asset => {
+        console.log("asset after base filter: ", asset)
         let totalDeposited = 0;
         let totalDepositedUsd = "";
         const activityAddress = (asset.walletAddress || wallet.address || "");
@@ -244,10 +251,18 @@ const MyYieldsPage: React.FC = () => {
 
   // 1. Calculate static totals via useMemo (Replaces the "culprit" useEffect)
   const summaryTotals = useMemo(() => {
+    // Return zeros if no wallet connected
     if (!wallet.address) {
-      return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0 };
+      return {
+        currentDeposit: 0,
+        totalDeposited: 0,
+        totalWithdrawn: 0,
+        totalEarned: 0,
+        currentEarned: 0
+      };
     }
 
+    // Determine addresses to scan
     const addresses = isConsolidated
       ? [...manualAddresses, ...(isMetamaskConnected && metamaskAddress ? [metamaskAddress] : [])]
       : [wallet.address];
@@ -255,13 +270,14 @@ const MyYieldsPage: React.FC = () => {
     let currentD = 0, totalD = 0, totalW = 0, totalE = 0, currentE = 0;
 
     addresses.forEach(addr => {
+      // Access directly from stable activityData object
       const userData = activityData[addr.toLowerCase()];
       if (userData) {
         currentD += userData.currentDeposit;
         totalD += userData.totalDeposits;
         totalW += userData.totalWithdrawals;
-        totalE += userData.totalEarnings;
-        currentE += userData.currentEarnings;
+        totalE += userData.totalEarnings;   // Total Lifetime Earnings
+        currentE += userData.currentEarnings; // Current Active Earnings
       }
     });
 
@@ -273,35 +289,39 @@ const MyYieldsPage: React.FC = () => {
       currentEarned: currentE
     };
   }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, activityData]);
-  // Sync "Live" ticking values when the base data updates
+
+  // 2. Sync "Live" ticking values when the base data updates
   useEffect(() => {
-    console.log("summaryTotals:", summaryTotals)
-
-    // Only update the live counters. 
-    // The other values (deposits/withdrawals) are read directly from summaryTotals.
-    setCurrentEarned(summaryTotals.currentEarned);
     setLiveTotalEarned(summaryTotals.totalEarned);
-  }, [summaryTotals.currentEarned, summaryTotals.totalEarned]);
+  }, [summaryTotals.totalEarned]);
+  // update when current update done
+  useEffect(() => {
+    setCurrentEarned(summaryTotals.currentEarned);
+    setTotalDeposited(summaryTotals?.totalDeposited);
+    setTotalWithdrawn(summaryTotals?.totalWithdrawn);
+    setCurrentDeposit(summaryTotals?.currentDeposit);
+    setTotalEarned(summaryTotals?.totalEarned);
+  }, [summaryTotals.currentEarned])
+  console.log("summaryTotals:", summaryTotals)
 
 
-  // Live Earning Liestner
-  // useEffect(() => {
-  //   if (!wallet.address || summaryTotals.totalEarned <= 0 || currentEarned <= 0) return;
-  //   setLiveTotalEarned(summaryTotals.totalEarned);
-  //   const weightedApy = calculateWeightedApy();
-  //   const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
-  //   // const timer = setInterval(() => {
-  //   //   setLiveTotalEarned(prevValue => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevValue * growthRate;
-  //   //   });
-  //   //   setCurrentEarned(prevCurrent => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevCurrent * growthRate;
-  //   //   });
-  //   // }, 100);
-  //   // return () => clearInterval(timer);
-  // }, [wallet.address, allYieldAssets, apyData, selectedNetwork]);
+  useEffect(() => {
+    if (!wallet.address || totalEarned <= 0 || currentEarned <= 0) return;
+    setLiveTotalEarned(totalEarned);
+    const weightedApy = calculateWeightedApy();
+    const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
+    const timer = setInterval(() => {
+      setLiveTotalEarned(prevValue => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevValue * growthRate;
+      });
+      setCurrentEarned(prevCurrent => {
+        const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
+        return prevCurrent * growthRate;
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, [totalEarned, wallet.address, allYieldAssets, apyData, selectedNetwork]);
 
   const formatLiveValue = (value: number): string => {
     if (typeof value !== 'number' || isNaN(value)) return '0.000000000000000000';
@@ -349,27 +369,25 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.summaryCards}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Deposit</div>
-            {/* DIRECT READ: No state needed */}
-            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
-            <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
+            <div className={styles.summaryAmount}>${formatNumber(currentDeposit, 10)}</div>
+            <div className={styles.summarySubtext}>Total Deposit ${formatNumber(totalDeposited, 10)}</div>
           </div>
-
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Earned</div>
-            {/* LIVE STATE: These use state because they animate */}
             <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
             <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
           </div>
-
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Total Withdrawn</div>
-            {/* DIRECT READ: No state needed */}
-            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.totalWithdrawn, 4)}</div>
+            <div className={styles.summaryAmount}>${formatNumber(totalWithdrawn, 4)}</div>
+            <div className={styles.summarySubtext}></div>
           </div>
         </div>
       )}
+
       {isConsolidated ? (
         (() => {
+          console.log("in consolidated view");
           const allAddresses = [...manualAddresses];
           if (isMetamaskConnected && metamaskAddress) allAddresses.push(metamaskAddress);
 
