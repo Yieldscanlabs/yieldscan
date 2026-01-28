@@ -176,6 +176,13 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
+  const getApyForAsset = (asset: Asset) => {
+    if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
+      const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
+      return apys[asset.protocol.toLowerCase()] || 0;
+    }
+    return 0;
+  };
   const handleResetFilters = () => {
     setSelectedNetwork('all');
     setSelectedProtocol('all');
@@ -382,10 +389,16 @@ const MyYieldsPage: React.FC = () => {
           return allAddresses.map((address) => {
             const allWalletAssets = assetsByWallet.get(address.toLowerCase()) || [];
 
-            // 1. FILTER specifically for assets actually earning yield
-            const activeYieldingAssets = allWalletAssets.filter(asset =>
-              Number(asset.currentBalanceInProtocolUsd || 0) >= HARD_MIN_USD
-            );
+            // 1. FILTER specifically for assets actually earning yield and SORT (High to Low APY)
+
+            const activeYieldingAssets = allWalletAssets
+              .filter(asset => Number(asset.currentBalanceInProtocolUsd || 0) >= HARD_MIN_USD)
+              .sort((a, b) => getApyForAsset(b) - getApyForAsset(a));
+
+            // 2. FIND HIGHEST APY for this specific wallet
+            const maxApy = activeYieldingAssets.length > 0
+              ? Math.max(...activeYieldingAssets.map(a => getApyForAsset(a)))
+              : 0;
 
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
 
@@ -415,6 +428,7 @@ const MyYieldsPage: React.FC = () => {
                               asset={asset}
                               optimizationData={getOptimizationDataForAsset(asset)}
                               onOptimize={() => { }}
+                              isHighestYield={maxApy > 0 && getApyForAsset(asset) === maxApy}
                             />
                           ))}
                         </div>
@@ -447,25 +461,45 @@ const MyYieldsPage: React.FC = () => {
         /* Apply the same logic for Single Wallet View */
         <div className={styles.section}>
           {loading ? <MyYieldSkeletonLoader viewType={viewType} /> : (
-            <>
-              {filteredYieldAssets.filter(a => Number(a.currentBalanceInProtocolUsd || 0) >= HARD_MIN_USD).length > 0 ? (
-                viewType === 'cards' ? (
-                  <div className={styles.yieldGrid}>
-                    {filteredYieldAssets
-                      .filter(a => Number(a.currentBalanceInProtocolUsd || 0) >= HARD_MIN_USD)
-                      .map((asset) => (
-                        <YieldCard key={`${asset.token}-${asset.chainId}-${asset.protocol}`} asset={asset} optimizationData={getOptimizationDataForAsset(asset)} onOptimize={() => { }} />
-                      ))}
-                  </div>
-                ) : <YieldsTable assets={filteredYieldAssets.filter(a => Number(a.currentBalanceInProtocolUsd || 0) >= HARD_MIN_USD)} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
-              ) : (
-                <NoYieldEmptyState
-                  onRedirect={() => handleRedirect(globalState.hasDormantFunds ? "/" : "/explore")}
-                  subtext={globalState.hasDormantFunds ? 'You have idle assets ready to earn yield.' : 'You don’t have any assets yet.'}
-                  btnText={globalState.hasDormantFunds ? "View Wallet Options" : "Explore Yield Options"}
-                />
-              )}
-            </>
+            (() => {
+              // 1. FILTER and SORT
+              const activeYields = filteredYieldAssets
+                .filter(a => Number(a.currentBalanceInProtocolUsd || 0) >= HARD_MIN_USD)
+                .sort((a, b) => getApyForAsset(b) - getApyForAsset(a));
+
+              // 2. FIND HIGHEST APY
+              const maxApy = activeYields.length > 0
+                ? Math.max(...activeYields.map(a => getApyForAsset(a)))
+                : 0;
+
+              return (
+                <>
+                  {activeYields.length > 0 ? (
+                    viewType === 'cards' ? (
+                      <div className={styles.yieldGrid}>
+                        {activeYields.map((asset) => (
+                          <YieldCard
+                            key={`${asset.token}-${asset.chainId}-${asset.protocol}`}
+                            asset={asset}
+                            isHighestYield={maxApy > 0 && getApyForAsset(asset) === maxApy} // 🟢 HIGHLIGHT
+                            optimizationData={getOptimizationDataForAsset(asset)}
+                            onOptimize={() => { }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <YieldsTable assets={activeYields} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset} />
+                    )
+                  ) : (
+                    <NoYieldEmptyState
+                      onRedirect={() => handleRedirect(globalState.hasDormantFunds ? "/" : "/explore")}
+                      subtext={globalState.hasDormantFunds ? 'You have idle assets ready to earn yield.' : 'You don’t have any assets yet.'}
+                      btnText={globalState.hasDormantFunds ? "View Wallet Options" : "Explore Yield Options"}
+                    />
+                  )}
+                </>
+              );
+            })()
           )}
         </div>
       )}
