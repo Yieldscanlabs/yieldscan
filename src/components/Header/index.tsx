@@ -221,13 +221,6 @@ const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleOpenExplorer = () => {
-    if (address && chainId) {
-      const explorerUrl = getExplorerUrl(chainId, address);
-      window.open(explorerUrl, '_blank', 'noopener,noreferrer');
-    }
-  };
-
   return (
     <>
       <DesktopHeader
@@ -245,7 +238,6 @@ const Header: React.FC<HeaderProps> = ({
         dropdownRef={dropdownRef as React.RefObject<HTMLDivElement>}
         copySuccess={copySuccess}
         handleCopyAddress={handleCopyAddress}
-        handleOpenExplorer={handleOpenExplorer}
         disconnectWallet={disconnectWallet}
       />
 

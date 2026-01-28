@@ -24,7 +24,6 @@ interface DesktopHeaderProps {
   dropdownRef: React.RefObject<HTMLDivElement>;
   copySuccess: boolean;
   handleCopyAddress: () => void;
-  handleOpenExplorer: () => void;
   disconnectWallet: () => void;
 }
 
@@ -42,7 +41,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   dropdownRef,
   copySuccess,
   handleCopyAddress,
-  handleOpenExplorer,
   disconnectWallet,
   dormantCapital
 }) => {
@@ -77,7 +75,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
             dropdownRef={dropdownRef}
             copySuccess={copySuccess}
             handleCopyAddress={handleCopyAddress}
-            handleOpenExplorer={handleOpenExplorer}
             disconnectWallet={disconnectWallet}
           />
 
