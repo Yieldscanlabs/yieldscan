@@ -1,35 +1,43 @@
 import type { Asset } from '../types';
 import { useUserPreferencesStore } from '../store/userPreferencesStore';
 
-export const HARD_MIN_USD = 0.1; // Assets below this are NEVER shown (0.10)
-export const SOFT_MIN_USD = 1.00; // Assets below this are hidden when checkbox is checked (1.00)
+export const HARD_MIN_USD = 0.1; 
+export const SOFT_MIN_USD = 1.00; 
 
 /**
- * Pure function to check visibility.
- * Useful when we need to check visibility based on a state that isn't the hook's own state
- * (e.g., inside a loop of wallets where each has its own boolean flag).
+ * Logic for the Wallet Page: Only looks at balanceUsd (dormant)
  */
-export const checkIsAssetVisible = (asset: Asset, shouldHideLowValues: boolean) => {
+export const checkIsWalletAssetVisible = (asset: Asset, shouldHideLowValues: boolean) => {
   const balanceUsd = parseFloat(asset.balanceUsd || '0');
+  if (balanceUsd < HARD_MIN_USD) return false;
+  if (shouldHideLowValues && balanceUsd <= SOFT_MIN_USD) return false;
+  return true;
+};
 
-  // 1. Hard Rule: Always hide dust (< $0.10)
-  if (balanceUsd < HARD_MIN_USD) {
-    return false;
-  }
+/**
+ * Logic for the Yield Page: Looks at the HIGHER of wallet or protocol balance
+ */
+export const checkIsYieldAssetVisible = (asset: Asset, shouldHideLowValues: boolean) => {
+  const walletBal = parseFloat(asset.balanceUsd || '0');
+  const yieldBal = parseFloat(asset.currentBalanceInProtocolUsd || '0');
+  const relevantBalance = Math.max(walletBal, yieldBal);
 
-  // 2. Soft Rule: If checked, hide low values (<= $1.00)
-  if (shouldHideLowValues && balanceUsd <= SOFT_MIN_USD) {
-    return false;
-  }
-
+  if (relevantBalance < HARD_MIN_USD) return false;
+  if (shouldHideLowValues && relevantBalance <= SOFT_MIN_USD) return false;
   return true;
 };
 
 export function useLowValueFilter() {
   const { hideLowValues, setHideLowValues } = useUserPreferencesStore();
 
-  const shouldShowAsset = (asset: Asset) => {
-    return checkIsAssetVisible(asset, hideLowValues);
+  // For Wallet Page
+  const shouldShowWalletAsset = (asset: Asset) => {
+    return checkIsWalletAssetVisible(asset, hideLowValues);
+  };
+
+  // For Yield Page
+  const shouldShowYieldAsset = (asset: Asset) => {
+    return checkIsYieldAssetVisible(asset, hideLowValues);
   };
 
   const isAboveHardDust = (asset: Asset) => {
@@ -37,14 +45,14 @@ export function useLowValueFilter() {
   };
 
   const isAboveHardYieldDust = (asset: Asset) => {
-    // Check the actual amount earning yield, not just what's in the wallet
     return parseFloat(asset.currentBalanceInProtocolUsd || '0') >= HARD_MIN_USD;
   };
 
   return {
     hideLowValues,
     setHideLowValues,
-    shouldShowAsset,
+    shouldShowWalletAsset, // Use this in WalletPage
+    shouldShowYieldAsset,  // Use this in MyYieldsPage
     isAboveHardDust,
     isAboveHardYieldDust
   };

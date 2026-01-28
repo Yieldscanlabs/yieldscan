@@ -59,7 +59,7 @@ function Wallet() {
   const { walletPageView: viewType, setWalletPageView: setViewType } = useUserPreferencesStore();
 
   //  Uses Global Store via Hook (Persisted & Shared)
-  const { hideLowValues, setHideLowValues, shouldShowAsset, isAboveHardDust } = useLowValueFilter();
+  const { hideLowValues, setHideLowValues, shouldShowWalletAsset, isAboveHardDust } = useLowValueFilter();
 
   const [state, setState] = useState<WalletState>({
     selectedAsset: null,
@@ -218,7 +218,7 @@ function Wallet() {
     //  Shared Filter & Deduplication Logic using Global Checkbox
     // Applies to both consolidated and single views
     const processWalletAssets = (walletAssets: Asset[]) => {
-      const filtered = walletAssets.filter(asset => baseFilterMatch(asset) && shouldShowAsset(asset));
+      const filtered = walletAssets.filter(asset => baseFilterMatch(asset) && shouldShowWalletAsset(asset));
       const deduped = deduplicateAssets(filtered);
       return enrichAssetsWithApy(deduped); // Enrich for table view
     };

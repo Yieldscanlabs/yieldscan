@@ -2062,3 +2062,23 @@
 }
 
 
+
+
+.highestYieldHighlight {
+  border: 1.5px solid #00d395 !important; /* Your brand green */
+  box-shadow: 0 0 15px rgba(0, 211, 149, 0.2);
+}
+
+.highestYieldBadge {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: #00d395;
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  z-index: 10;
+}
