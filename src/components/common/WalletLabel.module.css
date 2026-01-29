@@ -1,0 +1,176 @@
+.container {
+  display: flex;
+  align-items: center; /* This ensures perfect vertical centering of Icon + Text */
+  gap: 12px;
+  font-family: inherit;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* --- VIEW MODE STYLES --- */
+.labelGroup {
+  display: flex;
+  align-items: center; /* Changed from baseline to center to fix alignment */
+  gap: 8px;
+}
+
+.customName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  letter-spacing: -0.02em;
+  line-height: 1; /* Helps with vertical alignment */
+}
+
+.defaultLabel {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  line-height: 1;
+}
+
+.addressWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.address {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #9ca3af);
+  font-weight: 400;
+  font-family: monospace;
+  line-height: 1;
+}
+
+.copyBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--text-secondary, #6b7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.copyBtn:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+  color: var(--primary-color, #3b82f6);
+  opacity: 1;
+}
+
+.editBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--text-secondary, #6b7280);
+  opacity: 0; 
+  transform: translateX(-5px);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container:hover .editBtn {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.editBtn:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.1));
+  color: var(--primary-color, #3b82f6);
+}
+
+/* --- EDIT MODE STYLES --- */
+.editContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input, rgba(0, 0, 0, 0.2));
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #374151);
+  transition: border-color 0.2s;
+}
+
+.editContainer:focus-within {
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #ffffff);
+  font-size: 0.95rem;
+  padding: 4px 8px;
+  outline: none;
+  width: 180px;
+  font-weight: 500;
+}
+
+.input::placeholder {
+  color: var(--text-secondary, #6b7280);
+  font-weight: 400;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.saveBtn { color: #10b981; }
+.saveBtn:hover { background: rgba(16, 185, 129, 0.1); }
+
+.cancelBtn { color: #ef4444; }
+.cancelBtn:hover { background: rgba(239, 68, 68, 0.1); }
+
+/* --- LIGHT THEME OVERRIDES --- */
+:global(body.light) .customName,
+:global(body.light) .defaultLabel {
+  color: #111827;
+}
+
+:global(body.light) .address {
+  color: #6b7280;
+}
+
+:global(body.light) .editBtn:hover,
+:global(body.light) .copyBtn:hover {
+  background: #f3f4f6;
+}
+
+:global(body.light) .editContainer {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+:global(body.light) .input {
+  color: #111827;
+}
