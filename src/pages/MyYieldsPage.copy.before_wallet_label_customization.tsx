@@ -10,7 +10,7 @@ import type { Asset } from '../types';
 import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import { shortenAddress } from '../utils/helpers';
-import { MIN_ALLOWED_BALANCE, PROTOCOL_NAMES } from '../utils/constants';
+import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard/YieldCard';
 import type { OptimizationData } from '../components/YieldCard/types';
 import { useAssetStore } from '../store/assetStore';
@@ -315,8 +315,8 @@ const MyYieldsPage: React.FC = () => {
   };
 
   const globalState = useMemo(() => {
-    const hasActiveYields = assets.some(a => Number(a.currentBalanceInProtocolUsd) > MIN_ALLOWED_BALANCE);
-    const hasDormantFunds = assets.some(a => Number(a.balanceUsd) > MIN_ALLOWED_BALANCE);
+    const hasActiveYields = assets.some(a => Number(a.currentBalanceInProtocolUsd) > HARD_MIN_USD);
+    const hasDormantFunds = assets.some(a => Number(a.balanceUsd) > HARD_MIN_USD);
     return { hasActiveYields, hasDormantFunds };
   }, [assets]);
 

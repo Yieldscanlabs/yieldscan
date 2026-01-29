@@ -24,10 +24,9 @@ import { shortenAddress } from '../../utils/helpers';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EmptyStateCard from '../../components/wallet-page/EmptyWalletStateCard';
 import { WalletSkeletonLoader } from '../../components/loaders/WalletSkeletonLoader';
-import { useLowValueFilter } from '../../hooks/useLowValueFilter';
+import { HARD_MIN_USD, useLowValueFilter } from '../../hooks/useLowValueFilter';
 import { useApyStore } from '../../store/apyStore';
 import { getBestYield } from '../../utils/getBestYield';
-import { MIN_ALLOWED_BALANCE } from '../../utils/constants';
 import LowValueFilterCheckbox from '../../components/common/LowValueFilterCheckbox';
 import FilteredEmptyState from '../../components/wallet-page/FilteredEmptyState';
 import WalletLabel from '../../components/common/WalletLabel';
@@ -152,7 +151,7 @@ function Wallet() {
 
   const uniqueAssetsForSelector = useMemo(() => {
     const assetMap = new Map();
-    const minBalance = typeof MIN_ALLOWED_BALANCE !== 'undefined' ? MIN_ALLOWED_BALANCE : 0;
+    const minBalance = typeof HARD_MIN_USD !== 'undefined' ? HARD_MIN_USD : 0;
 
     assets.forEach(asset => {
       if (!asset.token || typeof asset.token !== 'string') return;
