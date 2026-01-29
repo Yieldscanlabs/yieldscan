@@ -2038,12 +2038,18 @@
   border-bottom: 2px solid var(--border-color);
 }
 
+
 .walletSectionHeader h3 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
   font-family: var(--font-mono, monospace);
+}
+.headerLeft{
+  display: flex;
+  align-items: center;
+  /* gap: 1rem; */
 }
 
 .metamaskBadge {

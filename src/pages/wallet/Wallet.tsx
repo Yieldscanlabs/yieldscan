@@ -30,6 +30,7 @@ import { getBestYield } from '../../utils/getBestYield';
 import { MIN_ALLOWED_BALANCE } from '../../utils/constants';
 import LowValueFilterCheckbox from '../../components/common/LowValueFilterCheckbox';
 import FilteredEmptyState from '../../components/wallet-page/FilteredEmptyState';
+import WalletLabel from '../../components/common/WalletLabel';
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -109,8 +110,8 @@ function Wallet() {
   const handleNetworkChange = (selectedNetwork: number | 'all') => { setState(prev => ({ ...prev, selectedNetwork })); };
   const handleAssetFilterChange = (assetToken: string | 'all') => { setState(prev => ({ ...prev, selectedAssetFilter: assetToken })); };
   const handleSearchChange = (query: string) => { setState(prev => ({ ...prev, searchQuery: query })); };
-  const handleResetFilters = () => { 
-    setState(prev => ({ ...prev, selectedNetwork: 'all', selectedAssetFilter: 'all', searchQuery: '' })); 
+  const handleResetFilters = () => {
+    setState(prev => ({ ...prev, selectedNetwork: 'all', selectedAssetFilter: 'all', searchQuery: '' }));
     setHideLowValues(false);
   };
 
@@ -269,7 +270,9 @@ function Wallet() {
               <div key={address} className={styles.walletSection}>
                 <div className={styles.walletSectionHeader}>
                   <div className={styles.headerLeft}>
-                    <h3>Wallet: {walletName}</h3>
+                    {/* 2. Integrate the Wallet Label Component */}
+                    <WalletLabel address={address} />
+
                     {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
                   </div>
                 </div>
@@ -313,7 +316,7 @@ function Wallet() {
           <div className={styles.filterControls}>
             <NetworkSelector
               selectedNetwork={state.selectedNetwork}
-              networks={AVAILABLE_NETWORKS} 
+              networks={AVAILABLE_NETWORKS}
               /* @ts-ignore */
               onChange={handleNetworkChange}
             />
