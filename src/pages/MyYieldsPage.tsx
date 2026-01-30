@@ -3,13 +3,11 @@ import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import { useApyStore } from '../store/apyStore';
-import { useEarnStore } from '../store/earnStore';
 import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
 import useWalletConnection from '../hooks/useWalletConnection';
 import type { Asset } from '../types';
 import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount } from 'wagmi';
-import { shortenAddress } from '../utils/helpers';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard/YieldCard';
 import type { OptimizationData } from '../components/YieldCard/types';
@@ -359,9 +357,6 @@ const MyYieldsPage: React.FC = () => {
     } catch (error) { return '0.000000000000000000'; }
   };
 
-  const hasAnyAssets = (walletAssets: Asset[]) => {
-    return walletAssets.some(asset => isAboveHardDust(asset));
-  }
   const hasAnyYieldAssets = (walletAssets: Asset[]) => {
     return walletAssets.some(asset => isAboveHardYieldDust(asset));
   }
