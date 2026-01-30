@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { MyYieldSkeletonLoader, MyYieldSummaryCardsSkeleton } from '../components/loaders/MyYieldSkeletonLoader';
 
 // NEW: Import persistent filter logic
-import { HARD_MIN_USD, useLowValueFilter } from '../hooks/useLowValueFilter';
+import { checkIsYieldAssetVisible, HARD_MIN_USD, useLowValueFilter } from '../hooks/useLowValueFilter';
 import LowValueFilterCheckbox from '../components/common/LowValueFilterCheckbox';
 import FilteredEmptyState from '../components/wallet-page/FilteredEmptyState';
 import WalletLabel from '../components/common/WalletLabel';
@@ -59,16 +59,49 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
+  // const uniqueAssets = useMemo(() => {
+  //   type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
+  //   const assetMap = new Map<string, UniqueAsset>();
+  //   console.log("allYieldAssets inside uniqueAssets: ", allYieldAssets)
+  //   allYieldAssets.forEach(asset => {
+  //     // Respect hard dust limit in dropdown list
+  //     if (!isAboveHardDust(asset)) return;
+
+  //     const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
+  //     const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
+  //     const existing = assetMap.get(asset.token);
+
+  //     if (existing) {
+  //       if (hasHoldings && !existing.hasHoldings) {
+  //         assetMap.set(asset.token, { ...existing, hasHoldings: true });
+  //       }
+  //     } else {
+  //       assetMap.set(asset.token, {
+  //         token: asset.token,
+  //         icon: asset.icon,
+  //         chainId: asset.chainId,
+  //         hasHoldings
+  //       });
+  //     }
+  //   });
+
+  //   return Array.from(assetMap.values());
+  // }, [allYieldAssets, isAboveHardDust]);
+
   const uniqueAssets = useMemo(() => {
     type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
     const assetMap = new Map<string, UniqueAsset>();
 
     allYieldAssets.forEach(asset => {
-      // Respect hard dust limit in dropdown list
-      if (!isAboveHardDust(asset)) return;
+      // This checks if MAX(WalletBal, YieldBal) >= HARD_MIN_USD.
+      // Passing 'false' ensures we don't hide items just because the "Low Value" checkbox is ticked,
+      // allowing the user to find them in the dropdown if they exist.
+      if (!checkIsYieldAssetVisible(asset, false)) return;
 
+      // Keep existing logic for the green dot / holdings indicator
       const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
       const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
+
       const existing = assetMap.get(asset.token);
 
       if (existing) {
@@ -86,8 +119,19 @@ const MyYieldsPage: React.FC = () => {
     });
 
     return Array.from(assetMap.values());
-  }, [allYieldAssets, isAboveHardDust]);
+  }, [allYieldAssets]); // Dependencies
 
+  // Helper to check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      selectedNetwork !== 'all' ||
+      selectedProtocol !== 'all' ||
+      selectedAsset !== 'all' ||
+      searchQuery !== '' ||
+      hideLowValues === true
+    );
+  }, [selectedNetwork, selectedProtocol, selectedAsset, searchQuery, hideLowValues]);
+  console.log("uniqueAssets: ", uniqueAssets)
   useEffect(() => {
     fetchProtocols()
   }, [])
@@ -315,6 +359,13 @@ const MyYieldsPage: React.FC = () => {
     } catch (error) { return '0.000000000000000000'; }
   };
 
+  const hasAnyAssets = (walletAssets: Asset[]) => {
+    return walletAssets.some(asset => isAboveHardDust(asset));
+  }
+  const hasAnyYieldAssets = (walletAssets: Asset[]) => {
+    return walletAssets.some(asset => isAboveHardYieldDust(asset));
+  }
+
   const globalState = useMemo(() => {
     const hasActiveYields = assets.some(a => Number(a.currentBalanceInProtocolUsd) > HARD_MIN_USD);
     const hasDormantFunds = assets.some(a => Number(a.balanceUsd) > HARD_MIN_USD);
@@ -385,8 +436,9 @@ const MyYieldsPage: React.FC = () => {
             if (!assetsByWallet.has(walletAddr)) assetsByWallet.set(walletAddr, []);
             assetsByWallet.get(walletAddr)!.push(asset);
           });
-
+          console.warn("=================================================")
           return allAddresses.map((address) => {
+            console.log("Processing wallet address: ", address);
             const allWalletAssets = assetsByWallet.get(address.toLowerCase()) || [];
 
             // 1. FILTER specifically for assets actually earning yield and SORT (High to Low APY)
@@ -407,6 +459,16 @@ const MyYieldsPage: React.FC = () => {
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
               .some(a => isAboveHardDust(a) || isAboveHardYieldDust(a));
 
+            console.log("hasAnyBalance: ", hasAnyBalance)
+
+            // Check if this wallet *really* has yield assets regardless of UI filters.
+            // We use `allYieldAssets` (raw list) instead of `filteredYieldAssets`.
+            const rawWalletAssets = allYieldAssets.filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase());
+            const walletTrulyHasYieldAssets = hasAnyYieldAssets(rawWalletAssets);
+            console.log("walletTrulyHasYieldAssets: ", walletTrulyHasYieldAssets)
+            const walletHasAnyYieldAssets = hasAnyYieldAssets(allWalletAssets);
+            console.log("walletHasAnyYieldAssets: ", walletHasAnyYieldAssets)
+            console.log("------------------------------------------------")
             return (
               <div key={address} className={styles.section}>
                 <div className={styles.walletSectionHeader}>
@@ -440,23 +502,23 @@ const MyYieldsPage: React.FC = () => {
                           ))}
                         </div>
                       ) : (
-                        <YieldsTable
-                          assets={activeYieldingAssets}
-                          loading={loading}
-                          getOptimizationDataForAsset={getOptimizationDataForAsset}
+                        <YieldsTable assets={activeYieldingAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset}
                         />
                       )
                     ) : (
-                      /* Handle Empty States: If no active yields, check if they have dormant money */
-                      <NoYieldEmptyState
-                        subtext={
-                          hasAnyBalance
-                            ? "You have idle assets ready to earn yield."
-                            : "You don’t have any assets yet. Explore yield opportunities to get started."
-                        }
-                        btnText={hasAnyBalance ? "View Wallet Options" : "Explore Yield Options"}
-                        onRedirect={() => handleRedirect(hasAnyBalance ? "/" : "/explore")}
-                      />
+                      hasActiveFilters && walletTrulyHasYieldAssets ? (
+                        <FilteredEmptyState onReset={handleResetFilters} />
+                      ) :
+                        /* Handle Empty States: If no active yields, check if they have dormant money */
+                        <NoYieldEmptyState
+                          subtext={
+                            hasAnyBalance
+                              ? "You have idle assets ready to earn yield."
+                              : "You don’t have any assets yet. Explore yield opportunities to get started."
+                          }
+                          btnText={hasAnyBalance ? "View Wallet Options" : "Explore Yield Options"}
+                          onRedirect={() => handleRedirect(hasAnyBalance ? "/" : "/explore")}
+                        />
                     )}
                   </>
                 )}

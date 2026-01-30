@@ -259,7 +259,6 @@ function Wallet() {
           {allAddresses.map((address) => {
             const walletAssets = assetsByWallet.get(address.toLowerCase()) || [];
             const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
-            const walletName = shortenAddress(address);
 
             //  Use shared processor with Global Checkbox state
             const finalAssets = processWalletAssets(walletAssets);

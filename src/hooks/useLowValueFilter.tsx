@@ -2,7 +2,7 @@ import type { Asset } from '../types';
 import { useUserPreferencesStore } from '../store/userPreferencesStore';
 
 export const HARD_MIN_USD = 0.1; 
-export const SOFT_MIN_USD = 1.00; 
+export const SOFT_MIN_USD = 10.00; 
 
 /**
  * Logic for the Wallet Page: Only looks at balanceUsd (dormant)
