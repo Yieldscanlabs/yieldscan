@@ -230,7 +230,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           } else {
             normalizedData[normalizedAddress] = data;
           }
-
+          normalizedData[normalizedAddress].label = data.label;
           if (!currentController.signal.aborted) {
             set(state => ({
               activityData: { ...state.activityData, ...normalizedData },

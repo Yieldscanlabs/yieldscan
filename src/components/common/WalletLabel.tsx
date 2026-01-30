@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Pencil, Check, X as XIcon, Copy } from 'lucide-react'; 
-import { useEnsName } from 'wagmi';
 import { shortenAddress } from '../../utils/helpers';
-// 1. Switch import to Activity Store
 import { useDepositsAndWithdrawalsStore } from '../../store/depositsAndWithdrawalsStore'; 
 import { generateWalletGradient } from '../../utils/avatarGenerator';
 import styles from './WalletLabel.module.css';
@@ -12,31 +10,23 @@ interface Props {
 }
 
 const WalletLabel: React.FC<Props> = ({ address }) => {
-  // 2. Access Data & Actions from the correct store
   const activityData = useDepositsAndWithdrawalsStore(state => state.activityData);
   const updateWalletLabel = useDepositsAndWithdrawalsStore(state => state.updateWalletLabel);
 
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false); 
 
-  const { data: ensName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: 1
-  });
-
   const avatarBackground = generateWalletGradient(address);
   
-  // 3. Get Saved Label from Backend Data
+  // Data Source: Strictly from Store (Backend)
   const userData = activityData[address.toLowerCase()];
-  const savedLabel = userData?.label;
+  const savedLabel = userData?.label; // Backend provides default if custom isn't set
 
-  const defaultDisplayName = ensName || `Wallet:`;
   const [inputValue, setInputValue] = useState(savedLabel || "");
 
   const handleSave = () => {
-    // 4. Trigger Action (Optimistic Update + API Call)
     const newLabel = inputValue.trim();
-    // If empty, pass empty string to backend to clear it (or handle per your API logic)
+    // Optimistic update happens inside the store action
     updateWalletLabel(address, newLabel);
     setIsEditing(false);
   };
@@ -72,10 +62,10 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={defaultDisplayName}
+            // Use savedLabel directly. If data is loading, fallback to simple "Wallet" string for UI stability.
+            placeholder={savedLabel || "Wallet:"} 
             maxLength={24}
           />
-          {/* Label: {userData?.label} */}
           <div className={styles.actions}>
             <button onClick={handleSave} className={`${styles.actionBtn} ${styles.saveBtn}`} title="Save">
               <Check size={16} strokeWidth={2.5} />
@@ -98,9 +88,10 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
       />
 
       <div className={styles.labelGroup}>
-        {/* Priority: DB Label -> ENS -> Default */}
-        <h3 className={savedLabel ? styles.customName : styles.defaultLabel} style={{ margin: 0 }}>
-          {savedLabel || ensName || "Wallet"}
+        {/* Simplified: Relies purely on backend label. 
+            Fallback to "Wallet" only happens if API hasn't responded yet. */}
+        <h3 className={styles.customName} style={{ margin: 0 }}>
+          {savedLabel || "Wallet"}
         </h3>
         
         <div className={styles.addressWrapper}>
@@ -118,7 +109,10 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
       </div>
       
       <button 
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          setInputValue(savedLabel || ""); // Ensure input starts with current DB value
+          setIsEditing(true);
+        }}
         className={styles.editBtn}
         title="Edit Label"
       >
