@@ -30,7 +30,7 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
   const userData = activityData[address.toLowerCase()];
   const savedLabel = userData?.label;
 
-  const defaultDisplayName = ensName || `Wallet`;
+  const defaultDisplayName = ensName || `Wallet:`;
   const [inputValue, setInputValue] = useState(savedLabel || "");
 
   const handleSave = () => {
@@ -75,6 +75,7 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
             placeholder={defaultDisplayName}
             maxLength={24}
           />
+          {/* Label: {userData?.label} */}
           <div className={styles.actions}>
             <button onClick={handleSave} className={`${styles.actionBtn} ${styles.saveBtn}`} title="Save">
               <Check size={16} strokeWidth={2.5} />

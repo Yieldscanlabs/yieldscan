@@ -99,15 +99,15 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         // 1. Optimistic UI Update
         set((state) => {
           const existingData = state.activityData[normalizedAddress];
-          
+
           // If data exists, update it. If not, create a skeleton so the label appears immediately.
-          const newData = existingData 
+          const newData = existingData
             ? { ...existingData, label }
-            : { 
-                label, 
-                totalDeposits: 0, currentDeposit: 0, totalEarnings: 0, currentEarnings: 0, 
-                totalWithdrawals: 0, userBalance: 0, transactions: {} 
-              };
+            : {
+              label,
+              totalDeposits: 0, currentDeposit: 0, totalEarnings: 0, currentEarnings: 0,
+              totalWithdrawals: 0, userBalance: 0, transactions: {}
+            };
 
           return {
             activityData: {
@@ -126,8 +126,8 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           });
 
           if (!response.ok) {
-             const err = await response.json();
-             throw new Error(err.error || 'Failed to save label');
+            const err = await response.json();
+            throw new Error(err.error || 'Failed to save label');
           }
 
         } catch (error) {
@@ -223,7 +223,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
           const data = await response.json();
-
+          console.warn(`response:${url}: `, data)
           let normalizedData: ActivityDataType = {};
           if (data.transactions && Object.keys(data.transactions).length > 0) {
             normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
