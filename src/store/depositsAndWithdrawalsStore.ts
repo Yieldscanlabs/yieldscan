@@ -23,7 +23,12 @@ export type ApiResponseStructure = {
   currentEarnings: number;
   totalWithdrawals: number;
   userBalance: number;
-  label?: string; // Added label field
+  label?: string; 
+  accumulatedYield?: {
+    daily: number;
+    yearly: number;
+    totalTillNow: number;
+  };
   transactions: Record<string, Record<string, ChainActivity>>;
 };
 

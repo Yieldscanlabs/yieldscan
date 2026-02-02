@@ -269,7 +269,7 @@ const MyYieldsPage: React.FC = () => {
   // 1. Calculate static totals via useMemo (Replaces the "culprit" useEffect)
   const summaryTotals = useMemo(() => {
     if (!wallet.address) {
-      return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0 };
+      return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0, dailyYield: 0, yearlyYield: 0 };
     }
 
     const addresses = isConsolidated
@@ -277,7 +277,7 @@ const MyYieldsPage: React.FC = () => {
       : [wallet.address];
 
     let currentD = 0, totalD = 0, totalW = 0, totalE = 0, currentE = 0;
-
+    let dailyY = 0, yearlyY = 0;
     addresses.forEach(addr => {
       const userData = activityData[addr.toLowerCase()];
       if (userData) {
@@ -287,6 +287,10 @@ const MyYieldsPage: React.FC = () => {
         totalE += userData.totalEarnings;
         currentE += userData.currentEarnings;
       }
+      if (userData?.accumulatedYield) {
+        dailyY += userData.accumulatedYield.daily || 0;
+        yearlyY += userData.accumulatedYield.yearly || 0;
+      }
     });
 
     return {
@@ -294,7 +298,9 @@ const MyYieldsPage: React.FC = () => {
       totalDeposited: totalD,
       totalWithdrawn: totalW,
       totalEarned: totalE,
-      currentEarned: currentE
+      currentEarned: currentE,
+      dailyYield: dailyY,
+      yearlyYield: yearlyY
     };
   }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, activityData]);
   // Sync "Live" ticking values when the base data updates
@@ -397,25 +403,83 @@ const MyYieldsPage: React.FC = () => {
       </div>
 
       {loading ? <MyYieldSummaryCardsSkeleton /> : (
+        // <div className={styles.summaryCards}>
+        //   <div className={styles.summaryCard}>
+        //     <div className={styles.summaryTitle}>Current Deposit</div>
+        //     {/* DIRECT READ: No state needed */}
+        //     <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
+        //     <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
+        //   </div>
+
+        //   <div className={styles.summaryCard}>
+        //     <div className={styles.summaryTitle}>Current Earned</div>
+        //     {/* LIVE STATE: These use state because they animate */}
+        //     <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
+        //     <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
+        //   </div>
+
+        //   <div className={styles.summaryCard}>
+        //     <div className={styles.summaryTitle}>Daily Yield</div>
+        //     <div className={styles.summaryAmount}>
+        //       ${formatNumber(summaryTotals.dailyYield, 4)}
+        //     </div>
+        //     <div className={styles.summarySubtext}>
+        //       Yearly Yield ${formatNumber(summaryTotals.yearlyYield, 2)}
+        //     </div>
+        //   </div>
+        // </div>
         <div className={styles.summaryCards}>
+          {/* Card 1: Current Deposit (Neutral) */}
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Deposit</div>
-            {/* DIRECT READ: No state needed */}
-            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
-            <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
+            <div className={styles.summaryAmount}>
+              ${formatNumber(summaryTotals.currentDeposit, 10)}
+            </div>
+            <div className={styles.summarySubtext}>
+              Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}
+            </div>
           </div>
 
+          {/* Card 2: Current Earned (Color only if != 0) */}
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Earned</div>
-            {/* LIVE STATE: These use state because they animate */}
-            <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
-            <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
+            <div
+              className={styles.summaryAmount}
+              style={{
+                color: currentEarned > 0 ? '#2EBD85' : currentEarned < 0 ? '#ef4444' : 'inherit'
+              }}
+            >
+              ${formatLiveValue(currentEarned)}
+            </div>
+            <div
+              className={styles.summarySubtext}
+              style={{
+                color: liveTotalEarned > 0 ? '#2EBD85' : liveTotalEarned < 0 ? '#ef4444' : 'inherit'
+              }}
+            >
+              Total Earning ${formatLiveValue(liveTotalEarned)}
+            </div>
           </div>
 
+          {/* Card 3: Daily Yield (Color only if > 0) */}
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Total Withdrawn</div>
-            {/* DIRECT READ: No state needed */}
-            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.totalWithdrawn, 4)}</div>
+            <div className={styles.summaryTitle}>Daily Yield</div>
+            <div
+              className={styles.summaryAmount}
+              style={{
+                color: summaryTotals.dailyYield > 0 ? '#2EBD85' : 'inherit'
+              }}
+            >
+              ${formatNumber(summaryTotals.dailyYield, 4)}
+            </div>
+            <div
+              className={styles.summarySubtext}
+              style={{
+                color: summaryTotals.yearlyYield > 0 ? '#2EBD85' : 'inherit'
+              }}
+            >
+              Yearly Yield ${formatNumber(summaryTotals.yearlyYield, 2)}
+            </div>
           </div>
         </div>
       )}
