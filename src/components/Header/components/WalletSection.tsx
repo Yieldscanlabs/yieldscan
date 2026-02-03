@@ -5,6 +5,8 @@ import { useManualWalletStore } from '../../../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import styles from '../Header.module.css';
 import ExplorerSelectionModal from '../../Modals/ExplorerSelectionModal';
+import { Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface WalletSectionProps {
   isConnected: boolean;
@@ -36,7 +38,8 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     toggleConsolidated,
     openManualModal
   } = useManualWalletStore();
-const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
+  const navigate = useNavigate()
+  const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
 
   // Build wallets list (MetaMask + manual) unconditionally
@@ -87,15 +90,15 @@ const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
   };
 
 
- 
+
   return (
     <div className={styles.walletContainer} ref={dropdownRef}>
 
       {/* The Modal */}
-      <ExplorerSelectionModal 
-        isOpen={isExplorerModalOpen} 
-        onClose={() => setExplorerModalOpen(false)} 
-        walletAddress={activeAddress!} 
+      <ExplorerSelectionModal
+        isOpen={isExplorerModalOpen}
+        onClose={() => setExplorerModalOpen(false)}
+        walletAddress={activeAddress!}
       />
       <div
         className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
@@ -239,7 +242,18 @@ const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
           </label>
 
           <div className={styles.dropdownDivider}></div>
-
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              // props.toggleDropdown(); 
+              navigate('/settings');
+            }}
+            className={styles.dropdownButton}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Settings size={14} /> Settings
+          </button>
+          <div className={styles.dropdownDivider}></div>
           <div
             className={styles.dropdownThemeToggle}
             onMouseDown={(e) => e.stopPropagation()}
@@ -249,7 +263,9 @@ const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
 
           <div className={styles.dropdownDivider}></div>
 
-          {/* 👇 Disconnect Button is now Always Visible */}
+
+
+
           <button
             onClick={(e) => {
               e.stopPropagation();

@@ -1,0 +1,117 @@
+.container {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--text-primary, #fff);
+    /* Fallback to white if var missing */
+}
+
+.settingsGroup {
+    margin-top: 2rem;
+}
+
+.settingCard {
+    background: var(--bg-card, #1f2937);
+    border: 1px solid var(--border-color, #374151);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.cardHeader h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.25rem;
+}
+
+.subtext {
+    color: var(--text-secondary, #9ca3af);
+    font-size: 0.875rem;
+    margin: 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.walletTag {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    margin-left: 8px;
+}
+
+.settingItem {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color, #374151);
+}
+
+.labelGroup {
+    margin-bottom: 16px;
+}
+
+.labelGroup label {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.description {
+    color: var(--text-secondary, #9ca3af);
+    font-size: 0.875rem;
+}
+
+.optionsContainer {
+    display: flex;
+    gap: 12px;
+}
+
+.optionBtn {
+    background: transparent;
+    border: 1px solid var(--border-color, #4b5563);
+    color: var(--text-secondary, #9ca3af);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.optionBtn:hover {
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+.optionBtn.active {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    border-color: var(--primary-color, #3b82f6);
+}
+
+.previewBox {
+    margin-top: 24px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.previewLabel {
+    color: var(--text-secondary, #9ca3af);
+    font-size: 0.875rem;
+}
+
+.previewValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary, #fff);
+}
+
+.previewOriginal {
+    color: var(--text-tertiary, #6b7280);
+    font-size: 0.875rem;
+    font-style: italic;
+}

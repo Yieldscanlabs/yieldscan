@@ -3,15 +3,16 @@ import { persist } from 'zustand/middleware';
 import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
 
 interface ManualWalletState {
+  metamaskAddress: null | string;
   manualAddresses: string[];
   activeManualAddressIndex: number | null;
   isConsolidated: boolean;
   isManualModalOpen: boolean;
   hasHydrated: boolean;
-  
+
   // 1. New State for Labels
   walletLabels: Record<string, string>;
-
+  setMetamaskAddress: (address: string|null) => void;
   addManualAddress: (address: string) => void;
   removeManualAddress: (index: number) => void;
   setActiveManualAddress: (index: number | null) => void;
@@ -30,13 +31,14 @@ interface ManualWalletState {
 export const useManualWalletStore = create<ManualWalletState>()(
   persist(
     (set, get) => ({
+      metamaskAddress: null,
       manualAddresses: [],
       activeManualAddressIndex: null,
       isConsolidated: false,
       isManualModalOpen: false,
       hasHydrated: false,
       walletLabels: {}, // Initial empty state
-
+      setMetamaskAddress: (address: string|null) => set({ metamaskAddress: address }),
       addManualAddress: (address: string) => {
         const state = get();
         const trimmedAddress = address.trim().toLowerCase();

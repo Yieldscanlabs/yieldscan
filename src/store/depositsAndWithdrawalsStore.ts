@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
 import { API_BASE_URL } from '../utils/constants';
+import { useUserPreferencesStore } from './userPreferencesStore';
+import { useManualWalletStore } from './manualWalletStore';
 
 export interface TokenActivity {
   totalDeposit: string;
@@ -97,7 +99,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       scanStatus: '',
       isScanning: false,
 
-      // --- NEW ACTION: UPDATE LABEL ---
       updateWalletLabel: async (walletAddress: string, label: string) => {
         const normalizedAddress = walletAddress.toLowerCase();
 
@@ -228,7 +229,13 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
           const data = await response.json();
-          console.warn(`response:${url}: `, data)
+          console.log(`response:: `,url, data)
+
+          if (useManualWalletStore?.getState()?.metamaskAddress==normalizedAddress && data.decimalPoint !== undefined) {
+            console.log("changinging user preferences store decimal point to ", data.decimalPoint) 
+            useUserPreferencesStore.getState().setActiveDecimalDigits(data.decimalPoint);
+          }
+
           let normalizedData: ActivityDataType = {};
           if (data.transactions && Object.keys(data.transactions).length > 0) {
             normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;

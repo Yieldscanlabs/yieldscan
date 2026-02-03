@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import FaqPage from './pages/FaqPage';
 import LiveApyPage from './pages/live-apy';
 import AboutPage from './pages/AboutPage';
+import SettingsPage from './pages/settings/SettingsPage';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -41,6 +42,11 @@ const router = createBrowserRouter([
       {
         path: 'faq',
         element: <FaqPage />,
+      },
+
+      {
+        path: 'settings',
+        element: <SettingsPage />,
       },
       {
         path: 'yields',

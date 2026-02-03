@@ -24,7 +24,8 @@ const Layout = () => {
     openManualModal,
     manualAddresses,
     activeManualAddressIndex,
-    isConsolidated
+    isConsolidated,
+    setMetamaskAddress
   } = useManualWalletStore();
   const {
     fetchAssets,
@@ -104,6 +105,14 @@ const Layout = () => {
     updateActiveView
   ]);
 
+  useEffect(() => {
+    // Update metamask address in store when it changes
+    if (isMetamaskConnected && metamaskAddress) {
+      setMetamaskAddress(metamaskAddress.toLocaleLowerCase());
+    } else {
+      setMetamaskAddress(null);
+    }
+  }, [isMetamaskConnected]);
   // Update active view when consolidation mode or wallet selection changes
   useEffect(() => {
     const allAddresses = [...manualAddresses];

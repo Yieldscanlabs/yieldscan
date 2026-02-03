@@ -4,6 +4,7 @@ import type { Location } from 'react-router-dom';
 // import Logo from '../../Logo';
 import styles from '../Header.module.css';
 import Logo from '../../Logo';
+import { useCurrencyFormatter } from '../../../hooks/useCurrencyFormatter';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -13,7 +14,6 @@ interface MobileMenuProps {
   location: Location;
   totalValue: number;
   dormantCapital: number; // Add this line
-  formatValue: (value: number) => string;
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -23,10 +23,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   isConnected,
   location,
   totalValue,
-  formatValue,
   dormantCapital
 }) => {
   const closeMobileMenu = () => setIsOpen(false);
+  const formatValue = useCurrencyFormatter();
 
   return (
     <>
