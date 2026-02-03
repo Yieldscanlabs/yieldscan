@@ -8,9 +8,7 @@ interface ManualWalletState {
   isConsolidated: boolean;
   isManualModalOpen: boolean;
   hasHydrated: boolean;
-  
-  // 1. New State for Labels
-  walletLabels: Record<string, string>;
+
 
   addManualAddress: (address: string) => void;
   removeManualAddress: (index: number) => void;
@@ -20,11 +18,6 @@ interface ManualWalletState {
   openManualModal: () => void;
   closeManualModal: () => void;
   setHasHydrated: (state: boolean) => void;
-
-  // 2. New Actions for Labels
-  setWalletLabel: (address: string, label: string) => void;
-  removeWalletLabel: (address: string) => void;
-  getWalletLabel: (address: string) => string;
 }
 
 export const useManualWalletStore = create<ManualWalletState>()(
@@ -35,8 +28,6 @@ export const useManualWalletStore = create<ManualWalletState>()(
       isConsolidated: false,
       isManualModalOpen: false,
       hasHydrated: false,
-      walletLabels: {}, // Initial empty state
-
       addManualAddress: (address: string) => {
         const state = get();
         const trimmedAddress = address.trim().toLowerCase();
@@ -64,7 +55,6 @@ export const useManualWalletStore = create<ManualWalletState>()(
           activeManualAddressIndex: newActiveIndex === null && newAddresses.length > 0 ? 0 : newActiveIndex,
         });
       },
-
       removeManualAddress: (index: number) => {
         const state = get();
         if (index < 0 || index >= state.manualAddresses.length) {
@@ -92,24 +82,17 @@ export const useManualWalletStore = create<ManualWalletState>()(
           newActiveIndex = null;
         }
 
-        // 3. Cleanup label when wallet is removed
-        const newLabels = { ...state.walletLabels };
-        if (addressToRemove) {
-          delete newLabels[addressToRemove.toLowerCase()];
-        }
-
         set({
           manualAddresses: newAddresses,
           activeManualAddressIndex: newActiveIndex,
-          walletLabels: newLabels,
         });
 
         // Trigger the cleanup in the Activity Store
+        // We use .getState() to call the action outside of a React component
         if (addressToRemove) {
           useDepositsAndWithdrawalsStore.getState().removeUserActivity(addressToRemove);
         }
       },
-
       setActiveManualAddress: (index: number | null) => {
         const state = get();
         if (index !== null && (index < 0 || index >= state.manualAddresses.length)) {
@@ -117,50 +100,19 @@ export const useManualWalletStore = create<ManualWalletState>()(
         }
         set({ activeManualAddressIndex: index });
       },
-
       toggleConsolidated: () => {
         set((state) => ({ isConsolidated: !state.isConsolidated }));
       },
-
       clearAllManualAddresses: () => {
         set({
           manualAddresses: [],
           activeManualAddressIndex: null,
-          walletLabels: {}, // Clear all labels too
         });
       },
-
       openManualModal: () => set({ isManualModalOpen: true }),
       closeManualModal: () => set({ isManualModalOpen: false }),
       setHasHydrated: (state) => {
         set({ hasHydrated: state });
-      },
-
-      // --- New Label Actions Implementation ---
-
-      setWalletLabel: (address, label) => {
-        const normalizedAddr = address.toLowerCase();
-        set((state) => ({
-          walletLabels: {
-            ...state.walletLabels,
-            [normalizedAddr]: label.trim()
-          }
-        }));
-      },
-
-      removeWalletLabel: (address) => {
-        const normalizedAddr = address.toLowerCase();
-        set((state) => {
-          const newLabels = { ...state.walletLabels };
-          delete newLabels[normalizedAddr];
-          return { walletLabels: newLabels };
-        });
-      },
-
-      getWalletLabel: (address) => {
-        if (!address) return "";
-        const labels = get().walletLabels;
-        return labels[address.toLowerCase()] || "";
       }
     }),
     {
@@ -169,7 +121,6 @@ export const useManualWalletStore = create<ManualWalletState>()(
         manualAddresses: state.manualAddresses,
         activeManualAddressIndex: state.activeManualAddressIndex,
         isConsolidated: state.isConsolidated,
-        walletLabels: state.walletLabels, // 4. Persist Labels
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
@@ -177,3 +128,5 @@ export const useManualWalletStore = create<ManualWalletState>()(
     }
   )
 );
+
+

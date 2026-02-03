@@ -3,11 +3,13 @@ import styles from './MyYieldsPage.module.css';
 import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import { useApyStore } from '../store/apyStore';
+import { useEarnStore } from '../store/earnStore';
 import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
 import useWalletConnection from '../hooks/useWalletConnection';
 import type { Asset } from '../types';
 import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount } from 'wagmi';
+import { shortenAddress } from '../utils/helpers';
 import { PROTOCOL_NAMES } from '../utils/constants';
 import YieldCard from '../components/YieldCard/YieldCard';
 import type { OptimizationData } from '../components/YieldCard/types';
@@ -24,10 +26,9 @@ import { useNavigate } from 'react-router-dom';
 import { MyYieldSkeletonLoader, MyYieldSummaryCardsSkeleton } from '../components/loaders/MyYieldSkeletonLoader';
 
 // NEW: Import persistent filter logic
-import { checkIsYieldAssetVisible, HARD_MIN_USD, useLowValueFilter } from '../hooks/useLowValueFilter';
+import { HARD_MIN_USD, useLowValueFilter } from '../hooks/useLowValueFilter';
 import LowValueFilterCheckbox from '../components/common/LowValueFilterCheckbox';
 import FilteredEmptyState from '../components/wallet-page/FilteredEmptyState';
-import WalletLabel from '../components/common/WalletLabel';
 
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,49 +58,16 @@ const MyYieldsPage: React.FC = () => {
     [assets]
   );
 
-  // const uniqueAssets = useMemo(() => {
-  //   type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
-  //   const assetMap = new Map<string, UniqueAsset>();
-  //   console.log("allYieldAssets inside uniqueAssets: ", allYieldAssets)
-  //   allYieldAssets.forEach(asset => {
-  //     // Respect hard dust limit in dropdown list
-  //     if (!isAboveHardDust(asset)) return;
-
-  //     const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
-  //     const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
-  //     const existing = assetMap.get(asset.token);
-
-  //     if (existing) {
-  //       if (hasHoldings && !existing.hasHoldings) {
-  //         assetMap.set(asset.token, { ...existing, hasHoldings: true });
-  //       }
-  //     } else {
-  //       assetMap.set(asset.token, {
-  //         token: asset.token,
-  //         icon: asset.icon,
-  //         chainId: asset.chainId,
-  //         hasHoldings
-  //       });
-  //     }
-  //   });
-
-  //   return Array.from(assetMap.values());
-  // }, [allYieldAssets, isAboveHardDust]);
-
   const uniqueAssets = useMemo(() => {
     type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
     const assetMap = new Map<string, UniqueAsset>();
 
     allYieldAssets.forEach(asset => {
-      // This checks if MAX(WalletBal, YieldBal) >= HARD_MIN_USD.
-      // Passing 'false' ensures we don't hide items just because the "Low Value" checkbox is ticked,
-      // allowing the user to find them in the dropdown if they exist.
-      if (!checkIsYieldAssetVisible(asset, false)) return;
+      // Respect hard dust limit in dropdown list
+      if (!isAboveHardDust(asset)) return;
 
-      // Keep existing logic for the green dot / holdings indicator
       const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
       const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
-
       const existing = assetMap.get(asset.token);
 
       if (existing) {
@@ -117,19 +85,8 @@ const MyYieldsPage: React.FC = () => {
     });
 
     return Array.from(assetMap.values());
-  }, [allYieldAssets]); // Dependencies
+  }, [allYieldAssets, isAboveHardDust]);
 
-  // Helper to check if any filters are active
-  const hasActiveFilters = useMemo(() => {
-    return (
-      selectedNetwork !== 'all' ||
-      selectedProtocol !== 'all' ||
-      selectedAsset !== 'all' ||
-      searchQuery !== '' ||
-      hideLowValues === true
-    );
-  }, [selectedNetwork, selectedProtocol, selectedAsset, searchQuery, hideLowValues]);
-  console.log("uniqueAssets: ", uniqueAssets)
   useEffect(() => {
     fetchProtocols()
   }, [])
@@ -269,7 +226,7 @@ const MyYieldsPage: React.FC = () => {
   // 1. Calculate static totals via useMemo (Replaces the "culprit" useEffect)
   const summaryTotals = useMemo(() => {
     if (!wallet.address) {
-      return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0, dailyYield: 0, yearlyYield: 0 };
+      return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0 };
     }
 
     const addresses = isConsolidated
@@ -277,7 +234,7 @@ const MyYieldsPage: React.FC = () => {
       : [wallet.address];
 
     let currentD = 0, totalD = 0, totalW = 0, totalE = 0, currentE = 0;
-    let dailyY = 0, yearlyY = 0;
+
     addresses.forEach(addr => {
       const userData = activityData[addr.toLowerCase()];
       if (userData) {
@@ -287,10 +244,6 @@ const MyYieldsPage: React.FC = () => {
         totalE += userData.totalEarnings;
         currentE += userData.currentEarnings;
       }
-      if (userData?.accumulatedYield) {
-        dailyY += userData.accumulatedYield.daily || 0;
-        yearlyY += userData.accumulatedYield.yearly || 0;
-      }
     });
 
     return {
@@ -298,9 +251,7 @@ const MyYieldsPage: React.FC = () => {
       totalDeposited: totalD,
       totalWithdrawn: totalW,
       totalEarned: totalE,
-      currentEarned: currentE,
-      dailyYield: dailyY,
-      yearlyYield: yearlyY
+      currentEarned: currentE
     };
   }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, activityData]);
   // Sync "Live" ticking values when the base data updates
@@ -363,10 +314,6 @@ const MyYieldsPage: React.FC = () => {
     } catch (error) { return '0.000000000000000000'; }
   };
 
-  const hasAnyYieldAssets = (walletAssets: Asset[]) => {
-    return walletAssets.some(asset => isAboveHardYieldDust(asset));
-  }
-
   const globalState = useMemo(() => {
     const hasActiveYields = assets.some(a => Number(a.currentBalanceInProtocolUsd) > HARD_MIN_USD);
     const hasDormantFunds = assets.some(a => Number(a.balanceUsd) > HARD_MIN_USD);
@@ -403,83 +350,25 @@ const MyYieldsPage: React.FC = () => {
       </div>
 
       {loading ? <MyYieldSummaryCardsSkeleton /> : (
-        // <div className={styles.summaryCards}>
-        //   <div className={styles.summaryCard}>
-        //     <div className={styles.summaryTitle}>Current Deposit</div>
-        //     {/* DIRECT READ: No state needed */}
-        //     <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
-        //     <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
-        //   </div>
-
-        //   <div className={styles.summaryCard}>
-        //     <div className={styles.summaryTitle}>Current Earned</div>
-        //     {/* LIVE STATE: These use state because they animate */}
-        //     <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
-        //     <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
-        //   </div>
-
-        //   <div className={styles.summaryCard}>
-        //     <div className={styles.summaryTitle}>Daily Yield</div>
-        //     <div className={styles.summaryAmount}>
-        //       ${formatNumber(summaryTotals.dailyYield, 4)}
-        //     </div>
-        //     <div className={styles.summarySubtext}>
-        //       Yearly Yield ${formatNumber(summaryTotals.yearlyYield, 2)}
-        //     </div>
-        //   </div>
-        // </div>
         <div className={styles.summaryCards}>
-          {/* Card 1: Current Deposit (Neutral) */}
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Deposit</div>
-            <div className={styles.summaryAmount}>
-              ${formatNumber(summaryTotals.currentDeposit, 10)}
-            </div>
-            <div className={styles.summarySubtext}>
-              Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}
-            </div>
+            {/* DIRECT READ: No state needed */}
+            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
+            <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
           </div>
 
-          {/* Card 2: Current Earned (Color only if != 0) */}
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Earned</div>
-            <div
-              className={styles.summaryAmount}
-              style={{
-                color: currentEarned > 0 ? '#2EBD85' : currentEarned < 0 ? '#ef4444' : 'inherit'
-              }}
-            >
-              ${formatLiveValue(currentEarned)}
-            </div>
-            <div
-              className={styles.summarySubtext}
-              style={{
-                color: liveTotalEarned > 0 ? '#2EBD85' : liveTotalEarned < 0 ? '#ef4444' : 'inherit'
-              }}
-            >
-              Total Earning ${formatLiveValue(liveTotalEarned)}
-            </div>
+            {/* LIVE STATE: These use state because they animate */}
+            <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
+            <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
           </div>
 
-          {/* Card 3: Daily Yield (Color only if > 0) */}
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Daily Yield</div>
-            <div
-              className={styles.summaryAmount}
-              style={{
-                color: summaryTotals.dailyYield > 0 ? '#2EBD85' : 'inherit'
-              }}
-            >
-              ${formatNumber(summaryTotals.dailyYield, 4)}
-            </div>
-            <div
-              className={styles.summarySubtext}
-              style={{
-                color: summaryTotals.yearlyYield > 0 ? '#2EBD85' : 'inherit'
-              }}
-            >
-              Yearly Yield ${formatNumber(summaryTotals.yearlyYield, 2)}
-            </div>
+            <div className={styles.summaryTitle}>Total Withdrawn</div>
+            {/* DIRECT READ: No state needed */}
+            <div className={styles.summaryAmount}>${formatNumber(summaryTotals.totalWithdrawn, 4)}</div>
           </div>
         </div>
       )}
@@ -495,9 +384,8 @@ const MyYieldsPage: React.FC = () => {
             if (!assetsByWallet.has(walletAddr)) assetsByWallet.set(walletAddr, []);
             assetsByWallet.get(walletAddr)!.push(asset);
           });
-          console.warn("=================================================")
+
           return allAddresses.map((address) => {
-            console.log("Processing wallet address: ", address);
             const allWalletAssets = assetsByWallet.get(address.toLowerCase()) || [];
 
             // 1. FILTER specifically for assets actually earning yield and SORT (High to Low APY)
@@ -518,28 +406,11 @@ const MyYieldsPage: React.FC = () => {
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
               .some(a => isAboveHardDust(a) || isAboveHardYieldDust(a));
 
-            console.log("hasAnyBalance: ", hasAnyBalance)
-
-            // Check if this wallet *really* has yield assets regardless of UI filters.
-            // We use `allYieldAssets` (raw list) instead of `filteredYieldAssets`.
-            const rawWalletAssets = allYieldAssets.filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase());
-            const walletTrulyHasYieldAssets = hasAnyYieldAssets(rawWalletAssets);
-            console.log("walletTrulyHasYieldAssets: ", walletTrulyHasYieldAssets)
-            const walletHasAnyYieldAssets = hasAnyYieldAssets(allWalletAssets);
-            console.log("walletHasAnyYieldAssets: ", walletHasAnyYieldAssets)
-            console.log("------------------------------------------------")
             return (
               <div key={address} className={styles.section}>
                 <div className={styles.walletSectionHeader}>
-                  {/* <div className={styles.headerLeft}>
-                    <h3>Wallet: {shortenAddress(address)}</h3>
-                    {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
-                  </div> */}
-
                   <div className={styles.headerLeft}>
-                    {/* 2. Integrate the Wallet Label Component */}
-                    <WalletLabel address={address} />
-
+                    <h3>Wallet: {shortenAddress(address)}</h3>
                     {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
                   </div>
                 </div>
@@ -561,23 +432,23 @@ const MyYieldsPage: React.FC = () => {
                           ))}
                         </div>
                       ) : (
-                        <YieldsTable assets={activeYieldingAssets} loading={loading} getOptimizationDataForAsset={getOptimizationDataForAsset}
+                        <YieldsTable
+                          assets={activeYieldingAssets}
+                          loading={loading}
+                          getOptimizationDataForAsset={getOptimizationDataForAsset}
                         />
                       )
                     ) : (
-                      hasActiveFilters && walletTrulyHasYieldAssets ? (
-                        <FilteredEmptyState onReset={handleResetFilters} />
-                      ) :
-                        /* Handle Empty States: If no active yields, check if they have dormant money */
-                        <NoYieldEmptyState
-                          subtext={
-                            hasAnyBalance
-                              ? "You have idle assets ready to earn yield."
-                              : "You don’t have any assets yet. Explore yield opportunities to get started."
-                          }
-                          btnText={hasAnyBalance ? "View Wallet Options" : "Explore Yield Options"}
-                          onRedirect={() => handleRedirect(hasAnyBalance ? "/" : "/explore")}
-                        />
+                      /* Handle Empty States: If no active yields, check if they have dormant money */
+                      <NoYieldEmptyState
+                        subtext={
+                          hasAnyBalance
+                            ? "You have idle assets ready to earn yield."
+                            : "You don’t have any assets yet. Explore yield opportunities to get started."
+                        }
+                        btnText={hasAnyBalance ? "View Wallet Options" : "Explore Yield Options"}
+                        onRedirect={() => handleRedirect(hasAnyBalance ? "/" : "/explore")}
+                      />
                     )}
                   </>
                 )}

@@ -17,13 +17,19 @@ export interface ChainActivity {
 }
 
 export type ApiResponseStructure = {
-  totalDeposits: number,
-  currentDeposit: number,
-  totalEarnings: number,
-  currentEarnings: number,
-  totalWithdrawals: number,
-  userBalance: number,
-  transactions: Record<string, Record<string, ChainActivity>>
+  totalDeposits: number;
+  currentDeposit: number;
+  totalEarnings: number;
+  currentEarnings: number;
+  totalWithdrawals: number;
+  userBalance: number;
+  label?: string; 
+  accumulatedYield?: {
+    daily: number;
+    yearly: number;
+    totalTillNow: number;
+  };
+  transactions: Record<string, Record<string, ChainActivity>>;
 };
 
 export type ActivityDataType = Record<string, ApiResponseStructure>;
@@ -39,6 +45,7 @@ export interface DepositsAndWithdrawalsStore {
   isScanning: boolean;
 
   fetchUserActivity: (walletAddress: string, showLoading?: boolean) => Promise<void>;
+  updateWalletLabel: (walletAddress: string, label: string) => Promise<void>; // New Action
   clearErrors: () => void;
   getUserActivity: (walletAddress: string) => ApiResponseStructure | null;
   getTotalDepositsForUser: (walletAddress: string) => string;
@@ -59,12 +66,10 @@ function generateId() {
 const USER_DETAILS_API_ENDPOINT = API_BASE_URL + '/api/user-details';
 const AUTO_REFRESH_INTERVAL = 300000;
 
-// External connection trackers
 let activeAbortController: AbortController | null = null;
 let activeEventSource: EventSource | null = null;
 let activeProgressTimer: NodeJS.Timeout | null = null;
 
-// Helper to clean up external connections
 const cleanupActiveRequests = () => {
   if (activeAbortController) {
     activeAbortController.abort();
@@ -92,6 +97,50 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       scanStatus: '',
       isScanning: false,
 
+      // --- NEW ACTION: UPDATE LABEL ---
+      updateWalletLabel: async (walletAddress: string, label: string) => {
+        const normalizedAddress = walletAddress.toLowerCase();
+
+        // 1. Optimistic UI Update
+        set((state) => {
+          const existingData = state.activityData[normalizedAddress];
+
+          // If data exists, update it. If not, create a skeleton so the label appears immediately.
+          const newData = existingData
+            ? { ...existingData, label }
+            : {
+              label,
+              totalDeposits: 0, currentDeposit: 0, totalEarnings: 0, currentEarnings: 0,
+              totalWithdrawals: 0, userBalance: 0, transactions: {}
+            };
+
+          return {
+            activityData: {
+              ...state.activityData,
+              [normalizedAddress]: newData
+            }
+          };
+        });
+
+        try {
+          // 2. Call API
+          const response = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}/label`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ label })
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Failed to save label');
+          }
+
+        } catch (error) {
+          console.error("Label update failed:", error);
+          // Optional: You could revert the state here if critical
+        }
+      },
+
       resetProgress: () => {
         if (activeProgressTimer) clearInterval(activeProgressTimer);
         set({ progress: 0, scanStatus: '', isScanning: false });
@@ -99,17 +148,12 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
       removeUserActivity: (walletAddress: string) => {
         if (!walletAddress) return;
-
         set((state) => {
           const normalizedAddress = walletAddress.toLowerCase();
-          // Create a copy of the data
           const newActivityData = { ...state.activityData };
-
-          // Delete the specific wallet's data
           if (newActivityData[normalizedAddress]) {
             delete newActivityData[normalizedAddress];
           }
-
           return { activityData: newActivityData };
         });
       },
@@ -128,7 +172,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       },
 
       fetchUserActivity: async (walletAddress: string, showLoading = true) => {
-        // 1. Cancel any running scan immediately
         cleanupActiveRequests();
 
         if (!walletAddress || walletAddress === '0x') {
@@ -139,25 +182,14 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         const normalizedAddress = walletAddress.toLowerCase();
         const currentController = new AbortController();
         activeAbortController = currentController;
-        console.log("get().activityData: ", get().activityData)
-        // Smart Check: Only show full progress bar for NEW wallets
-        const hasExistingData = !!get().activityData[normalizedAddress];
-        console.log("hasExistingData: ", hasExistingData);
 
+        const hasExistingData = !!get().activityData[normalizedAddress];
         const shouldShowProgressBar = showLoading && !hasExistingData;
 
-        // Basic loading state (for spinners)
         if (showLoading) set({ isLoading: true });
 
-        // Full "Scanning" UI state (only if needed)
         if (shouldShowProgressBar) {
-          set({
-            isScanning: true,
-            progress: 5,
-            scanStatus: 'Scanning blockchain in background...'
-          });
-
-          // Smooth animation for new scans
+          set({ isScanning: true, progress: 5, scanStatus: 'Scanning blockchain in background...' });
           activeProgressTimer = setInterval(() => {
             set((state) => {
               if (state.progress >= 90) return state;
@@ -171,10 +203,8 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         try {
           const requestId = generateId();
 
-          // 2. Setup SSE for progress updates (only if bar is visible)
           if (shouldShowProgressBar) {
             activeEventSource = new EventSource(`${API_BASE_URL}/api/long-task/progress?requestId=${requestId}`);
-
             activeEventSource.onmessage = (event) => {
               if (currentController.signal.aborted) return;
               if (event.data === "done") {
@@ -190,7 +220,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             };
           }
 
-          // 3. API Request
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
           url.searchParams.set("requestId", requestId);
 
@@ -199,15 +228,14 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
           const data = await response.json();
-
+          console.warn(`response:${url}: `, data)
           let normalizedData: ActivityDataType = {};
           if (data.transactions && Object.keys(data.transactions).length > 0) {
             normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
           } else {
             normalizedData[normalizedAddress] = data;
           }
-
-          // 4. Success Handling
+          normalizedData[normalizedAddress].label = data.label;
           if (!currentController.signal.aborted) {
             set(state => ({
               activityData: { ...state.activityData, ...normalizedData },
@@ -217,11 +245,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
             if (shouldShowProgressBar) {
               set({ progress: 100, scanStatus: 'Scan Complete!' });
-
-              // FIXED: Removed the check that was failing (activeAbortController === currentController)
-              // We rely on the closure variable `currentController` to ensure we don't close a *newer* request
               setTimeout(() => {
-                // Only reset if we haven't started a NEW request in the meantime
                 if (!currentController.signal.aborted) {
                   get().resetProgress();
                 }
@@ -231,29 +255,17 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
         } catch (error: any) {
           if (error.name === 'AbortError') return;
-
           console.error("Fetch Error:", error);
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false,
-            // Force reset on error
             isScanning: false,
             progress: 0
           });
         } finally {
           if (activeAbortController === currentController) {
-            // Clear Timer & Event Source
-            if (activeProgressTimer) {
-              clearInterval(activeProgressTimer);
-              activeProgressTimer = null;
-            }
-            if (activeEventSource) {
-              activeEventSource.close();
-              activeEventSource = null;
-            }
-
-            // Just release the controller reference, DO NOT abort it.
-            // If we abort here, the setTimeout check above will fail.
+            if (activeProgressTimer) clearInterval(activeProgressTimer);
+            if (activeEventSource) activeEventSource.close();
             activeAbortController = null;
           }
         }
@@ -297,13 +309,10 @@ export function useDepositsAndWithdrawalsAutoRefresh(walletAddress: string) {
 
   useEffect(() => {
     if (!autoRefreshEnabled || !walletAddress || walletAddress === '0x') return;
-
     if (!lastUpdated) fetchUserActivity(walletAddress, true);
-
     const interval = setInterval(() => {
       fetchUserActivity(walletAddress, false);
     }, AUTO_REFRESH_INTERVAL);
-
     return () => clearInterval(interval);
   }, [fetchUserActivity, autoRefreshEnabled, walletAddress, lastUpdated]);
 }

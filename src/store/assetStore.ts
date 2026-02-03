@@ -55,9 +55,6 @@ async function getWalletYields(walletAddress: string) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
   const data = await response.json();
-  console.warn("WALLET_YIELDS_API_ENDPOINT response:", data);
-
-  console.log(data);
 
   if (!data.assets || !Array.isArray(data.assets)) {
     throw new Error('Invalid response format: expected assets array');
@@ -97,6 +94,7 @@ interface AssetStore {
   dormantCapital: number;
   workingCapital: number;
   dormantCapitalByAddress: Record<string, number>;
+  workingCapitalByAddress: Record<string, number>;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
@@ -124,6 +122,7 @@ export const useAssetStore = create<AssetStore>()(
       dormantCapital: 0,
       workingCapital: 0,
       dormantCapitalByAddress: {},
+      workingCapitalByAddress: {},
       isLoading: false,
       error: null,
       lastUpdated: null,
@@ -144,7 +143,7 @@ export const useAssetStore = create<AssetStore>()(
 
           // Update the Active View (because this is a single fetch)
           set({
-            assets: assets, 
+            assets: assets,
             dormantCapital,
             workingCapital,
             isLoading: false,
@@ -186,7 +185,7 @@ export const useAssetStore = create<AssetStore>()(
           const state = get();
           const consolidatedAssets: Asset[] = [];
           let totalDormantCapital = 0;
-
+          let totalWorkingCapital = 0;
           addresses.forEach(address => {
             const addressLower = address.toLowerCase();
             const assets = state.assetsByAddress[addressLower] || [];
@@ -196,11 +195,13 @@ export const useAssetStore = create<AssetStore>()(
             }));
             consolidatedAssets.push(...assetsWithSource);
             totalDormantCapital += state.dormantCapitalByAddress[addressLower] || 0;
+            totalWorkingCapital += state.workingCapitalByAddress[addressLower] || 0;
           });
 
           set({
             assets: consolidatedAssets,
             dormantCapital: totalDormantCapital,
+            workingCapital: totalWorkingCapital,
             lastUpdated: Date.now(),
             isLoading: false // <--- Only turn off loading HERE at the very end
           });
@@ -227,7 +228,7 @@ export const useAssetStore = create<AssetStore>()(
       //   set({ error: null });
 
       //   try {
-          
+
       //     // // Update assetsByAddress and dormantCapitalByAddress
       //     const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress)
       //     const state = get();
@@ -349,7 +350,7 @@ export const useAssetStore = create<AssetStore>()(
           // Consolidated view
           const consolidatedAssets: Asset[] = [];
           let totalDormantCapital = 0;
-
+let totalWorkingCapital = 0;
           allAddresses.forEach(addr => {
             const addrLower = addr.toLowerCase();
             const assets = state.assetsByAddress[addrLower] || [];
@@ -359,26 +360,31 @@ export const useAssetStore = create<AssetStore>()(
             }));
             consolidatedAssets.push(...assetsWithSource);
             totalDormantCapital += state.dormantCapitalByAddress[addrLower] || 0;
+            totalWorkingCapital += state.workingCapitalByAddress[addrLower] || 0;
           });
 
           set({
             assets: consolidatedAssets,
-            dormantCapital: totalDormantCapital
+            dormantCapital: totalDormantCapital,
+            workingCapital: totalWorkingCapital
           });
         } else if (address) {
           // Single wallet view
           const addrLower = address.toLowerCase();
           const assets = state.assetsByAddress[addrLower] || [];
           const dormantCapital = state.dormantCapitalByAddress[addrLower] || 0;
+          const workingCapital = state.workingCapitalByAddress[addrLower] || 0;
           set({
             assets,
-            dormantCapital
+            dormantCapital,
+            workingCapital
           });
         } else {
           // No wallet
           set({
             assets: [],
-            dormantCapital: 0
+            dormantCapital: 0,
+            workingCapital: 0
           });
         }
       },
@@ -479,12 +485,17 @@ const fetchWalletDataInternal = async (walletAddress: string, get: () => AssetSt
       [walletAddress.toLowerCase()]: dormantCapital
     };
 
+    const newWorkingCapitalByAddress = {
+      ...state.workingCapitalByAddress,
+      [walletAddress.toLowerCase()]: workingCapital
+    };
     // Only update the data cache, NOT the active view 'assets' or 'isLoading'
     set({
       assetsByAddress: newAssetsByAddress,
       dormantCapitalByAddress: newDormantCapitalByAddress,
+      workingCapitalByAddress: newWorkingCapitalByAddress
     });
-    
+
     return { assets, dormantCapital, workingCapital };
   } catch (error) {
     console.error(`Error fetching for ${walletAddress}:`, error);

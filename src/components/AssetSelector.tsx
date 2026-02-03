@@ -7,7 +7,7 @@ interface AssetData {
   token: string;
   icon?: string;
   chainId: number;
-  label?: string; // Added label property
+  label?: string;
   hasHoldings?: boolean;
 }
 
@@ -54,6 +54,7 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
     ? assets.find(asset => asset.token === selectedAsset)
     : null;
 
+    // console.log("Assetes list in AssetSelector: ", assets);
   return (
     <div className={`${styles.dropdown} ${className || ''}`} ref={dropdownRef}>
       <button
@@ -89,15 +90,15 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
             const itemClasses = [
               styles.dropdownItem,
               selectedAsset === asset.token ? styles.selected : '',
-              asset.hasHoldings ? '' : styles.unavailable
+              // Removed styles.unavailable so it looks clickable
             ].join(' ').trim();
 
             return (
               <div
-                key={asset.token}
+                key={`${asset.token}-${asset.chainId}`} // Added chainId to key for uniqueness
                 className={itemClasses}
-                onClick={() => handleSelect(asset.token, !asset.hasHoldings)}
-                aria-disabled={!asset.hasHoldings}
+                // FIX: Changed second arg to false so click is never disabled
+                onClick={() => handleSelect(asset.token, false)}
               >
                 <span className={styles.assetIcon}>
                   <AssetIcon
@@ -108,6 +109,8 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
                   />
                 </span>
                 <span>{asset.token}</span>
+                {/* we can still show a visual indicator if they hold it, without blocking the click */}
+                {/* {asset.hasHoldings && <span className={styles.holdingsIndicator}>•</span>} */}
               </div>
             );
           })}

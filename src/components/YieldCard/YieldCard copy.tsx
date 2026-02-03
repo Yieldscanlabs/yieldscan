@@ -13,14 +13,12 @@ import YieldInfo from './YieldInfo';
 import YieldActions from './YieldActions';
 import { API_BASE_URL } from '../../utils/constants';
 
-// Add isHighestYield to the component props
-const YieldCard: React.FC<YieldCardProps & { isHighestYield?: boolean }> = (props) => {
+const YieldCard: React.FC<YieldCardProps> = (props) => {
   const {
     asset,
     optimizationData,
     onOptimize,
-    onLockAPY,
-    isHighestYield // 🟢 New prop for highlighting
+    onLockAPY
   } = props;
 
   const { openModal } = useOptimizationStore();
@@ -53,18 +51,26 @@ const YieldCard: React.FC<YieldCardProps & { isHighestYield?: boolean }> = (prop
 
   // Handle optimization - open the global information modal
   const handleOptimize = () => {
+    console.log('handleOptimize called in YieldCard', { optimizationData });
     if (optimizationData) {
+      console.log('Opening global optimization information modal');
       openInformationModal({
         asset,
         optimizationData,
         onConfirm: handleOptimizeConfirm
       });
+    } else {
+      console.log('No optimization data available');
     }
   };
 
-  // Handle optimization confirm
+  // Handle optimization confirm - close information modal and open transaction modal via store
   const handleOptimizeConfirm = () => {
+    console.log('handleOptimizeConfirm called', { optimizationData });
     if (optimizationData) {
+      console.log('Opening transaction modal via store');
+
+      // Open the transaction modal using the global store (like Lock flow)
       openModal({
         asset,
         currentProtocol: optimizationData.currentProtocol,
@@ -77,9 +83,11 @@ const YieldCard: React.FC<YieldCardProps & { isHighestYield?: boolean }> = (prop
     }
   };
 
-  // Handle Lock APY
-  const handleLockAPYClick = () => {
+  // Handle Lock APY - open the global information modal
+  const handleLockAPY = () => {
+    console.log('handleLockAPY called in YieldCard', { lockYieldDetails });
     if (lockYieldDetails) {
+      console.log('Opening global Lock APY information modal');
       openLockAPYInformationModal({
         asset,
         protocol: lockYieldDetails.protocol,
@@ -88,10 +96,12 @@ const YieldCard: React.FC<YieldCardProps & { isHighestYield?: boolean }> = (prop
         amountToLock: balanceNum,
         onConfirm: handleLockAPYConfirm
       });
+    } else {
+      console.log('No lock yield details available');
     }
   };
 
-  // Handle Withdraw
+  // Handle Withdraw - open the global withdraw modal
   const handleWithdrawClick = () => {
     openWithdrawModalGlobal({
       asset,
@@ -106,17 +116,7 @@ const YieldCard: React.FC<YieldCardProps & { isHighestYield?: boolean }> = (prop
 
   return (
     asset.currentBalanceInProtocolUsd && Number(asset.currentBalanceInProtocolUsd) > 0 ?
-      <div 
-        className={`${styles.yieldCardSlim} ${isHighestYield ? styles.highestYieldHighlight : ''}`} 
-        style={{ position: 'relative' }}
-      >
-        {/* 🟢 Highest Yield Badge */}
-        {/* {isHighestYield && (
-          <div className={styles.highestYieldBadge}>
-            ⭐ Highest Yield
-          </div>
-        )} */}
-
+      <div className={styles.yieldCardSlim} style={{ position: 'relative' }}>
         <div className={styles.cardTopSection}>
           <div className={styles.assetInfoSlim}>
             <AssetIcon
@@ -163,11 +163,11 @@ const YieldCard: React.FC<YieldCardProps & { isHighestYield?: boolean }> = (prop
           optimizationData={optimizationData}
           onWithdrawClick={handleWithdrawClick}
           onOptimize={handleOptimize}
-          onLockAPYClick={handleLockAPYClick}
+          onLockAPYClick={handleLockAPY}
         />
       </div>
       : <></>
   );
 };
 
-export default YieldCard;
+export default YieldCard; 

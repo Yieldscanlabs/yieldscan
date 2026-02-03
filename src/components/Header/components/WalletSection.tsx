@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { shortenAddress } from '../../../utils/helpers';
 import ThemeToggle from '../../ThemeToggle';
 import { useManualWalletStore } from '../../../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import styles from '../Header.module.css';
+import ExplorerSelectionModal from '../../Modals/ExplorerSelectionModal';
 
 interface WalletSectionProps {
   isConnected: boolean;
@@ -13,7 +14,6 @@ interface WalletSectionProps {
   dropdownRef: React.RefObject<HTMLDivElement>;
   copySuccess: boolean;
   handleCopyAddress: () => void;
-  handleOpenExplorer: () => void;
   disconnectWallet: () => void;
 }
 
@@ -25,7 +25,6 @@ const WalletSection: React.FC<WalletSectionProps> = ({
   dropdownRef,
   copySuccess,
   handleCopyAddress,
-  handleOpenExplorer,
   disconnectWallet,
 }) => {
   const {
@@ -37,7 +36,7 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     toggleConsolidated,
     openManualModal
   } = useManualWalletStore();
-
+const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
 
   // Build wallets list (MetaMask + manual) unconditionally
@@ -87,8 +86,17 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     return activeManualAddressIndex !== walletIndex;
   };
 
+
+ 
   return (
     <div className={styles.walletContainer} ref={dropdownRef}>
+
+      {/* The Modal */}
+      <ExplorerSelectionModal 
+        isOpen={isExplorerModalOpen} 
+        onClose={() => setExplorerModalOpen(false)} 
+        walletAddress={activeAddress!} 
+      />
       <div
         className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
         onClick={toggleDropdown}
@@ -134,7 +142,7 @@ const WalletSection: React.FC<WalletSectionProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleOpenExplorer();
+              setExplorerModalOpen(true);
             }}
             onMouseDown={(e) => e.stopPropagation()}
             className={styles.dropdownButton}

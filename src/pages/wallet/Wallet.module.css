@@ -219,6 +219,13 @@
   flex-shrink: 0;
 }
 
+.filterControls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .searchAndViewGroup {
   display: flex;
   align-items: center;
@@ -231,6 +238,93 @@
   max-width: 400px;
   min-width: 200px;
 }
+
+/* ==========================(Filtered Empty Card Styles)=============================== */
+
+/* 1. Main Card Container */
+.filteredEmptyState {
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 3rem 2rem;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 250px;
+  transition: all 0.2s ease;
+  grid-column: 1 / -1;
+}
+
+/* Hover effect */
+.filteredEmptyState:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 2. Inner Content Wrapper (same spacing logic as emptyState) */
+.filteredEmptyContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  max-width: 400px;
+  padding: 1rem;
+}
+
+/* 3. Icon */
+.filteredEmptyIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* 4. Typography */
+.filteredEmptyText h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.filteredEmptyText p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* 5. Action Button (matches exploreButton weight & feel) */
+.resetFiltersButton {
+  padding: 0.75rem 2rem;
+  background: linear-gradient(
+    to right,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: white;
+
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 1rem;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.resetFiltersButton:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+/* end of filted rested empty card */
+/* ==========================(Responsive Design)=============================== */
 
 /* Responsive design for controls */
 @media (max-width: 1024px) {
@@ -280,10 +374,17 @@
 .walletSectionHeader {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid var(--border-color);
+}
+
+.walletSection .headerLeft {
+  display: flex;
+  align-items: center;
+  /* gap: 0.75rem; */
 }
 
 .walletSectionHeader h3 {
@@ -292,6 +393,19 @@
   font-weight: 600;
   color: var(--text-primary);
   font-family: var(--font-mono, monospace);
+}
+
+.lowFilterCheckboxlabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.lowFilterCheckboxlabel:hover {
+  color: var(--primary-color);
 }
 
 .metamaskBadge {
@@ -308,18 +422,24 @@
 /* 1. Main Card Container (Replaces old .emptyState) */
 /* We keep your original background/border but add flex for better centering */
 .emptyState {
-  background-color: var(--surface-dark); /* Keeps your original dark theme support */
-  border: 1px solid var(--border-color); /* Keeps your original border */
-  border-radius: var(--radius-md);       /* Keeps your original radius */
-  padding: 3rem 2rem;                    /* Increased padding for better spacing */
+  background-color: var(--surface-dark);
+  /* Keeps your original dark theme support */
+  border: 1px solid var(--border-color);
+  /* Keeps your original border */
+  border-radius: var(--radius-md);
+  /* Keeps your original radius */
+  padding: 3rem 2rem;
+  /* Increased padding for better spacing */
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 250px;                     /* Ensures it looks like a substantial card */
+  min-height: 250px;
+  /* Ensures it looks like a substantial card */
   transition: all 0.2s ease;
-  grid-column: 1 / -1;                   /* Critical for Grid Views: Spans full width */
+  grid-column: 1 / -1;
+  /* Critical for Grid Views: Spans full width */
 }
 
 /* Hover effect from the new design (Optional but nice) */
@@ -331,7 +451,8 @@
 
 /* 2. Typography */
 .emptyState h3 {
-  font-size: 1.5rem;        /* Kept your original size */
+  font-size: 1.5rem;
+  /* Kept your original size */
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--text-primary);
@@ -350,66 +471,19 @@
   font-size: 1rem;
 }
 
-/* 4. The Address Badge (New Feature) */
-.addressBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-secondary, #2d3748); /* Darker default for badge */
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 0.9em;
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-  vertical-align: middle;
-}
-
-.addressBadge:hover {
-  border-color: var(--primary-color);
-  background: var(--card-hover-bg, #3a455a);
-}
-
-.addressBadge code {
-  font-family: 'Courier New', monospace; /* Ensures address looks technical */
-  font-weight: 600;
-}
-
-/* Success State (Green) */
-.addressBadge.copied {
-  background: rgba(34, 197, 94, 0.1); /* Green tint */
-  border-color: #22c55e;
-  color: #22c55e;
-}
-
-.copyFeedback {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.copyIcon {
-  opacity: 0.6;
-  width: 14px;
-  height: 14px;
-}
-
-.addressBadge:hover .copyIcon {
-  opacity: 1;
-}
-
 /* 5. Subtext (Instructions below address) */
 .subText {
   color: var(--text-secondary);
   margin-bottom: 2rem;
   font-size: 0.95rem;
-  max-width: 400px; /* Prevents text from getting too wide on large screens */
+  max-width: 400px;
+  /* Prevents text from getting too wide on large screens */
 }
 
 /* 6. Action Button (Kept your exact original styles) */
 .exploreButton {
-  padding: 0.75rem 2rem; /* Slightly wider */
+  padding: 0.75rem 2rem;
+  /* Slightly wider */
   background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
   color: white;
   border: none;
@@ -418,13 +492,13 @@
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .exploreButton:hover {
   filter: brightness(1.1);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* 7. Container Wrapper (Optional, depends if you wrap the card) */
