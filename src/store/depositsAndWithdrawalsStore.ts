@@ -179,7 +179,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           set({ activityData: {}, error: null, isLoading: false });
           return;
         }
-
+        console.log("Fetching user activity for wallet:", walletAddress);
         const normalizedAddress = walletAddress.toLowerCase();
 
         // SNAPSHOT: Capture current data for this wallet to restore if the API fails
@@ -235,16 +235,26 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         try {
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
           url.searchParams.set("requestId", requestId);
-
+          console.log("Just Before Fetch:", url);
           const response = await fetch(url, { signal: currentController.signal });
-          if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+          if (!response.ok) {
+            console.error("API Response Error:", response);
+            throw new Error(`API response error: ${response.statusText}`);
+          };
 
+          console.log("After Fetch and Before Parse");
+          let data
           // BYPASS INTERCEPTOR: Use arrayBuffer to avoid the 'split' crash
-          const buffer = await response.arrayBuffer();
-          const decoder = new TextDecoder("utf-8");
-          const responseText = decoder.decode(buffer);
-          const data = JSON.parse(responseText);
-
+          try {
+            const buffer = await response.arrayBuffer();
+            const decoder = new TextDecoder("utf-8");
+            const responseText = decoder.decode(buffer);
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error("API Parse Error:", parseError);
+            throw new Error(`API parse error: ${parseError}`);
+          }
+          console.log("Passed Parse and data is; ", data);
           // Update decimals if address matches
           if (useManualWalletStore?.getState()?.metamaskAddress === normalizedAddress && data.decimalPoint !== undefined) {
             useUserPreferencesStore.getState().setActiveDecimalDigits(data.decimalPoint);
