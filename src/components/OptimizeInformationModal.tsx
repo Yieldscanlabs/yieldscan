@@ -61,7 +61,7 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
                   <Protocol name={optimizationData.currentProtocol} showLogo={true} />
                 </div>
                 <div className={styles.assetBalance}>
-                  Balance: {formatNumber(parseFloat(asset.balance), asset.maxDecimalsShow || 6)} {asset.token}
+                  Balance: {formatNumber(parseFloat(asset.currentBalanceInProtocolUsd as string), asset.maxDecimalsShow || 6)} {asset.token}
                 </div>
               </div>
             </div>
