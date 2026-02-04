@@ -22,3 +22,7 @@ The frontend of YieldScan is built for performance, developer experience, and sc
 | **TypeScript** | Strongly typed language for improved safety and tooling     |
 | **Zustand**  | Lightweight global state management                          |
 | **wagmi + viem** | Wallet and contract integration tailored for Web3 UX       |
+
+
+
+For Details about the project you can get help from this doc: https://docs.google.com/document/d/1KzOgK1OwM2tdXYDIVGpjwh09DfHBa4Dfz0kKEw3UY3w/edit?tab=t.gjqclfyx9f6v#heading=h.21xgr45ucrl6
