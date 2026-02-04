@@ -21,30 +21,6 @@ export function formatNumber(number: number | string, decimals?: number ): strin
   });
 }
 
-/**
- * Formats a number with specific rounding down logic.
- * If decimals is not provided, it fetches the active preference from the store.
- * @param value The number to format
- * @param decimals (Optional) 0, 1, or 2. Defaults to store setting if omitted.
- * @returns Formatted string
- * NOTE: Do not use this directly in components if you want reactive updates. 
- * Use the useCurrencyFormatter() hook instead.
- */
-
-// export const formatCurrencyOverride = (value: number, decimals?: number): string => {
-//   if (isNaN(value)) return '0';
-
-//   const effectiveDecimal = decimals ?? useUserPreferencesStore.getState().activeDecimalDigits
-//   const multiplier = Math.pow(10, effectiveDecimal);
-//   // Use Math.round to round to the nearest neighbor (0.535 -> 0.54)
-//   // Added Number.EPSILON to handle floating point precision issues (e.g. 1.005 -> 1.01)
-//   const rounded = Math.round((value * multiplier) + Number.EPSILON) / multiplier;
-
-//   return new Intl.NumberFormat('en-US', {
-//     minimumFractionDigits: effectiveDecimal,
-//     maximumFractionDigits: effectiveDecimal,
-//   }).format(rounded);
-// };
 
 export function calculateDailyYield(amount: number, apy: number): number {
   // Daily yield = (amount * (apy / 100)) / 365

@@ -62,3 +62,6 @@ export const PROTOCOL_NAMES = {
   creamFinance: 'creamfinance',
   maple: 'Maple',
 };
+
+
+export const EXMPLE_VALUE = 10000.9876;

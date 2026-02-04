@@ -9,7 +9,7 @@ import useWalletConnection from '../../hooks/useWalletConnection';
 import { useManualWalletStore } from '../../store/manualWalletStore';
 import WalletModal from '../../components/WalletModal';
 import WalletWelcome from '../wallet/WalletWelcome';
-import { API_BASE_URL } from '../../utils/constants';
+import { API_BASE_URL, EXMPLE_VALUE } from '../../utils/constants';
 import { useCurrencyFormatter } from '../../hooks/useCurrencyFormatter';
 
 const SettingsPage: React.FC = () => {
@@ -18,11 +18,9 @@ const SettingsPage: React.FC = () => {
     const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
     const { manualAddresses } = useManualWalletStore();
     const [isSaving, setIsSaving] = useState(false);
-    const exampleValue = 10000.9876;
 
     const formatValue = useCurrencyFormatter();
 
-    console.log("SettingsPage render", { address, activeDecimalDigits, isSaving });
     const handleOptionChange = async (value: number) => {
         if (!address) {
             alert("Please connect your wallet to save settings.");
@@ -95,7 +93,7 @@ const SettingsPage: React.FC = () => {
                     <div className={styles.previewBox}>
                         <span className={styles.previewLabel}>Preview:</span>
                         <span className={styles.previewValue}>
-                            ${formatValue(exampleValue)}
+                            ${formatValue(EXMPLE_VALUE)}
                         </span>
                         <span className={styles.previewOriginal}>(Original: $10,000.9876)</span>
                     </div>

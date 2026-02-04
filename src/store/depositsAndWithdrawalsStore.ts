@@ -179,6 +179,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           set({ activityData: {}, error: null, isLoading: false });
           return;
         }
+        // DEBUGING: console needed for debugging
         console.log("Fetching user activity for wallet:", walletAddress);
         const normalizedAddress = walletAddress.toLowerCase();
 
@@ -235,12 +236,16 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         try {
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
           url.searchParams.set("requestId", requestId);
+          // DEBUGING: console needed for debugging
           console.log("Just Before Fetch:", url);
           const response = await fetch(url, { signal: currentController.signal });
           if (!response.ok) {
+            // DEBUGING: console needed for debugging
             console.error("API Response Error:", response);
             throw new Error(`API response error: ${response.statusText}`);
           };
+
+          // DEBUGING: console needed for debugging
 
           console.log("After Fetch and Before Parse");
           let data
@@ -254,6 +259,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             console.error("API Parse Error:", parseError);
             throw new Error(`API parse error: ${parseError}`);
           }
+          // DEBUGING: console needed for debugging
           console.log("Passed Parse and data is; ", data);
           // Update decimals if address matches
           if (useManualWalletStore?.getState()?.metamaskAddress === normalizedAddress && data.decimalPoint !== undefined) {
@@ -289,6 +295,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         } catch (error: any) {
           if (error.name === 'AbortError') return;
 
+          // DEBUGING: console needed for debugging
           console.error("Fetch Error - Restoring snapshot:", error.message);
 
           // RESTORE DATA: In case of error, put the old wallet data back into the state

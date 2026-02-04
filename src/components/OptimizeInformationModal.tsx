@@ -26,7 +26,6 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
   const { chainId } = useAccount()
   const { switchChainAsync } = useSwitchChain()
   if (!isOpen) return null;
-  console.log('OptimizationModal render', { asset });
 
   const onOptimize = async () => {
     if (asset.chainId !== chainId) {

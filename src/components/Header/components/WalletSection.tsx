@@ -245,7 +245,6 @@ const WalletSection: React.FC<WalletSectionProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              // props.toggleDropdown(); 
               navigate('/settings');
             }}
             className={styles.dropdownButton}
