@@ -1,22 +1,26 @@
+import { useUserPreferencesStore } from '../store/userPreferencesStore';
 import type { SupportedChain, SupportedToken } from '../types';
-export function formatNumber(number: number | string, decimals: number = 2): string {
+export function formatNumber(number: number | string, decimals?: number ): string {
   // Handle undefined, null, or empty string
   if (number === undefined || number === null || number === '') {
     return '0.00';
   }
-  
+
+  const effectiveDecimal = decimals ?? useUserPreferencesStore.getState().activeDecimalDigits
+
   const num = typeof number === 'string' ? parseFloat(number) : number;
-  
+
   // Handle NaN or invalid numbers
   if (isNaN(num) || !isFinite(num)) {
     return '0.00';
   }
-  
+
   return num.toLocaleString(undefined, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+    minimumFractionDigits: effectiveDecimal,
+    maximumFractionDigits: effectiveDecimal,
   });
 }
+
 
 export function calculateDailyYield(amount: number, apy: number): number {
   // Daily yield = (amount * (apy / 100)) / 365

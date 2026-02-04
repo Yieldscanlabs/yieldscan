@@ -229,7 +229,6 @@ const Header: React.FC<HeaderProps> = ({
         address={address}
         location={location}
         totalValue={workingCapital}
-        formatValue={formatValue}
         dormantCapital={dormantCapital}
         isDropdownOpen={isDropdownOpen}
         toggleDropdown={toggleDropdown}
@@ -249,7 +248,6 @@ const Header: React.FC<HeaderProps> = ({
         isConnected={isConnected}
         location={location}
         totalValue={workingCapital}
-        formatValue={formatValue}
       />
     </>
   );

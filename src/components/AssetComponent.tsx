@@ -58,17 +58,18 @@ const AssetComponent: React.FC<AssetComponentProps> = ({
               <span className={styles['asset-name']}>{asset.token}</span>
             </div>
             <div className={styles['asset-balance']} title={asset.balance}>
-              <small>Balance: </small>{formatNumber(asset.balance || '0', asset.maxDecimalsShow || 2)} <span className={styles['asset-balance-usd']}>
+              <small>Balance: </small>{formatNumber(Number(asset.balance || 0))} <span className={styles['asset-balance-usd']}>
                 (${formatNumber(
                   price && asset.balance
                     ? price * Number(asset.balance)
-                    : asset.balanceUsd || 0
+                    : Number(asset.balanceUsd)  || 0
                 )})
               </span>
             </div>
           </div>
         </div>
 
+        {/* show yield in wallet page cards */}
         <div className={styles['yield-info']}>
           <YieldOptionComponent
             loading={apyLoading}

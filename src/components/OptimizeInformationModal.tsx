@@ -26,7 +26,6 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
   const { chainId } = useAccount()
   const { switchChainAsync } = useSwitchChain()
   if (!isOpen) return null;
-  console.log('OptimizationModal render', { asset });
 
   const onOptimize = async () => {
     if (asset.chainId !== chainId) {
@@ -61,7 +60,7 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
                   <Protocol name={optimizationData.currentProtocol} showLogo={true} />
                 </div>
                 <div className={styles.assetBalance}>
-                  Balance: {formatNumber(parseFloat(asset.balance), asset.maxDecimalsShow || 6)} {asset.token}
+                  Balance: {formatNumber(parseFloat(asset.currentBalanceInProtocolUsd as string), asset.maxDecimalsShow || 6)} {asset.token}
                 </div>
               </div>
             </div>

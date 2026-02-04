@@ -16,7 +16,6 @@ interface DesktopHeaderProps {
   location: Location;
   totalValue: number;
   dormantCapital: number;
-  formatValue: (value: number) => string;
   isDropdownOpen: boolean;
   toggleDropdown: () => void;
   toggleMobileMenu: () => void;
@@ -33,7 +32,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   address,
   location,
   totalValue,
-  formatValue,
   isDropdownOpen,
   toggleDropdown,
   toggleMobileMenu,
@@ -63,7 +61,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
           <EarningsDisplay
             isConnected={isConnected}
             totalValue={totalValue}
-            formatValue={formatValue}
             dormantCapital={dormantCapital}
           />
 

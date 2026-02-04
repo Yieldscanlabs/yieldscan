@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from './CopyWrapper.module.css';
 
 interface CopyWrapperProps {
-    text: string;
+    text?: string;
     shortenText?: string | undefined;
 }
 

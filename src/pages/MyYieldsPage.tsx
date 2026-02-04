@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './MyYieldsPage.module.css';
-import { formatNumber } from '../utils/helpers';
 import tokens from '../utils/tokens';
 import { useApyStore } from '../store/apyStore';
 import { useDepositsAndWithdrawalsStore } from '../store/depositsAndWithdrawalsStore';
@@ -28,6 +27,7 @@ import { checkIsYieldAssetVisible, HARD_MIN_USD, useLowValueFilter } from '../ho
 import LowValueFilterCheckbox from '../components/common/LowValueFilterCheckbox';
 import FilteredEmptyState from '../components/wallet-page/FilteredEmptyState';
 import WalletLabel from '../components/common/WalletLabel';
+import { useCurrencyFormatter } from '../hooks/useCurrencyFormatter';
 
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,8 +35,9 @@ const MyYieldsPage: React.FC = () => {
   const { assets, error, isLoading: loading, fetchProtocols, protocols } = useAssetStore();
   const { manualAddresses, isConsolidated } = useManualWalletStore();
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
+  const formatValue = useCurrencyFormatter();
 
-  // NEW: Persistent Filter Integration
+  // Persistent Filter Integration
   const { hideLowValues, setHideLowValues, shouldShowYieldAsset, isAboveHardDust, isAboveHardYieldDust } = useLowValueFilter();
 
   const [selectedNetwork, setSelectedNetwork] = useState<number | 'all'>('all');
@@ -56,35 +57,6 @@ const MyYieldsPage: React.FC = () => {
     assets.filter(asset => asset.yieldBearingToken),
     [assets]
   );
-
-  // const uniqueAssets = useMemo(() => {
-  //   type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
-  //   const assetMap = new Map<string, UniqueAsset>();
-  //   console.log("allYieldAssets inside uniqueAssets: ", allYieldAssets)
-  //   allYieldAssets.forEach(asset => {
-  //     // Respect hard dust limit in dropdown list
-  //     if (!isAboveHardDust(asset)) return;
-
-  //     const holdingValue = Number(asset.currentBalanceInProtocolUsd || 0);
-  //     const hasHoldings = !Number.isNaN(holdingValue) && holdingValue > 0;
-  //     const existing = assetMap.get(asset.token);
-
-  //     if (existing) {
-  //       if (hasHoldings && !existing.hasHoldings) {
-  //         assetMap.set(asset.token, { ...existing, hasHoldings: true });
-  //       }
-  //     } else {
-  //       assetMap.set(asset.token, {
-  //         token: asset.token,
-  //         icon: asset.icon,
-  //         chainId: asset.chainId,
-  //         hasHoldings
-  //       });
-  //     }
-  //   });
-
-  //   return Array.from(assetMap.values());
-  // }, [allYieldAssets, isAboveHardDust]);
 
   const uniqueAssets = useMemo(() => {
     type UniqueAsset = { token: string; icon?: string; chainId: number; hasHoldings: boolean };
@@ -129,7 +101,6 @@ const MyYieldsPage: React.FC = () => {
       hideLowValues === true
     );
   }, [selectedNetwork, selectedProtocol, selectedAsset, searchQuery, hideLowValues]);
-  console.log("uniqueAssets: ", uniqueAssets)
   useEffect(() => {
     fetchProtocols()
   }, [])
@@ -258,7 +229,7 @@ const MyYieldsPage: React.FC = () => {
         currentApy: currentApyEstimate,
         betterProtocol: betterProtocolName,
         betterApy: bestApy,
-        additionalYearlyUsd: formatNumber(additionalYearlyUsd, 2),
+        additionalYearlyUsd: formatValue(additionalYearlyUsd),
         apyImprovement: parseFloat(apyImprovement.toFixed(0))
       };
     }
@@ -305,63 +276,12 @@ const MyYieldsPage: React.FC = () => {
   }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, activityData]);
   // Sync "Live" ticking values when the base data updates
   useEffect(() => {
-    console.log("summaryTotals:", summaryTotals)
 
     // Only update the live counters. 
     // The other values (deposits/withdrawals) are read directly from summaryTotals.
     setCurrentEarned(summaryTotals.currentEarned);
     setLiveTotalEarned(summaryTotals.totalEarned);
   }, [summaryTotals.currentEarned, summaryTotals.totalEarned]);
-
-
-
-  // used in Live Earning Liestner useEffect
-  // const calculateWeightedApy = (): number => {
-  //   let totalWeightedApy = 0;
-  //   let totalValue = 0;
-  //   const supportedAssets = filteredYieldAssets.filter(asset => {
-  //     return asset?.protocol?.toLowerCase() === 'aave' || asset?.protocol?.toLowerCase() === 'radiant' || asset?.protocol?.toLowerCase() === 'compound' || asset?.protocol?.toLowerCase() === 'yearn v3';
-  //   });
-  //   supportedAssets.forEach(asset => {
-  //     const balanceValue = parseFloat(asset.totalDepositedUsd || '0');
-  //     if (isNaN(balanceValue) || balanceValue === 0) return;
-  //     let assetApy = 0;
-  //     if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
-  //       const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
-  //       assetApy = apys[asset.protocol.toLowerCase()] || 0;
-  //     }
-  //     totalWeightedApy += assetApy * balanceValue;
-  //     totalValue += balanceValue;
-  //   });
-  //   return totalValue > 0 ? (totalWeightedApy / totalValue) : 3.5;
-  // };
-
-
-  // Live Earning Liestner
-  // useEffect(() => {
-  //   if (!wallet.address || summaryTotals.totalEarned <= 0 || currentEarned <= 0) return;
-  //   setLiveTotalEarned(summaryTotals.totalEarned);
-  //   const weightedApy = calculateWeightedApy();
-  //   const ticksPerYear = (365 * 24 * 60 * 60 * 1000) / 100;
-  //   // const timer = setInterval(() => {
-  //   //   setLiveTotalEarned(prevValue => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevValue * growthRate;
-  //   //   });
-  //   //   setCurrentEarned(prevCurrent => {
-  //   //     const growthRate = Math.pow(1 + (weightedApy / 100), 1 / ticksPerYear);
-  //   //     return prevCurrent * growthRate;
-  //   //   });
-  //   // }, 100);
-  //   // return () => clearInterval(timer);
-  // }, [wallet.address, allYieldAssets, apyData, selectedNetwork]);
-
-  const formatLiveValue = (value: number): string => {
-    if (typeof value !== 'number' || isNaN(value)) return '0.000000000000000000';
-    try {
-      return value >= 1000 ? value.toLocaleString('en-US', { minimumFractionDigits: 18, maximumFractionDigits: 18 }) : value.toFixed(18);
-    } catch (error) { return '0.000000000000000000'; }
-  };
 
   const hasAnyYieldAssets = (walletAssets: Asset[]) => {
     return walletAssets.some(asset => isAboveHardYieldDust(asset));
@@ -403,40 +323,16 @@ const MyYieldsPage: React.FC = () => {
       </div>
 
       {loading ? <MyYieldSummaryCardsSkeleton /> : (
-        // <div className={styles.summaryCards}>
-        //   <div className={styles.summaryCard}>
-        //     <div className={styles.summaryTitle}>Current Deposit</div>
-        //     {/* DIRECT READ: No state needed */}
-        //     <div className={styles.summaryAmount}>${formatNumber(summaryTotals.currentDeposit, 10)}</div>
-        //     <div className={styles.summarySubtext}>Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}</div>
-        //   </div>
 
-        //   <div className={styles.summaryCard}>
-        //     <div className={styles.summaryTitle}>Current Earned</div>
-        //     {/* LIVE STATE: These use state because they animate */}
-        //     <div className={styles.summaryAmount}>${formatLiveValue(currentEarned)}</div>
-        //     <div className={styles.summarySubtext}>Total Earning ${formatLiveValue(liveTotalEarned)}</div>
-        //   </div>
-
-        //   <div className={styles.summaryCard}>
-        //     <div className={styles.summaryTitle}>Daily Yield</div>
-        //     <div className={styles.summaryAmount}>
-        //       ${formatNumber(summaryTotals.dailyYield, 4)}
-        //     </div>
-        //     <div className={styles.summarySubtext}>
-        //       Yearly Yield ${formatNumber(summaryTotals.yearlyYield, 2)}
-        //     </div>
-        //   </div>
-        // </div>
         <div className={styles.summaryCards}>
           {/* Card 1: Current Deposit (Neutral) */}
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>Current Deposit</div>
             <div className={styles.summaryAmount}>
-              ${formatNumber(summaryTotals.currentDeposit, 10)}
+              ${formatValue(summaryTotals.currentDeposit)}
             </div>
             <div className={styles.summarySubtext}>
-              Total Deposit ${formatNumber(summaryTotals.totalDeposited, 10)}
+              Total Deposit ${formatValue(summaryTotals.totalDeposited)}
             </div>
           </div>
 
@@ -449,7 +345,7 @@ const MyYieldsPage: React.FC = () => {
                 color: currentEarned > 0 ? '#2EBD85' : currentEarned < 0 ? '#ef4444' : 'inherit'
               }}
             >
-              ${formatLiveValue(currentEarned)}
+              ${formatValue(currentEarned)}
             </div>
             <div
               className={styles.summarySubtext}
@@ -457,7 +353,7 @@ const MyYieldsPage: React.FC = () => {
                 color: liveTotalEarned > 0 ? '#2EBD85' : liveTotalEarned < 0 ? '#ef4444' : 'inherit'
               }}
             >
-              Total Earning ${formatLiveValue(liveTotalEarned)}
+              Total Earning ${formatValue(liveTotalEarned)}
             </div>
           </div>
 
@@ -470,7 +366,7 @@ const MyYieldsPage: React.FC = () => {
                 color: summaryTotals.dailyYield > 0 ? '#2EBD85' : 'inherit'
               }}
             >
-              ${formatNumber(summaryTotals.dailyYield, 4)}
+              ${formatValue(summaryTotals.dailyYield)}
             </div>
             <div
               className={styles.summarySubtext}
@@ -478,7 +374,7 @@ const MyYieldsPage: React.FC = () => {
                 color: summaryTotals.yearlyYield > 0 ? '#2EBD85' : 'inherit'
               }}
             >
-              Yearly Yield ${formatNumber(summaryTotals.yearlyYield, 2)}
+              Yearly Yield ${formatValue(summaryTotals.yearlyYield)}
             </div>
           </div>
         </div>
@@ -495,9 +391,7 @@ const MyYieldsPage: React.FC = () => {
             if (!assetsByWallet.has(walletAddr)) assetsByWallet.set(walletAddr, []);
             assetsByWallet.get(walletAddr)!.push(asset);
           });
-          console.warn("=================================================")
           return allAddresses.map((address) => {
-            console.log("Processing wallet address: ", address);
             const allWalletAssets = assetsByWallet.get(address.toLowerCase()) || [];
 
             // 1. FILTER specifically for assets actually earning yield and SORT (High to Low APY)
@@ -518,24 +412,15 @@ const MyYieldsPage: React.FC = () => {
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
               .some(a => isAboveHardDust(a) || isAboveHardYieldDust(a));
 
-            console.log("hasAnyBalance: ", hasAnyBalance)
 
             // Check if this wallet *really* has yield assets regardless of UI filters.
             // We use `allYieldAssets` (raw list) instead of `filteredYieldAssets`.
             const rawWalletAssets = allYieldAssets.filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase());
             const walletTrulyHasYieldAssets = hasAnyYieldAssets(rawWalletAssets);
-            console.log("walletTrulyHasYieldAssets: ", walletTrulyHasYieldAssets)
-            const walletHasAnyYieldAssets = hasAnyYieldAssets(allWalletAssets);
-            console.log("walletHasAnyYieldAssets: ", walletHasAnyYieldAssets)
-            console.log("------------------------------------------------")
+
             return (
               <div key={address} className={styles.section}>
                 <div className={styles.walletSectionHeader}>
-                  {/* <div className={styles.headerLeft}>
-                    <h3>Wallet: {shortenAddress(address)}</h3>
-                    {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
-                  </div> */}
-
                   <div className={styles.headerLeft}>
                     {/* 2. Integrate the Wallet Label Component */}
                     <WalletLabel address={address} />

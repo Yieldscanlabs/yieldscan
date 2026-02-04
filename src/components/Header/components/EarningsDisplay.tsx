@@ -1,21 +1,21 @@
 import React from 'react';
 import styles from '../Header.module.css';
 import { Link } from 'react-router-dom';
+import { useCurrencyFormatter } from '../../../hooks/useCurrencyFormatter';
 
 interface EarningsDisplayProps {
   isConnected: boolean;
   totalValue: number;
   dormantCapital: number;
-  formatValue: (value: number) => string;
 }
 
 const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
   isConnected,
   totalValue,
   dormantCapital,
-  formatValue,
 }) => {
   if (!isConnected) return null;
+    const formatValue = useCurrencyFormatter();
 
   return (
     <div className={styles.earningsContainer}>
