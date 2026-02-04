@@ -101,7 +101,6 @@ const MyYieldsPage: React.FC = () => {
       hideLowValues === true
     );
   }, [selectedNetwork, selectedProtocol, selectedAsset, searchQuery, hideLowValues]);
-  console.log("uniqueAssets: ", uniqueAssets)
   useEffect(() => {
     fetchProtocols()
   }, [])
@@ -277,7 +276,6 @@ const MyYieldsPage: React.FC = () => {
   }, [wallet.address, isConsolidated, manualAddresses, isMetamaskConnected, metamaskAddress, activityData]);
   // Sync "Live" ticking values when the base data updates
   useEffect(() => {
-    console.log("summaryTotals:", summaryTotals)
 
     // Only update the live counters. 
     // The other values (deposits/withdrawals) are read directly from summaryTotals.
@@ -393,9 +391,7 @@ const MyYieldsPage: React.FC = () => {
             if (!assetsByWallet.has(walletAddr)) assetsByWallet.set(walletAddr, []);
             assetsByWallet.get(walletAddr)!.push(asset);
           });
-          console.warn("=================================================")
           return allAddresses.map((address) => {
-            console.log("Processing wallet address: ", address);
             const allWalletAssets = assetsByWallet.get(address.toLowerCase()) || [];
 
             // 1. FILTER specifically for assets actually earning yield and SORT (High to Low APY)
@@ -416,24 +412,15 @@ const MyYieldsPage: React.FC = () => {
               .filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase())
               .some(a => isAboveHardDust(a) || isAboveHardYieldDust(a));
 
-            console.log("hasAnyBalance: ", hasAnyBalance)
 
             // Check if this wallet *really* has yield assets regardless of UI filters.
             // We use `allYieldAssets` (raw list) instead of `filteredYieldAssets`.
             const rawWalletAssets = allYieldAssets.filter(a => a.walletAddress?.toLowerCase() === address.toLowerCase());
             const walletTrulyHasYieldAssets = hasAnyYieldAssets(rawWalletAssets);
-            console.log("walletTrulyHasYieldAssets: ", walletTrulyHasYieldAssets)
-            const walletHasAnyYieldAssets = hasAnyYieldAssets(allWalletAssets);
-            console.log("walletHasAnyYieldAssets: ", walletHasAnyYieldAssets)
-            console.log("------------------------------------------------")
+
             return (
               <div key={address} className={styles.section}>
                 <div className={styles.walletSectionHeader}>
-                  {/* <div className={styles.headerLeft}>
-                    <h3>Wallet: {shortenAddress(address)}</h3>
-                    {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
-                  </div> */}
-
                   <div className={styles.headerLeft}>
                     {/* 2. Integrate the Wallet Label Component */}
                     <WalletLabel address={address} />

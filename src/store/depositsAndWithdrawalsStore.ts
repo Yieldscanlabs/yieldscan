@@ -25,7 +25,7 @@ export type ApiResponseStructure = {
   currentEarnings: number;
   totalWithdrawals: number;
   userBalance: number;
-  label?: string; 
+  label?: string;
   accumulatedYield?: {
     daily: number;
     yearly: number;
@@ -181,10 +181,14 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         }
 
         const normalizedAddress = walletAddress.toLowerCase();
+
+        // SNAPSHOT: Capture current data for this wallet to restore if the API fails
+        const previousWalletData = get().activityData[normalizedAddress];
+
         const currentController = new AbortController();
         activeAbortController = currentController;
 
-        const hasExistingData = !!get().activityData[normalizedAddress];
+        const hasExistingData = !!previousWalletData;
         const shouldShowProgressBar = showLoading && !hasExistingData;
 
         if (showLoading) set({ isLoading: true });
@@ -200,11 +204,11 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         }
 
         set({ error: null });
+        const requestId = generateId();
 
-        try {
-          const requestId = generateId();
-
-          if (shouldShowProgressBar) {
+        // --- API CALL 1: Progress Stream (SSE) ---
+        if (shouldShowProgressBar) {
+          try {
             activeEventSource = new EventSource(`${API_BASE_URL}/api/long-task/progress?requestId=${requestId}`);
             activeEventSource.onmessage = (event) => {
               if (currentController.signal.aborted) return;
@@ -216,59 +220,80 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
                   const data = JSON.parse(event.data);
                   const totalTxFound = Object.values(data).reduce((a: any, b: any) => Number(a) + Number(b), 0);
                   set({ scanStatus: `Scanning in background: ${totalTxFound} transactions analyzed` });
-                } catch (e) { }
+                } catch (e) {
+                  console.warn("SSE Parse Error:", e);
+                }
               }
             };
+            activeEventSource.onerror = () => activeEventSource?.close();
+          } catch (sseError) {
+            console.error("SSE Init Error:", sseError);
           }
+        }
 
+        // --- API CALL 2: Main Data Fetch ---
+        try {
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
           url.searchParams.set("requestId", requestId);
 
           const response = await fetch(url, { signal: currentController.signal });
+          if (!response.ok) throw new Error(`Server Error: ${response.status}`);
 
-          if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+          // BYPASS INTERCEPTOR: Use arrayBuffer to avoid the 'split' crash
+          const buffer = await response.arrayBuffer();
+          const decoder = new TextDecoder("utf-8");
+          const responseText = decoder.decode(buffer);
+          const data = JSON.parse(responseText);
 
-          const data = await response.json();
-          console.log(`response:: `,url, data)
-
-          if (useManualWalletStore?.getState()?.metamaskAddress==normalizedAddress && data.decimalPoint !== undefined) {
-            console.log("changinging user preferences store decimal point to ", data.decimalPoint) 
+          // Update decimals if address matches
+          if (useManualWalletStore?.getState()?.metamaskAddress === normalizedAddress && data.decimalPoint !== undefined) {
             useUserPreferencesStore.getState().setActiveDecimalDigits(data.decimalPoint);
           }
 
-          let normalizedData: ActivityDataType = {};
-          if (data.transactions && Object.keys(data.transactions).length > 0) {
-            normalizedData[Object.keys(data.transactions)[0].toLowerCase()] = data;
-          } else {
-            normalizedData[normalizedAddress] = data;
-          }
-          normalizedData[normalizedAddress].label = data.label;
+          // Prepare fresh data object
+          const transactions = data.transactions || {};
+          const transactionKeys = Object.keys(transactions);
+          const targetKey = (transactionKeys.length > 0 && transactionKeys[0])
+            ? transactionKeys[0].toLowerCase()
+            : normalizedAddress;
+
+          const normalizedData = {
+            [targetKey]: { ...data, label: data.label || "Wallet" }
+          };
+
           if (!currentController.signal.aborted) {
             set(state => ({
               activityData: { ...state.activityData, ...normalizedData },
               isLoading: false,
-              lastUpdated: Date.now()
+              lastUpdated: Date.now(),
+              progress: 100,
+              scanStatus: 'Scan Complete!'
             }));
 
-            if (shouldShowProgressBar) {
-              set({ progress: 100, scanStatus: 'Scan Complete!' });
-              setTimeout(() => {
-                if (!currentController.signal.aborted) {
-                  get().resetProgress();
-                }
-              }, 800);
-            }
+            // Smooth progress bar cleanup instead of stuck their and confuse the user
+            setTimeout(() => {
+              if (!currentController.signal.aborted) get().resetProgress();
+            }, 800);
           }
 
         } catch (error: any) {
           if (error.name === 'AbortError') return;
-          console.error("Fetch Error:", error);
-          set({
-            error: error instanceof Error ? error.message : 'Unknown error',
+
+          console.error("Fetch Error - Restoring snapshot:", error.message);
+
+          // RESTORE DATA: In case of error, put the old wallet data back into the state
+          // so the Yield Summary doesn't show inconsistent or empty records.
+          set(state => ({
+            activityData: {
+              ...state.activityData,
+              [normalizedAddress]: previousWalletData || state.activityData[normalizedAddress]
+            },
+            error: "Could not refresh data. Showing last known records.",
             isLoading: false,
             isScanning: false,
             progress: 0
-          });
+          }));
+
         } finally {
           if (activeAbortController === currentController) {
             if (activeProgressTimer) clearInterval(activeProgressTimer);
