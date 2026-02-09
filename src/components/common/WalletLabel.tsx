@@ -36,7 +36,7 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
       {
         loading: 'Updating label...',
         success: 'Label updated successfully!',
-        error: (err: any) => `Error: ${err.message}`,
+        error: (err: any) => `Error: ${err.message}. Please try in while again.`,
       }
     );
     setIsEditing(false);
