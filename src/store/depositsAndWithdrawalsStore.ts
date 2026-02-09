@@ -125,7 +125,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
         try {
           // 2. Call API
-          const response = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}/label`, {
+          const response = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ label })
