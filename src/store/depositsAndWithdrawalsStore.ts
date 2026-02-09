@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { API_BASE_URL } from '../utils/constants';
 import { useUserPreferencesStore } from './userPreferencesStore';
 import { useManualWalletStore } from './manualWalletStore';
-
+import axios from 'axios';
 export interface TokenActivity {
   totalDeposit: string;
   totalWithdraw: string;
@@ -68,24 +68,8 @@ function generateId() {
 const USER_DETAILS_API_ENDPOINT = API_BASE_URL + '/api/user-details';
 const AUTO_REFRESH_INTERVAL = 300000;
 
-let activeAbortController: AbortController | null = null;
-let activeEventSource: EventSource | null = null;
-let activeProgressTimer: NodeJS.Timeout | null = null;
-
-const cleanupActiveRequests = () => {
-  if (activeAbortController) {
-    activeAbortController.abort();
-    activeAbortController = null;
-  }
-  if (activeEventSource) {
-    activeEventSource.close();
-    activeEventSource = null;
-  }
-  if (activeProgressTimer) {
-    clearInterval(activeProgressTimer);
-    activeProgressTimer = null;
-  }
-};
+// Track active fetch promises by wallet address to prevent 429s 🛡️
+const inFlightRequests = new Map<string, Promise<void>>();
 
 export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore>()(
   persist(
@@ -103,7 +87,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         const normalizedAddress = walletAddress.toLowerCase();
         const previousData = get().activityData[normalizedAddress];
 
-        // 1. Optimistic Update 🏃
+        // Optimistic Update 
         set((state) => ({
           activityData: {
             ...state.activityData,
@@ -118,7 +102,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         }));
 
         const performUpdate = async () => {
-          console.log("normalizedAddress: ", normalizedAddress)
           const response = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -126,10 +109,10 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           });
 
           if (response.status === 404) {
-            // 2. Not found? Sync data first 🔄
+            // Not found? Sync data first 🔄
             await get().fetchUserActivity(walletAddress, false);
 
-            // 3. Retry update after sync 🔁
+            // Retry update after sync 🔁
             const retry = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
@@ -156,10 +139,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
         }
       },
 
-      resetProgress: () => {
-        if (activeProgressTimer) clearInterval(activeProgressTimer);
-        set({ progress: 0, scanStatus: '', isScanning: false });
-      },
 
       removeUserActivity: (walletAddress: string) => {
         if (!walletAddress) return;
@@ -174,7 +153,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       },
 
       reset: () => {
-        cleanupActiveRequests();
+        inFlightRequests.clear();
         set({
           activityData: {},
           isLoading: false,
@@ -187,146 +166,137 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       },
 
       fetchUserActivity: async (walletAddress: string, showLoading = true) => {
-        cleanupActiveRequests();
-
         if (!walletAddress || walletAddress === '0x') {
           set({ activityData: {}, error: null, isLoading: false });
           return;
         }
-        // DEBUGING: console needed for debugging
+
         const normalizedAddress = walletAddress.toLowerCase();
 
-        // SNAPSHOT: Capture current data for this wallet to restore if the API fails
-        const previousWalletData = get().activityData[normalizedAddress];
-
-        const currentController = new AbortController();
-        activeAbortController = currentController;
-
-        const hasExistingData = !!previousWalletData;
-        const shouldShowProgressBar = showLoading && !hasExistingData;
-
-        if (showLoading) set({ isLoading: true });
-
-        if (shouldShowProgressBar) {
-          set({ isScanning: true, progress: 5, scanStatus: 'Scanning blockchain in background...' });
-          activeProgressTimer = setInterval(() => {
-            set((state) => {
-              if (state.progress >= 90) return state;
-              return { progress: state.progress + (Math.random() * 2) };
-            });
-          }, 200);
+        // 🛡️ DEDUPLICATION: Return existing promise if already fetching this specific wallet
+        if (inFlightRequests.has(normalizedAddress)) {
+          return inFlightRequests.get(normalizedAddress);
         }
 
-        set({ error: null });
-        const requestId = generateId();
+        const fetchPromise = (async () => {
+          // Capture state before starting
+          const previousWalletData = get().activityData[normalizedAddress];
+          const controller = new AbortController();
+          const requestId = generateId();
 
-        // --- API CALL 1: Progress Stream (SSE) ---
-        if (shouldShowProgressBar) {
-          try {
-            activeEventSource = new EventSource(`${API_BASE_URL}/api/long-task/progress?requestId=${requestId}`);
-            activeEventSource.onmessage = (event) => {
-              if (currentController.signal.aborted) return;
-              if (event.data === "done") {
-                activeEventSource?.close();
-                set({ scanStatus: 'Finalizing data...' });
-              } else {
-                try {
-                  const data = JSON.parse(event.data);
-                  const totalTxFound = Object.values(data).reduce((a: any, b: any) => Number(a) + Number(b), 0);
-                  set({ scanStatus: `Scanning in background: ${totalTxFound} transactions analyzed` });
-                } catch (e) {
-                  console.warn("SSE Parse Error:", e);
+          const hasExistingData = !!previousWalletData;
+          const shouldShowProgressBar = showLoading && !hasExistingData;
+
+          // Only set global isLoading if we're actually showing a loader
+          if (showLoading) set({ isLoading: true });
+
+          let progressTimer: NodeJS.Timeout | null = null;
+          let eventSource: EventSource | null = null;
+
+          if (shouldShowProgressBar) {
+            set({ isScanning: true, progress: 5, scanStatus: `Initializing scan for ${normalizedAddress.slice(0, 6)}...` });
+
+            progressTimer = setInterval(() => {
+              set((state) => ({
+                // 📈 Smooth increment logic
+                progress: state.progress >= 90 ? state.progress : state.progress + (Math.random() * 2)
+              }));
+            }, 200);
+
+            try {
+              eventSource = new EventSource(`${API_BASE_URL}/api/long-task/progress?requestId=${requestId}`);
+              eventSource.onmessage = (event) => {
+                if (controller.signal.aborted) return;
+                if (event.data === "done") {
+                  eventSource?.close();
+                  set({ scanStatus: 'Finalizing data calculation...' });
+                } else {
+                  try {
+                    const data = JSON.parse(event.data);
+                    const totalTx = Object.values(data).reduce((a: any, b: any) => Number(a) + Number(b), 0);
+                    set({ scanStatus: `Scanning: ${totalTx} transactions found` });
+                  } catch (e) { console.warn("SSE Parse Error", e); }
                 }
-              }
-            };
-            activeEventSource.onerror = () => activeEventSource?.close();
-          } catch (sseError) {
-            console.error("SSE Init Error:", sseError);
+              };
+              eventSource.onerror = () => eventSource?.close();
+            } catch (e) { console.error("SSE Connection Error", e); }
           }
-        }
 
-        // --- API CALL 2: Main Data Fetch ---
-        try {
-          const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
-          url.searchParams.set("requestId", requestId);
-          // DEBUGING: console needed for debugging
-          const response = await fetch(url, { signal: currentController.signal });
-          if (!response.ok) {
-            // DEBUGING: console needed for debugging
-            console.error("API Response Error:", response);
-            throw new Error(`API response error: ${response.statusText}`);
-          };
-
-          let data
-          // BYPASS INTERCEPTOR: Use arrayBuffer to avoid the 'split' crash
           try {
-            const buffer = await response.arrayBuffer();
-            const decoder = new TextDecoder("utf-8");
-            const responseText = decoder.decode(buffer);
-            data = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error("API Parse Error:", parseError);
-            throw new Error(`API parse error: ${parseError}`);
-          }
-          // Update decimals if address matches
-          if (useManualWalletStore?.getState()?.metamaskAddress === normalizedAddress && data.decimalPoint !== undefined) {
-            useUserPreferencesStore.getState().setActiveDecimalDigits(data.decimalPoint);
-          }
+            const url = `${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}?requestId=${requestId}`;
 
-          // Prepare fresh data object
-          const transactions = data.transactions || {};
-          const transactionKeys = Object.keys(transactions);
-          const targetKey = (transactionKeys.length > 0 && transactionKeys[0])
-            ? transactionKeys[0].toLowerCase()
-            : normalizedAddress;
+            // 🚀 AXIOS: Using the auto-transforming client
+            const response = await axios.get(url, { signal: controller.signal });
+            const data = response.data;
 
-          const normalizedData = {
-            [targetKey]: { ...data, label: data.label || "Wallet" }
-          };
+            if (!data) throw new Error("API returned success but data is empty");
 
-          if (!currentController.signal.aborted) {
+            // Preferences Sync
+            if (useManualWalletStore?.getState()?.metamaskAddress === normalizedAddress && data.decimalPoint !== undefined) {
+              useUserPreferencesStore.getState().setActiveDecimalDigits(data.decimalPoint);
+            }
+
+            // 🎯 DATA MAPPING: Ensure data is stored under the requested address key
+            // This prevents UI "flicker" where the data disappears and reappears under a new key.
+            const finalData = {
+              ...data,
+              label: data.label || previousWalletData?.label // 🏷️ Persistence: Preserve label if API returns null
+            };
+
+            if (!controller.signal.aborted) {
+              set(state => ({
+                activityData: {
+                  ...state.activityData,
+                  [normalizedAddress]: finalData
+                },
+                isLoading: false,
+                lastUpdated: Date.now(),
+                progress: 100,
+                scanStatus: 'Scan Complete!'
+              }));
+            }
+          } catch (error: any) {
+            if (axios.isCancel(error)) return;
+
+            console.error(`❌ Fetch Error for ${normalizedAddress}:`, error.message);
+
+            // 🔙 ROLLBACK: Restore previous state if fetch fails
             set(state => ({
-              activityData: { ...state.activityData, ...normalizedData },
+              activityData: {
+                ...state.activityData,
+                [normalizedAddress]: previousWalletData || state.activityData[normalizedAddress]
+              },
+              error: "Sync failed. Showing last cached data.",
               isLoading: false,
-              lastUpdated: Date.now(),
-              progress: 100,
-              scanStatus: 'Scan Complete!'
+              isScanning: false,
+              progress: 0
             }));
-
-            // Smooth progress bar cleanup instead of stuck their and confuse the user
+          } finally {
+            // 🏁 FINAL CLEANUP
+            inFlightRequests.delete(normalizedAddress);
+            if (progressTimer) clearInterval(progressTimer);
+            if (eventSource) eventSource.close();
+            // Added for DEBUGGING purpose
+            console.log("inFlightRequests: ", inFlightRequests)
             setTimeout(() => {
-              if (!currentController.signal.aborted) get().resetProgress();
-            }, 800);
+              if (inFlightRequests.size === 0) {
+                get().resetProgress();
+              }
+            }, 1500);
           }
+        })();
 
-        } catch (error: any) {
-          if (error.name === 'AbortError') return;
-
-          // DEBUGING: console needed for debugging
-          console.error("Fetch Error - Restoring snapshot:", error.message);
-
-          // RESTORE DATA: In case of error, put the old wallet data back into the state
-          // so the Yield Summary doesn't show inconsistent or empty records.
-          set(state => ({
-            activityData: {
-              ...state.activityData,
-              [normalizedAddress]: previousWalletData || state.activityData[normalizedAddress]
-            },
-            error: "Could not refresh data. Showing last known records.",
-            isLoading: false,
-            isScanning: false,
-            progress: 0
-          }));
-
-        } finally {
-          if (activeAbortController === currentController) {
-            if (activeProgressTimer) clearInterval(activeProgressTimer);
-            if (activeEventSource) activeEventSource.close();
-            activeAbortController = null;
-          }
-        }
+        inFlightRequests.set(normalizedAddress, fetchPromise);
+        return fetchPromise;
       },
-
+      resetProgress: () => {
+        set({
+          progress: 0,
+          scanStatus: '',
+          isScanning: false,
+          isLoading: false
+        });
+      },
       clearErrors: () => set({ error: null }),
 
       getUserActivity: (walletAddress: string) => {
