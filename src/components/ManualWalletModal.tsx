@@ -106,7 +106,7 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({ isOpen, onClose }
             placeholder="0x..."
             value={input}
             onChange={(e) => {
-              setInput(e.target.value);
+              setInput(e.target.value.toLocaleLowerCase());
               setError('');
             }}
             className={styles.input}

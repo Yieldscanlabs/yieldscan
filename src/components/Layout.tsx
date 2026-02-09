@@ -17,6 +17,7 @@ import GlobalManualWalletModal from './GlobalManualWalletModal';
 import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import ScanProgressBar from './loaders/ScanProgressBar';
+import { Toaster } from 'react-hot-toast';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
@@ -147,6 +148,12 @@ const Layout = () => {
   }
   return (
     <div className={styles.layout}>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+        }}
+      />
       <ScanProgressBar />
       <Header
         isConnected={wallet.isConnected}

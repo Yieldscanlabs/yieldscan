@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Pencil, Check, X as XIcon, Copy } from 'lucide-react'; 
+import { Pencil, Check, X as XIcon, Copy } from 'lucide-react';
 import { shortenAddress } from '../../utils/helpers';
-import { useDepositsAndWithdrawalsStore } from '../../store/depositsAndWithdrawalsStore'; 
+import { useDepositsAndWithdrawalsStore } from '../../store/depositsAndWithdrawalsStore';
 import { generateWalletGradient } from '../../utils/avatarGenerator';
 import styles from './WalletLabel.module.css';
+import toast from 'react-hot-toast';
 
 interface Props {
   address: string;
@@ -14,10 +15,10 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
   const updateWalletLabel = useDepositsAndWithdrawalsStore(state => state.updateWalletLabel);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [copied, setCopied] = useState(false); 
+  const [copied, setCopied] = useState(false);
 
   const avatarBackground = generateWalletGradient(address);
-  
+
   // Data Source: Strictly from Store (Backend)
   const userData = activityData[address.toLowerCase()];
   const savedLabel = userData?.label; // Backend provides default if custom isn't set
@@ -26,8 +27,14 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
 
   const handleSave = () => {
     const newLabel = inputValue.trim();
-    // Optimistic update happens inside the store action
-    updateWalletLabel(address, newLabel);
+    toast.promise(
+      updateWalletLabel(address, newLabel),
+      {
+        loading: 'Updating label...',
+        success: 'Label updated successfully!',
+        error: (err: any) => `Error: ${err.message}`,
+      }
+    );
     setIsEditing(false);
   };
 
@@ -51,19 +58,19 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
   if (isEditing) {
     return (
       <div className={styles.container}>
-        <div 
-          className={styles.avatar} 
+        <div
+          className={styles.avatar}
           style={{ background: avatarBackground }}
         />
         <div className={styles.editContainer}>
-          <input 
+          <input
             autoFocus
             className={styles.input}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             // Use savedLabel directly. If data is loading, fallback to simple "Wallet" string for UI stability.
-            placeholder={savedLabel || "Wallet:"} 
+            placeholder={savedLabel || "Wallet:"}
             maxLength={24}
           />
           <div className={styles.actions}>
@@ -81,8 +88,8 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
 
   return (
     <div className={styles.container}>
-      <div 
-        className={styles.avatar} 
+      <div
+        className={styles.avatar}
         style={{ background: avatarBackground }}
         title="Unique Wallet Identity"
       />
@@ -93,22 +100,22 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
         <h3 className={styles.customName} style={{ margin: 0 }}>
           {savedLabel || "Wallet"}
         </h3>
-        
+
         <div className={styles.addressWrapper}>
           <span className={styles.address}>
             ({shortenAddress(address)})
           </span>
-          <button 
-            onClick={handleCopy} 
-            className={styles.copyBtn} 
+          <button
+            onClick={handleCopy}
+            className={styles.copyBtn}
             title="Copy Address"
           >
             {copied ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
           </button>
         </div>
       </div>
-      
-      <button 
+
+      <button
         onClick={() => {
           setInputValue(savedLabel || ""); // Ensure input starts with current DB value
           setIsEditing(true);

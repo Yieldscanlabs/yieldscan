@@ -101,44 +101,58 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
 
       updateWalletLabel: async (walletAddress: string, label: string) => {
         const normalizedAddress = walletAddress.toLowerCase();
+        const previousData = get().activityData[normalizedAddress];
 
-        // 1. Optimistic UI Update
-        set((state) => {
-          const existingData = state.activityData[normalizedAddress];
-
-          // If data exists, update it. If not, create a skeleton so the label appears immediately.
-          const newData = existingData
-            ? { ...existingData, label }
-            : {
-              label,
-              totalDeposits: 0, currentDeposit: 0, totalEarnings: 0, currentEarnings: 0,
-              totalWithdrawals: 0, userBalance: 0, transactions: {}
-            };
-
-          return {
-            activityData: {
-              ...state.activityData,
-              [normalizedAddress]: newData
+        // 1. Optimistic Update 🏃
+        set((state) => ({
+          activityData: {
+            ...state.activityData,
+            [normalizedAddress]: {
+              ...(state.activityData[normalizedAddress] || {
+                totalDeposits: 0, currentDeposit: 0, totalEarnings: 0, currentEarnings: 0,
+                totalWithdrawals: 0, userBalance: 0, transactions: {}
+              }),
+              label
             }
-          };
-        });
+          }
+        }));
 
-        try {
-          // 2. Call API
+        const performUpdate = async () => {
+          console.log("normalizedAddress: ", normalizedAddress)
           const response = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ label })
           });
 
+          if (response.status === 404) {
+            // 2. Not found? Sync data first 🔄
+            await get().fetchUserActivity(walletAddress, false);
+
+            // 3. Retry update after sync 🔁
+            const retry = await fetch(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ label })
+            });
+            if (!retry.ok) throw new Error("Sync succeeded, but label update failed.");
+            return;
+          }
+
           if (!response.ok) {
             const err = await response.json();
             throw new Error(err.error || 'Failed to save label');
           }
+        };
 
+        try {
+          await performUpdate();
         } catch (error) {
-          console.error("Label update failed:", error);
-          // Optional: You could revert the state here if critical
+          // 🔙 Rollback UI on final failure
+          set((state) => ({
+            activityData: { ...state.activityData, [normalizedAddress]: previousData }
+          }));
+          throw error;
         }
       },
 
@@ -180,7 +194,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           return;
         }
         // DEBUGING: console needed for debugging
-        console.log("Fetching user activity for wallet:", walletAddress);
         const normalizedAddress = walletAddress.toLowerCase();
 
         // SNAPSHOT: Capture current data for this wallet to restore if the API fails
@@ -237,7 +250,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           const url = new URL(`${USER_DETAILS_API_ENDPOINT}/${normalizedAddress}`, window.location.origin);
           url.searchParams.set("requestId", requestId);
           // DEBUGING: console needed for debugging
-          console.log("Just Before Fetch:", url);
           const response = await fetch(url, { signal: currentController.signal });
           if (!response.ok) {
             // DEBUGING: console needed for debugging
@@ -245,9 +257,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             throw new Error(`API response error: ${response.statusText}`);
           };
 
-          // DEBUGING: console needed for debugging
-
-          console.log("After Fetch and Before Parse");
           let data
           // BYPASS INTERCEPTOR: Use arrayBuffer to avoid the 'split' crash
           try {
@@ -259,8 +268,6 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             console.error("API Parse Error:", parseError);
             throw new Error(`API parse error: ${parseError}`);
           }
-          // DEBUGING: console needed for debugging
-          console.log("Passed Parse and data is; ", data);
           // Update decimals if address matches
           if (useManualWalletStore?.getState()?.metamaskAddress === normalizedAddress && data.decimalPoint !== undefined) {
             useUserPreferencesStore.getState().setActiveDecimalDigits(data.decimalPoint);
