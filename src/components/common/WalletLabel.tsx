@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pencil, Check, X as XIcon, Copy } from 'lucide-react';
 import { shortenAddress } from '../../utils/helpers';
 import { useDepositsAndWithdrawalsStore } from '../../store/depositsAndWithdrawalsStore';
@@ -13,7 +13,6 @@ interface Props {
 const WalletLabel: React.FC<Props> = ({ address }) => {
   const activityData = useDepositsAndWithdrawalsStore(state => state.activityData);
   const updateWalletLabel = useDepositsAndWithdrawalsStore(state => state.updateWalletLabel);
-
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -25,6 +24,11 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
 
   const [inputValue, setInputValue] = useState(savedLabel || "");
 
+  useEffect(() => {
+    if (savedLabel) {
+      setInputValue(savedLabel);
+    }
+  }, [savedLabel]);
   const handleSave = () => {
     const newLabel = inputValue.trim();
     toast.promise(
@@ -32,7 +36,7 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
       {
         loading: 'Updating label...',
         success: 'Label updated successfully!',
-        error: (err: any) => `Error: ${err.message}`,
+        error: (err: any) => `Error: ${err.message}. Please try in while again.`,
       }
     );
     setIsEditing(false);
