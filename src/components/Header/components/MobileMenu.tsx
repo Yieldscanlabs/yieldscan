@@ -89,6 +89,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           >
             Alerts
           </Link>
+          {isConnected && (
+        <Link 
+          to="/liquidity" 
+          className={`${styles.mobileNavLink} ${location.pathname === '/liquidity' ? styles.mobileNavLinkActive : ''}`}
+          onClick={closeMobileMenu}
+              >
+          Liquidity
+        </Link>
+      )}
         </nav>
 
         {/* Mobile wallet info and actions */}
