@@ -41,6 +41,15 @@ const Navigation: React.FC<NavigationProps> = ({ isConnected, location }) => {
       >
         Alerts
       </Link>
+
+      {isConnected && (
+        <Link 
+          to="/liquidity" 
+          className={`${styles.navLink} ${location.pathname === '/liquidity' ? styles.activeLink : ''}`}
+        >
+          Liquidity
+        </Link>
+      )}
     </nav>
   );
 };

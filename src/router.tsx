@@ -12,6 +12,7 @@ import FaqPage from './pages/FaqPage';
 import LiveApyPage from './pages/live-apy';
 import AboutPage from './pages/AboutPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import LiquidityPage from './pages/liquidity';
 
 // Define the router configuration
 const router = createBrowserRouter([
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: 'alerts',
         element: <AlertsPage />,
+      },
+      {
+        path: 'liquidity',
+        element: <LiquidityPage />,
       },
     ],
 
