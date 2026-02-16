@@ -99,12 +99,32 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               <div className={styles.mobileEarningsContainer}>
                 <div className={styles.mobileEarningsBadge}>
                   <span className={styles.mobileEarningsLabel}>Dormant Capital:</span>
+                  <span className={styles.infoTooltipWrapperDown}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span className={styles.infoTooltipDown}>
+              <strong>Dormant Capital</strong>Funds currently in your wallet that are not  generating returns yet.
+            </span>
+          </span>
                   <span className={styles.mobileEarningsAmount}>
                     ~${formatValue(dormantCapital)}
                   </span>
                 </div>
                 <div className={styles.mobileEarningsBadge}>
                   <span className={styles.mobileEarningsLabel}>Working Capital:</span>
+                  <span className={styles.infoTooltipWrapperDown}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span className={styles.infoTooltipDown}>
+              <strong>Working Capital</strong> Compounded value (deposit + earned profit).
+            </span>
+          </span>
                   <span className={styles.mobileEarningsAmount}>
                     ~${formatValue(totalValue)}
                   </span>
