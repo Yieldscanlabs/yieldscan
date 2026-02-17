@@ -412,7 +412,7 @@
   min-width: 220px;
   height: 40px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .earningsBadgeTotal:hover {
@@ -527,6 +527,7 @@
   .earningsBadgeDaily .earningsAmount,
   .earningsBadgeTotal .earningsAmount {
     max-width: 110px;
+    overflow: visible;
   }
 }
 
@@ -901,4 +902,68 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
+}
+
+/* Downward tooltip (for header elements near top of viewport) */
+.infoTooltipWrapperDown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.infoTooltipWrapperDown:hover .infoIcon {
+  opacity: 1;
+}
+
+.infoTooltipDown {
+  visibility: hidden;
+  position: absolute;
+  z-index: 9999;
+  top: 135%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background-color: #2D3748;
+  color: #CBD5E0;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  white-space: normal;
+}
+
+/* Arrow at TOP of tooltip (pointing up) */
+.infoTooltipDown::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #2D3748 transparent;
+}
+
+.infoTooltipWrapperDown:hover .infoTooltipDown {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.infoTooltipDown strong {
+  display: block;
+  color: #E2E8F0;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
 }

@@ -327,18 +327,52 @@ const MyYieldsPage: React.FC = () => {
         <div className={styles.summaryCards}>
           {/* Card 1: Current Deposit (Neutral) */}
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Current Deposit</div>
+            <div className={styles.summaryTitle}>Current Deposit
+            <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Current Deposit</strong>Amount currently invested. <br/>(Total Deposit – Withdrawn Deposit)
+                </span>
+              </span>
+            </div>
             <div className={styles.summaryAmount}>
               ${formatValue(summaryTotals.currentDeposit)}
             </div>
+            
             <div className={styles.summarySubtext}>
               Total Deposit ${formatValue(summaryTotals.totalDeposited)}
+              <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Total Deposit</strong>Total amount ever deposited (including withdrawn + currently invested funds).
+                </span>
+              </span>
             </div>
+
           </div>
 
           {/* Card 2: Current Earned (Color only if != 0) */}
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Current Earned</div>
+            <div className={styles.summaryTitle}>Current Earned
+            <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Current Earnings</strong>Excludes any profit already withdrawn.
+                </span>
+              </span>
+            </div>
             <div
               className={styles.summaryAmount}
               style={{
@@ -354,12 +388,33 @@ const MyYieldsPage: React.FC = () => {
               }}
             >
               Total Earning ${formatValue(liveTotalEarned)}
+              <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Total Earning</strong>Your total profit since day 1, including withdrawn and reinvested gains.
+                </span>
+              </span>
             </div>
           </div>
 
           {/* Card 3: Daily Yield (Color only if > 0) */}
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>Daily Yield</div>
+            <div className={styles.summaryTitle}>Daily Yield
+            <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Daily Yield</strong>Estimated daily return.
+                </span>
+              </span>
+            </div>
             <div
               className={styles.summaryAmount}
               style={{
@@ -375,6 +430,16 @@ const MyYieldsPage: React.FC = () => {
               }}
             >
               Yearly Yield ${formatValue(summaryTotals.yearlyYield)}
+              <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Yearly Yield</strong>Estimated annual return based on current performance.
+                </span>
+              </span>
             </div>
           </div>
         </div>
