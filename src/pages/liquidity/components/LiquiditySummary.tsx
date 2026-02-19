@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { LiquidityData } from '../../../store/liquidityStore';
 import styles from '../styles/Liquidity.module.css';
+import WalletLabel from '../../../components/common/WalletLabel';
 
 interface Props {
   data: LiquidityData | null;
@@ -8,6 +9,30 @@ interface Props {
 }
 
 const LiquiditySummary: React.FC<Props> = ({ data, isLoading }) => {
+
+  const { activeAssetsCount, activeProtocolsCount } = useMemo(() => {
+    if (!data || !data.matrix) {
+      return { activeAssetsCount: 0, activeProtocolsCount: 0 };
+    }
+
+    const activeAssets = new Set<string>();
+    const activeProtocols = new Set<string>();
+
+    Object.entries(data.matrix).forEach(([asset, protocols]) => {
+      Object.entries(protocols).forEach(([protocol, value]) => {
+        if (value > 0) {
+          activeAssets.add(asset);
+          activeProtocols.add(protocol);
+        }
+      });
+    });
+
+    return {
+      activeAssetsCount: activeAssets.size,
+      activeProtocolsCount: activeProtocols.size,
+    };
+  }, [data]);
+
   if (isLoading) {
     return (
       <>
@@ -21,22 +46,13 @@ const LiquiditySummary: React.FC<Props> = ({ data, isLoading }) => {
     );
   }
 
-  if (!data) return null;
-
-  const truncatedAddress = `${data.walletAddress.slice(0, 6)}…${data.walletAddress.slice(-4)}`;
+  if (!data) return null;  
 
   return (
     <>
       {/* Wallet Address Card */}
       <div className={styles.walletCard}>
-        <div className={styles.walletAvatar}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" />
-            <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" />
-            <circle cx="18" cy="16" r="2" />
-          </svg>
-        </div>
-        <span className={styles.walletAddress}>{truncatedAddress}</span>
+        <WalletLabel address={data.walletAddress} showEditButton={false} />
       </div>
 
       {/* Summary Stats */}
@@ -49,11 +65,11 @@ const LiquiditySummary: React.FC<Props> = ({ data, isLoading }) => {
         </div>
         <div className={styles.summaryCard}>
           <div className={styles.summaryLabel}>Assets</div>
-          <div className={styles.summaryValue}>{data.assets.length}</div>
+          <div className={styles.summaryValue}>{activeAssetsCount}</div>
         </div>
         <div className={styles.summaryCard}>
           <div className={styles.summaryLabel}>Protocols</div>
-          <div className={styles.summaryValue}>{data.protocols.length}</div>
+          <div className={styles.summaryValue}>{activeProtocolsCount}</div>
         </div>
       </div>
     </>
