@@ -8,9 +8,10 @@ import toast from 'react-hot-toast';
 
 interface Props {
   address: string;
+  showEditButton?: boolean;
 }
 
-const WalletLabel: React.FC<Props> = ({ address }) => {
+const WalletLabel: React.FC<Props> = ({ address, showEditButton = true }) => {
   const activityData = useDepositsAndWithdrawalsStore(state => state.activityData);
   const updateWalletLabel = useDepositsAndWithdrawalsStore(state => state.updateWalletLabel);
   const [isEditing, setIsEditing] = useState(false);
@@ -119,6 +120,7 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
         </div>
       </div>
 
+      {showEditButton && (
       <button
         onClick={() => {
           setInputValue(savedLabel || ""); // Ensure input starts with current DB value
@@ -129,6 +131,7 @@ const WalletLabel: React.FC<Props> = ({ address }) => {
       >
         <Pencil size={14} />
       </button>
+      )}
     </div>
   );
 };
