@@ -105,5 +105,16 @@ export default [
     maxDecimalsShow: 2,
     decimals: 18,
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
-  }
+  },
+  {
+    token: 'ETH' as const,
+    chain: 'BASE' as const,
+    address: '0x4200000000000000000000000000000000000006',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+    chainId: 8453,
+    yieldBearingToken: false,
+    decimals: 18,
+    maxDecimalsShow: 4,
+    usdPrice: 1,                     
+  },
 ];

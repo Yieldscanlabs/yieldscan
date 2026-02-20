@@ -1,6 +1,7 @@
 import ethereumIcon from '../assets/networks/ethereum.svg';
 import arbitrumIcon from '../assets/networks/arbitrum.svg';
 import bscIcon from '../assets/networks/bsc.png';
+import baseIcon from '../assets/networks/base.png';
 import type { SupportedChain } from '../types';
 // import polygonIcon from '../assets/networks/polygon.svg';
 // import bscIcon from '../assets/networks/bsc.svg';
@@ -21,6 +22,8 @@ export function getNetworkIcon(chainId: number | SupportedChain): string {
     //   return polygonIcon;
     case 56:
       return bscIcon;
+    case 8453:
+      return baseIcon;
     // case 10:
     //   return optimismIcon;
     default:
@@ -46,6 +49,8 @@ export function getNetworkColor(chainId: number | SupportedChain): string {
       return '#F3BA2F'; // BSC yellow
     case 10:
       return '#FF0420'; // Optimism red
+    case 8453:
+      return '#0052FF'; // Base blue
     default:
       return '#718096'; // Generic gray
   }
@@ -68,6 +73,8 @@ export function getNetworkName(chainId: number | SupportedChain): string {
       return 'BNB Chain';
     case 10:
       return 'Optimism';
+    case 8453:
+      return 'Base';
     default:
       return `Chain ${chainId}`;
   }
