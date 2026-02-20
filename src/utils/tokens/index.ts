@@ -1,5 +1,6 @@
 import ethTokens from "./eth.tokens";
 import bnbTokens from "./bnb.tokens";
+import baseTokens from "./base.tokens";
 
 const tokens = [
   ...ethTokens,
@@ -46,7 +47,7 @@ const tokens = [
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
   ...bnbTokens,
-  // ...baseTokens
+  ...baseTokens
 ];
 
 export default tokens

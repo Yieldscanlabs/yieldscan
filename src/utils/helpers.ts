@@ -37,6 +37,8 @@ export function getChainColor(chain: SupportedChain): string {
       return '#F3BA2F';
     case 'ARBITRUM_ONE':
       return '#28A0F0';
+    case 'BASE':
+      return '#0052FF';
     default:
       return '#888888';
   }
