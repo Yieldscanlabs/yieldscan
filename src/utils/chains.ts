@@ -6,6 +6,7 @@ const CHAIN_NAMES: Record<number, string> = {
   42161: 'Arbitrum',
   43114: 'Avalanche',
   56: 'BNB Chain',
+  8453: 'Base',
   // Add more chains as needed
 };
 

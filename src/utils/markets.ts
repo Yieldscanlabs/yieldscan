@@ -1,4 +1,4 @@
-export const AVAILABLE_NETWORKS = [1, 56,42161]
+export const AVAILABLE_NETWORKS = [1, 56,42161, 8453]
 
 export const COMPOUND_V3_MARKETS: Record<number, Record<string, string>> = {
   // Ethereum Mainnet

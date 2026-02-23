@@ -16,6 +16,7 @@ export const CHAIN_IDS = {
   Arbitrum: 42161,
   Avalanche: 43114,
   BNB_CHAIN: 56,
+  Base: 8453,
 };
 
 
