@@ -311,6 +311,86 @@
   .matrixTable tbody tr:hover td:first-child {
     background: var(--surface-hover);
   }
+
+  /* Info Icon Tooltip Styles */
+.infoTooltipWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.infoIcon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-tertiary);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.infoTooltipWrapper:hover .infoIcon {
+  opacity: 1;
+}
+
+.infoTooltip {
+  visibility: hidden;
+  position: absolute;
+  z-index: 9999;
+  bottom: 135%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: #2D3748;
+  color: #E2E8F0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  white-space: normal;
+}
+
+/* Arrow at BOTTOM of tooltip (pointing down) */
+.infoTooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #2D3748 transparent transparent transparent;
+}
+
+.infoTooltipWrapper:hover .infoTooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.infoTooltip strong {
+  display: block;
+  color: #E2E8F0;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+
+/* Smaller icon for token amounts */
+.positionTokens .infoIcon {
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+}
+
+.positionTokens .infoTooltip {
+  width: 180px;
+  font-size: 0.7rem;
+}
   
   .cellNonZero {
     color: var(--text-primary) !important;

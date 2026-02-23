@@ -52,12 +52,36 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
               Total: ${pos.balanceUsd < 1
                 ? pos.balanceUsd.toFixed(6)
                 : pos.balanceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            
             </div>
+              <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Total Value</strong>
+                  The total USD value of this position across all tokens in the pool.
+                </span>
+              </span>
             <div className={styles.positionTokens}>
               {pos.tokens.map((t, i) => (
                 <div key={i}>
                   {t.symbol} <span>— {t.amount}</span>
+                  <span className={styles.infoTooltipWrapper}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className={styles.infoTooltip}>
+                  <strong>Token Amount</strong>
+                  The quantity of the token in the position.
+                </span>
+              </span>
                 </div>
+                
               ))}
             </div>
           </div>
