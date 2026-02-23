@@ -135,6 +135,20 @@ export default [
     usdPrice: 1 // Approximate value (will need to be updated dynamically in production)
   },
 
+  {
+    token: 'WBTC' as const,
+    chain: 'ETH' as const,
+    address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // Compound V3 WBTC Comet (cWBTCv3)
+    underlyingAsset: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC token address
+    withdrawContract: '0xe85Dc543813B8c2CFEaAc371517b925a166a9293', // Compound v3 cWBTC market (same as address)
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png',
+    chainId: 1, // Ethereum mainnet
+    protocol: 'Compound',
+    yieldBearingToken: false,
+    decimals: 8, // WBTC has 8 decimals
+    maxDecimalsShow: 8,
+    usdPrice: 65000 // Approximate value (will need to be updated dynamically in production)
+  },
   //   {
   //   token: 'USUALUSDC+' as const,
   //   chain: 'ETH' as const,
