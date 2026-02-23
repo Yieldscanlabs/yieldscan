@@ -6,9 +6,10 @@ import WalletLabel from '../../../components/common/WalletLabel';
 interface Props {
   data: LiquidityData | null;
   isLoading: boolean;
+  showWalletCard?: boolean; 
 }
 
-const LiquiditySummary: React.FC<Props> = ({ data, isLoading }) => {
+const LiquiditySummary: React.FC<Props> = ({ data, isLoading, showWalletCard = true }) => {
 
   const { activeAssetsCount, activeProtocolsCount } = useMemo(() => {
     if (!data || !data.matrix) {
@@ -36,7 +37,9 @@ const LiquiditySummary: React.FC<Props> = ({ data, isLoading }) => {
   if (isLoading) {
     return (
       <>
-        <div className={`${styles.walletCard} ${styles.skeleton}`} style={{ height: 56 }} />
+        {showWalletCard && (
+          <div className={`${styles.walletCard} ${styles.skeleton}`} style={{ height: 56 }} />
+        )}
         <div className={styles.summaryRow}>
           {[1, 2, 3].map(i => (
             <div key={i} className={`${styles.skeletonCard} ${styles.skeleton}`} />
@@ -51,9 +54,11 @@ const LiquiditySummary: React.FC<Props> = ({ data, isLoading }) => {
   return (
     <>
       {/* Wallet Address Card */}
-      <div className={styles.walletCard}>
-        <WalletLabel address={data.walletAddress} showEditButton={false} />
-      </div>
+      {showWalletCard && (
+        <div className={styles.walletCard}>
+          <WalletLabel address={data.walletAddress} showEditButton={false} />
+        </div>
+      )}
 
       {/* Summary Stats */}
       <div className={styles.summaryRow}>
