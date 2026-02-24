@@ -2,6 +2,7 @@ import React from 'react';
 import styles from '../Header.module.css';
 import { Link } from 'react-router-dom';
 import { useCurrencyFormatter } from '../../../hooks/useCurrencyFormatter';
+import InfoIcon from '../../common/InfoIcon';
 
 interface EarningsDisplayProps {
   isConnected: boolean;
@@ -23,32 +24,14 @@ const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
         <span className={styles.earningsLabel}>Dormant Capital:</span>
         <span className={styles.earningsAmount}>
           ~${formatValue(dormantCapital)}
-          <span className={styles.infoTooltipWrapperDown}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-            <span className={styles.infoTooltipDown}>
-              <strong>Dormant Capital</strong>Funds currently in your wallet that are not  generating returns yet.
-            </span>
-          </span>
+          <InfoIcon position="bottom" tooltipText="Funds currently in your wallet that are not  generating returns yet." tooltipTitle="Dormant Capital" />
         </span>
       </Link>
       <Link to="/yields" className={styles.earningsBadgeTotal}>
         <span className={styles.earningsLabel}>Working Capital:</span>
         <span className={styles.earningsAmount}>
           ~${formatValue(totalValue)}
-          <span className={styles.infoTooltipWrapperDown}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoIcon}>
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-            <span className={styles.infoTooltipDown}>
-              <strong>Working Capital</strong> Compounded value (deposit + earned profit).
-            </span>
-          </span>
+          <InfoIcon position="bottom" tooltipText="Compounded value (deposit + earned profit)." tooltipTitle="Working Capital" />
         </span>
       </Link>
     </div>
