@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LiquidityPosition } from '../../../store/liquidityStore';
 import styles from '../styles/Liquidity.module.css';
+import InfoIcon from '../../../components/common/InfoIcon';
 
 interface Props {
   positions: LiquidityPosition[];
@@ -52,12 +53,16 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
               Total: ${pos.balanceUsd < 1
                 ? pos.balanceUsd.toFixed(6)
                 : pos.balanceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            
             </div>
+              <InfoIcon tooltipText="The total USD value of this position across all tokens in the pool." tooltipTitle="Total Value" />
             <div className={styles.positionTokens}>
               {pos.tokens.map((t, i) => (
                 <div key={i}>
                   {t.symbol} <span>— {t.amount}</span>
+                <InfoIcon tooltipText="The quantity of the token in the position." tooltipTitle="Token Amount" />
                 </div>
+                
               ))}
             </div>
           </div>
