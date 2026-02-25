@@ -136,6 +136,18 @@ export default [
   },
 
   {
+    token: 'WETH' as const,
+    chain: 'ETH' as const,
+    address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // Wrapped ETH address
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png',
+    chainId: 1, // Ethereum mainnet
+    yieldBearingToken: false, // Important: must be false to show on Explore page
+    decimals: 18,
+    maxDecimalsShow: 4,
+    usdPrice: 2500 // Approximate value
+  },
+
+  {
     token: 'WBTC' as const,
     chain: 'ETH' as const,
     address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // Compound V3 WBTC Comet (cWBTCv3)
