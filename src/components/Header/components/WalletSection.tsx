@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { shortenAddress } from '../../../utils/helpers';
 import ThemeToggle from '../../ThemeToggle';
 import { useManualWalletStore } from '../../../store/manualWalletStore';
@@ -42,17 +42,23 @@ const WalletSection: React.FC<WalletSectionProps> = ({
   const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
 
-  // Build wallets list (MetaMask + manual) unconditionally
-  const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = (() => {
-    const wallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = [];
-    if (isMetamaskConnected && metamaskAddress) {
-      wallets.push({ address: metamaskAddress, type: 'metamask', index: null });
-    }
-    manualAddresses.forEach((addr, index) => {
-      wallets.push({ address: addr, type: 'manual', index });
-    });
-    return wallets;
-  })();
+
+const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = (() => {
+  const wallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = [];
+
+  const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
+
+  if (mm) {
+    wallets.push({ address: mm, type: 'metamask', index: null });
+  }
+
+  manualAddresses.forEach((addr, index) => {
+    if (mm && addr.toLowerCase() === mm.toLowerCase()) return;
+    wallets.push({ address: addr, type: 'manual', index });
+  });
+
+  return wallets;
+})();
 
   if (!isConnected || !address) return null;
 
@@ -60,11 +66,31 @@ const WalletSection: React.FC<WalletSectionProps> = ({
   const activeAddress = activeManualAddressIndex !== null && manualAddresses[activeManualAddressIndex]
     ? manualAddresses[activeManualAddressIndex]
     : (isMetamaskConnected ? metamaskAddress : null);
+  
+  useEffect(() => {
+    if (!isMetamaskConnected || !metamaskAddress) return;
+
+    const mm = metamaskAddress.toLowerCase();
+    const activeManual =
+      activeManualAddressIndex !== null ? manualAddresses[activeManualAddressIndex] : null;
+
+    if (activeManual && activeManual.toLowerCase() === mm) {
+      setActiveManualAddress(null);
+    }
+  }, [
+    isMetamaskConnected,
+    metamaskAddress,
+    activeManualAddressIndex,
+    manualAddresses,
+    setActiveManualAddress
+  ]);
+
+  const norm = (a?: string | null) => (a ? a.toLowerCase() : '');
 
   const isWalletActive = (walletAddress: string, walletIndex: number | null) => {
     if (walletIndex === null) {
       // MetaMask wallet
-      return activeManualAddressIndex === null && isMetamaskConnected && walletAddress === metamaskAddress;
+      return activeManualAddressIndex === null && isMetamaskConnected && norm(walletAddress) === norm(metamaskAddress);
     } else {
       // Manual wallet
       return activeManualAddressIndex === walletIndex;

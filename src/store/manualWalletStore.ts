@@ -58,7 +58,7 @@ export const useManualWalletStore = create<ManualWalletState>()(
         }
 
         // Add address
-        const newAddresses = [...state.manualAddresses, address.trim()];
+        const newAddresses = [...state.manualAddresses, trimmedAddress];
         const newActiveIndex = state.activeManualAddressIndex === null ? 0 : state.activeManualAddressIndex;
 
         set({
