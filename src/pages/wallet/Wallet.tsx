@@ -224,8 +224,18 @@ function Wallet() {
     };
 
     if (isConsolidated) {
-      const allAddresses = [...manualAddresses];
-      if (isMetamaskConnected && metamaskAddress) allAddresses.push(metamaskAddress);
+      const allAddresses : string[] = [];
+      
+      const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
+      if (mm) {
+        allAddresses.push(mm);
+      }
+    
+      manualAddresses.forEach((addr) => {
+        if (!mm || addr.toLowerCase() !== mm.toLowerCase()) {
+          allAddresses.push(addr);
+        }
+      });
 
       const assetsByWallet = new Map<string, Asset[]>();
       assets.forEach(asset => {
