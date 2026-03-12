@@ -28,10 +28,17 @@ const LiquidityPage: React.FC = () => {
   useEffect(() => {
     if (isConsolidated) {
       // Consolidated mode: fetch all wallets
-      const allAddresses = [...manualAddresses];
+      const allAddresses : string[] = [];
+
       if (isMetamaskConnected && metamaskAddress) {
         allAddresses.push(metamaskAddress);
       }
+
+      manualAddresses.forEach((addr) => {
+        if (!metamaskAddress || addr.toLowerCase() !== metamaskAddress.toLowerCase()) {
+          allAddresses.push(addr);
+        }
+      });
 
       if (allAddresses.length > 0) {
         fetchLiquidityForMultiple(allAddresses, true);
@@ -40,7 +47,7 @@ const LiquidityPage: React.FC = () => {
       }
     } else {
       // Single wallet mode: fetch active wallet
-      if (wallet.isConnected && wallet.address) {
+        if (wallet.isConnected && wallet.address && wallet.address.trim().length > 0) {
         fetchLiquidityForSingle(wallet.address, true);
       } else {
         updateActiveView(null, false);
@@ -59,18 +66,24 @@ const LiquidityPage: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const allAddresses = [...manualAddresses];
+    const allAddresses : string[] = [];
     if (isMetamaskConnected && metamaskAddress) {
       allAddresses.push(metamaskAddress);
     }
 
+    manualAddresses.forEach((addr) => {
+      if (!metamaskAddress || addr.toLowerCase() !== metamaskAddress.toLowerCase()) {
+        allAddresses.push(addr);
+      }
+    });
+
     if (isConsolidated) {
       updateActiveView(null, true, allAddresses);
     } else {
-      updateActiveView(wallet.address, false);
+      updateActiveView(wallet.address || null, false);
     }
   }, [isConsolidated, manualAddresses, wallet.address, isMetamaskConnected, metamaskAddress, updateActiveView]);
-
+  
   // Render single wallet view
   const renderSingleWallet = () => {
     if (isLoading && !data) {
@@ -108,10 +121,16 @@ const LiquidityPage: React.FC = () => {
 
   // Render consolidated (multiple wallets) view
   const renderConsolidatedView = () => {
-    const allAddresses = [...manualAddresses];
+    const allAddresses : string[] = [];
     if (isMetamaskConnected && metamaskAddress) {
       allAddresses.push(metamaskAddress);
     }
+
+    manualAddresses.forEach((addr) => {
+      if (!metamaskAddress || addr.toLowerCase() !== metamaskAddress.toLowerCase()) {
+        allAddresses.push(addr);
+      }
+    });
 
     if (allAddresses.length === 0) {
       return (

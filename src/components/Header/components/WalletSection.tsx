@@ -60,7 +60,6 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
   return wallets;
 })();
 
-  if (!isConnected || !address) return null;
 
   // Determine active wallet
   const activeAddress = activeManualAddressIndex !== null && manualAddresses[activeManualAddressIndex]
@@ -115,6 +114,7 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
     return activeManualAddressIndex !== walletIndex;
   };
 
+  if (!isConnected || !address) return null;
 
 
   return (
