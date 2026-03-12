@@ -44,6 +44,12 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
   lastUpdated: null,
 
   fetchLiquidityForSingle: async (walletAddress: string, showLoading = true) => {
+
+    if (!walletAddress || walletAddress.trim().length === 0) {
+      set({ data: null, error: null, isLoading: false });
+      return;
+    }
+
     if (showLoading) set({ isLoading: true });
     set({ error: null });
 
@@ -74,11 +80,18 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
       return;
     }
 
+    const validAddresses = addresses.filter(addr => addr && addr.trim().length > 0);
+    
+    if (validAddresses.length === 0) {
+      set({ liquidityDataByAddress: {}, error: null, isLoading: false });
+      return;
+    }
+
     if (showLoading) set({ isLoading: true });
     set({ error: null });
 
     try {
-      const fetchPromises = addresses.map(address => 
+      const fetchPromises = validAddresses.map(address => 
         fetchLiquidity(address).catch(err => {
           console.error(`Error fetching liquidity for ${address}:`, err);
           return {

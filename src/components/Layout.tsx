@@ -143,8 +143,7 @@ const Layout = () => {
 
 
   const handleDisconnectWallet = () => {
-    localStorage.clear();
-    disconnectWallet();
+      disconnectWallet();
   }
   return (
     <div className={styles.layout}>
