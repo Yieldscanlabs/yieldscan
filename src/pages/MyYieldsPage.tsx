@@ -393,8 +393,16 @@ const MyYieldsPage: React.FC = () => {
       )}
       {isConsolidated ? (
         (() => {
-          const allAddresses = [...manualAddresses];
-          if (isMetamaskConnected && metamaskAddress) allAddresses.push(metamaskAddress);
+          const allAddresses: string[] = [];
+
+          const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
+          if (mm) allAddresses.push(mm);
+
+          manualAddresses.forEach((addr) => {
+            if (!mm || addr.toLowerCase() !== mm.toLowerCase()) {
+              allAddresses.push(addr);
+            }
+          });
 
           // Grouping assets by wallet
           const assetsByWallet = new Map<string, typeof filteredYieldAssets>();
