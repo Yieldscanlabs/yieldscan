@@ -43,6 +43,26 @@ const Layout = () => {
   } = useDepositsAndWithdrawalsStore();
   const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
 
+  const getUniqueConsolidatedAddresses = (
+    manual: string[],
+    injected: string | null
+  ): string[] => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+
+    const push = (addr?: string | null) => {
+      const n = (addr ?? '').trim().toLowerCase();
+      if (!n || seen.has(n)) return;
+      seen.add(n);
+      out.push(n);
+    };
+
+    manual.forEach((a) => push(a));
+    push(injected);
+
+    return out;
+  };
+
   // Initialize theme on app startup
   useTheme();
 
@@ -65,10 +85,10 @@ const Layout = () => {
   useEffect(() => {
     if (isConsolidated) {
       // Consolidated mode: fetch all wallets
-      const allAddresses = [...manualAddresses];
-      if (isMetamaskConnected && metamaskAddress) {
-        allAddresses.push(metamaskAddress);
-      }
+      const allAddresses = getUniqueConsolidatedAddresses(
+        manualAddresses,
+        isMetamaskConnected && metamaskAddress ? metamaskAddress : null
+      );
 
       if (allAddresses.length > 0) {
         fetchAssetsForMultiple(allAddresses, true);
@@ -116,10 +136,10 @@ const Layout = () => {
   }, [isMetamaskConnected]);
   // Update active view when consolidation mode or wallet selection changes
   useEffect(() => {
-    const allAddresses = [...manualAddresses];
-    if (isMetamaskConnected && metamaskAddress) {
-      allAddresses.push(metamaskAddress);
-    }
+    const allAddresses = getUniqueConsolidatedAddresses(
+      manualAddresses,
+      isMetamaskConnected && metamaskAddress ? metamaskAddress : null
+    );
 
     if (isConsolidated) {
       updateActiveView(null, true, allAddresses);
