@@ -131,6 +131,8 @@ const MyYieldsPage: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const norm = (a?: string | null) => (a ? a.trim().toLowerCase() : '');
+
   // NEW: Updated Base Filter Match Helper
   const baseFilterMatch = (asset: Asset) => {
     if (selectedNetwork !== 'all' && asset.chainId !== selectedNetwork) return false;
@@ -244,9 +246,26 @@ const MyYieldsPage: React.FC = () => {
       return { currentDeposit: 0, totalDeposited: 0, totalWithdrawn: 0, totalEarned: 0, currentEarned: 0, dailyYield: 0, yearlyYield: 0 };
     }
 
+    const connected = wallet?.isConnected && wallet.address ? wallet.address : null;
     const addresses = isConsolidated
-      ? [...manualAddresses, ...(isMetamaskConnected && metamaskAddress ? [metamaskAddress] : [])]
-      : [wallet.address];
+  ? (() => {
+      const out: string[] = [];
+      const seen = new Set<string>();
+
+      const push = (a?: string | null) => {
+        const n = norm(a);
+        if (!n || seen.has(n)) return;
+        seen.add(n);
+        out.push(a!);
+      };
+
+      push(connected);
+      if (isMetamaskConnected && metamaskAddress) push(metamaskAddress);
+      manualAddresses.forEach((a) => push(a));
+
+      return out;
+    })()
+  : [wallet.address];
 
     let currentD = 0, totalD = 0, totalW = 0, totalE = 0, currentE = 0;
     let dailyY = 0, yearlyY = 0;
@@ -393,16 +412,23 @@ const MyYieldsPage: React.FC = () => {
       )}
       {isConsolidated ? (
         (() => {
+          const connected = wallet?.isConnected && wallet.address ? wallet.address : null;
+
           const allAddresses: string[] = [];
-
-          const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
-          if (mm) allAddresses.push(mm);
-
-          manualAddresses.forEach((addr) => {
-            if (!mm || addr.toLowerCase() !== mm.toLowerCase()) {
-              allAddresses.push(addr);
-            }
-          });
+          const seen = new Set<string>();
+          
+          const push = (a?: string | null) => {
+            const n = norm(a);
+            if (!n || seen.has(n)) return;
+            seen.add(n);
+            allAddresses.push(a!);
+          };
+          
+          push(connected);
+          
+          if (isMetamaskConnected && metamaskAddress) push(metamaskAddress);
+          
+          manualAddresses.forEach((a) => push(a));
 
           // Grouping assets by wallet
           const assetsByWallet = new Map<string, typeof filteredYieldAssets>();
