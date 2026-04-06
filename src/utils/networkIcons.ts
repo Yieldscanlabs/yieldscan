@@ -1,8 +1,8 @@
-import ethereumIcon from '../assets/networks/ethereum.svg';
-import arbitrumIcon from '../assets/networks/arbitrum.svg';
-import bscIcon from '../assets/networks/bsc.png';
-import baseIcon from '../assets/networks/base.png';
-import type { SupportedChain } from '../types';
+import ethereumIcon from "../assets/networks/ethereum.svg";
+import arbitrumIcon from "../assets/networks/arbitrum.svg";
+import bscIcon from "../assets/networks/bsc.png";
+import baseIcon from "../assets/networks/base2.png";
+import type { SupportedChain } from "../types";
 // import polygonIcon from '../assets/networks/polygon.svg';
 // import bscIcon from '../assets/networks/bsc.svg';
 // import optimismIcon from '../assets/networks/optimism.svg';
@@ -40,19 +40,19 @@ export function getNetworkIcon(chainId: number | SupportedChain): string {
 export function getNetworkColor(chainId: number | SupportedChain): string {
   switch (chainId) {
     case 1:
-      return '#627EEA'; // Ethereum blue
+      return "#627EEA"; // Ethereum blue
     case 42161:
-      return '#28A0F0'; // Arbitrum blue
+      return "#28A0F0"; // Arbitrum blue
     case 137:
-      return '#8247E5'; // Polygon purple
+      return "#8247E5"; // Polygon purple
     case 56:
-      return '#F3BA2F'; // BSC yellow
+      return "#F3BA2F"; // BSC yellow
     case 10:
-      return '#FF0420'; // Optimism red
+      return "#FF0420"; // Optimism red
     case 8453:
-      return '#0052FF'; // Base blue
+      return "#0052FF"; // Base blue
     default:
-      return '#718096'; // Generic gray
+      return "#718096"; // Generic gray
   }
 }
 
@@ -64,17 +64,17 @@ export function getNetworkColor(chainId: number | SupportedChain): string {
 export function getNetworkName(chainId: number | SupportedChain): string {
   switch (chainId) {
     case 1:
-      return 'Ethereum';
+      return "Ethereum";
     case 42161:
-      return 'Arbitrum One';
+      return "Arbitrum One";
     case 137:
-      return 'Polygon';
+      return "Polygon";
     case 56:
-      return 'BNB Chain';
+      return "BNB Chain";
     case 10:
-      return 'Optimism';
+      return "Optimism";
     case 8453:
-      return 'Base';
+      return "Base";
     default:
       return `Chain ${chainId}`;
   }
@@ -86,32 +86,34 @@ export function getNetworkName(chainId: number | SupportedChain): string {
  * @param chainId The blockchain network ID
  * @returns A data URL for the network icon
  */
-export function getNetworkIconDataUrl(chainId: number | SupportedChain): string {
+export function getNetworkIconDataUrl(
+  chainId: number | SupportedChain,
+): string {
   const name = getNetworkName(chainId);
   const letter = name.charAt(0);
   const color = getNetworkColor(chainId);
-  
+
   // Create a canvas element
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = 32;
   canvas.height = 32;
-  
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return '';
-  
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+
   // Draw a circular background
   ctx.beginPath();
   ctx.arc(16, 16, 16, 0, 2 * Math.PI);
   ctx.fillStyle = color;
   ctx.fill();
-  
+
   // Draw the letter
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 16px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 16px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   ctx.fillText(letter, 16, 16);
-  
+
   // Convert to data URL
-  return canvas.toDataURL('image/png');
+  return canvas.toDataURL("image/png");
 }
