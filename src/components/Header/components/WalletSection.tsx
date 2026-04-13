@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { shortenAddress } from '../../../utils/helpers';
-import ThemeToggle from '../../ThemeToggle';
-import { useManualWalletStore } from '../../../store/manualWalletStore';
-import { useAccount } from 'wagmi';
-import styles from '../Header.module.css';
-import ExplorerSelectionModal from '../../Modals/ExplorerSelectionModal';
-import { Settings } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { shortenAddress } from "../../../utils/helpers";
+import ThemeToggle from "../../ThemeToggle";
+import { useManualWalletStore } from "../../../store/manualWalletStore";
+import { useAccount } from "wagmi";
+import styles from "../Header.module.css";
+import ExplorerSelectionModal from "../../Modals/ExplorerSelectionModal";
+import { Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface WalletSectionProps {
   isConnected: boolean;
@@ -36,42 +36,56 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     setActiveManualAddress,
     removeManualAddress,
     toggleConsolidated,
-    openManualModal
+    openManualModal,
+    getWalletLabel,
   } = useManualWalletStore();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
+  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
+    useAccount();
 
+  const allWallets: Array<{
+    address: string;
+    type: "metamask" | "manual";
+    index: number | null;
+  }> = (() => {
+    const wallets: Array<{
+      address: string;
+      type: "metamask" | "manual";
+      index: number | null;
+    }> = [];
 
-const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = (() => {
-  const wallets: Array<{ address: string; type: 'metamask' | 'manual'; index: number | null }> = [];
+    const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
 
-  const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
+    if (mm) {
+      wallets.push({ address: mm, type: "metamask", index: null });
+    }
 
-  if (mm) {
-    wallets.push({ address: mm, type: 'metamask', index: null });
-  }
+    manualAddresses.forEach((addr, index) => {
+      if (mm && addr.toLowerCase() === mm.toLowerCase()) return;
+      wallets.push({ address: addr, type: "manual", index });
+    });
 
-  manualAddresses.forEach((addr, index) => {
-    if (mm && addr.toLowerCase() === mm.toLowerCase()) return;
-    wallets.push({ address: addr, type: 'manual', index });
-  });
-
-  return wallets;
-})();
-
+    return wallets;
+  })();
 
   // Determine active wallet
-  const activeAddress = activeManualAddressIndex !== null && manualAddresses[activeManualAddressIndex]
-    ? manualAddresses[activeManualAddressIndex]
-    : (isMetamaskConnected ? metamaskAddress : null);
-  
+  const activeAddress =
+    activeManualAddressIndex !== null &&
+    manualAddresses[activeManualAddressIndex]
+      ? manualAddresses[activeManualAddressIndex]
+      : isMetamaskConnected
+        ? metamaskAddress
+        : null;
+
   useEffect(() => {
     if (!isMetamaskConnected || !metamaskAddress) return;
 
     const mm = metamaskAddress.toLowerCase();
     const activeManual =
-      activeManualAddressIndex !== null ? manualAddresses[activeManualAddressIndex] : null;
+      activeManualAddressIndex !== null
+        ? manualAddresses[activeManualAddressIndex]
+        : null;
 
     if (activeManual && activeManual.toLowerCase() === mm) {
       setActiveManualAddress(null);
@@ -81,15 +95,22 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
     metamaskAddress,
     activeManualAddressIndex,
     manualAddresses,
-    setActiveManualAddress
+    setActiveManualAddress,
   ]);
 
-  const norm = (a?: string | null) => (a ? a.toLowerCase() : '');
+  const norm = (a?: string | null) => (a ? a.toLowerCase() : "");
 
-  const isWalletActive = (walletAddress: string, walletIndex: number | null) => {
+  const isWalletActive = (
+    walletAddress: string,
+    walletIndex: number | null,
+  ) => {
     if (walletIndex === null) {
       // MetaMask wallet
-      return activeManualAddressIndex === null && isMetamaskConnected && norm(walletAddress) === norm(metamaskAddress);
+      return (
+        activeManualAddressIndex === null &&
+        isMetamaskConnected &&
+        norm(walletAddress) === norm(metamaskAddress)
+      );
     } else {
       // Manual wallet
       return activeManualAddressIndex === walletIndex;
@@ -116,10 +137,8 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
 
   if (!isConnected || !address) return null;
 
-
   return (
     <div className={styles.walletContainer} ref={dropdownRef}>
-
       {/* The Modal */}
       <ExplorerSelectionModal
         isOpen={isExplorerModalOpen}
@@ -127,7 +146,7 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
         walletAddress={activeAddress!}
       />
       <div
-        className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ''}`}
+        className={`${styles.walletAddress} ${isDropdownOpen ? styles.walletAddressActive : ""}`}
         onClick={toggleDropdown}
       >
         {shortenAddress(address)}
@@ -148,9 +167,29 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <span className={styles.walletIcon}>
-                  {activeManualAddressIndex === null ? '🦊' : '📝'}
+                  {activeManualAddressIndex === null ? "🦊" : "📝"}
                 </span>
-                <span className={styles.walletAddressText}>{shortenAddress(activeAddress)}</span>
+
+                {/* ✅ Show name + address */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span className={styles.walletAddressText}>
+                    {getWalletLabel(activeAddress) ||
+                      shortenAddress(activeAddress)}
+                  </span>
+                  {getWalletLabel(activeAddress) && (
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "0.70rem",
+                        color: "var(--text-tertiary)",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {shortenAddress(activeAddress)}
+                    </span>
+                  )}
+                </div>
+
                 <span className={styles.activeBadge}>Active</span>
               </div>
               <div className={styles.dropdownDivider}></div>
@@ -165,7 +204,7 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
             onMouseDown={(e) => e.stopPropagation()}
             className={styles.dropdownButton}
           >
-            {copySuccess ? 'Copied!' : 'Copy Address'}
+            {copySuccess ? "Copied!" : "Copy Address"}
           </button>
 
           <button
@@ -182,12 +221,15 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
           <div className={styles.dropdownDivider}></div>
 
           {/* Other Wallets Section */}
-          {allWallets.length > 1 && (
+          {/* ✅ Check if there are actually non-active wallets to show */}
+          {allWallets.some((w) => !isWalletActive(w.address, w.index)) && (
             <>
               <div className={styles.walletSectionLabel}>Other Wallets:</div>
               {allWallets.map((wallet) => {
                 const isActive = isWalletActive(wallet.address, wallet.index);
-                if (isActive) return null; // Already shown in active section
+                if (isActive) return null;
+
+                const label = getWalletLabel(wallet.address);
 
                 return (
                   <div
@@ -196,9 +238,31 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     <span className={styles.walletIcon}>
-                      {wallet.type === 'metamask' ? '🦊' : '📝'}
+                      {wallet.type === "metamask" ? "🦊" : "📝"}
                     </span>
-                    <span className={styles.walletAddressText}>{shortenAddress(wallet.address)}</span>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span className={styles.walletAddressText}>
+                        <span></span>
+                        {label}
+                      </span>
+                      {label && (
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.70rem",
+                            color: "var(--text-tertiary)",
+                            fontFamily: "monospace",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {shortenAddress(wallet.address)}
+                        </span>
+                      )}
+                    </div>
+
                     <div className={styles.walletListItemActions}>
                       <button
                         onClick={(e) => {
@@ -242,7 +306,7 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
             disabled={manualAddresses.length >= 5}
             style={{
               opacity: manualAddresses.length >= 5 ? 0.5 : 1,
-              cursor: manualAddresses.length >= 5 ? 'not-allowed' : 'pointer'
+              cursor: manualAddresses.length >= 5 ? "not-allowed" : "pointer",
             }}
           >
             + Add wallet
@@ -271,10 +335,10 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate('/settings');
+              navigate("/settings");
             }}
             className={styles.dropdownButton}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
             <Settings size={14} /> Settings
           </button>
@@ -287,9 +351,6 @@ const allWallets: Array<{ address: string; type: 'metamask' | 'manual'; index: n
           </div>
 
           <div className={styles.dropdownDivider}></div>
-
-
-
 
           <button
             onClick={(e) => {

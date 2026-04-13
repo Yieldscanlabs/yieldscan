@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { useDepositsAndWithdrawalsStore } from "./depositsAndWithdrawalsStore";
 
 interface ManualWalletState {
   metamaskAddress: null | string;
@@ -12,7 +12,7 @@ interface ManualWalletState {
 
   // 1. New State for Labels
   walletLabels: Record<string, string>;
-  setMetamaskAddress: (address: string|null) => void;
+  setMetamaskAddress: (address: string | null) => void;
   addManualAddress: (address: string) => void;
   removeManualAddress: (index: number) => void;
   setActiveManualAddress: (index: number | null) => void;
@@ -38,32 +38,39 @@ export const useManualWalletStore = create<ManualWalletState>()(
       isManualModalOpen: false,
       hasHydrated: false,
       walletLabels: {}, // Initial empty state
-      setMetamaskAddress: (address: string|null) => set({ metamaskAddress: address }),
+      setMetamaskAddress: (address: string | null) =>
+        set({ metamaskAddress: address }),
       addManualAddress: (address: string) => {
         const state = get();
         const trimmedAddress = address.trim().toLowerCase();
 
         // Check if already exists
         const exists = state.manualAddresses.some(
-          addr => addr.toLowerCase() === trimmedAddress
+          (addr) => addr.toLowerCase() === trimmedAddress,
         );
 
         if (exists) {
-          throw new Error('Wallet address already exists');
+          throw new Error("Wallet address already exists");
         }
 
         // Check max limit (5)
         if (state.manualAddresses.length >= 5) {
-          throw new Error('Maximum 5 wallets allowed');
+          throw new Error("Maximum 5 wallets allowed");
         }
 
         // Add address
         const newAddresses = [...state.manualAddresses, trimmedAddress];
-        const newActiveIndex = state.activeManualAddressIndex === null ? 0 : state.activeManualAddressIndex;
+        const newActiveIndex =
+          state.activeManualAddressIndex === null
+            ? 0
+            : state.activeManualAddressIndex;
 
         set({
           manualAddresses: newAddresses,
-          activeManualAddressIndex: newActiveIndex === null && newAddresses.length > 0 ? 0 : newActiveIndex,
+          activeManualAddressIndex:
+            newActiveIndex === null && newAddresses.length > 0
+              ? 0
+              : newActiveIndex,
         });
       },
 
@@ -75,13 +82,17 @@ export const useManualWalletStore = create<ManualWalletState>()(
 
         // Cannot remove active wallet
         if (state.activeManualAddressIndex === index) {
-          throw new Error('Cannot remove active wallet. Please switch to another wallet first.');
+          throw new Error(
+            "Cannot remove active wallet. Please switch to another wallet first.",
+          );
         }
 
         // Capture the address BEFORE removing it from the array
         const addressToRemove = state.manualAddresses[index];
 
-        const newAddresses = state.manualAddresses.filter((_, i) => i !== index);
+        const newAddresses = state.manualAddresses.filter(
+          (_, i) => i !== index,
+        );
         let newActiveIndex = state.activeManualAddressIndex;
 
         // Adjust active index if needed
@@ -108,13 +119,18 @@ export const useManualWalletStore = create<ManualWalletState>()(
 
         // Trigger the cleanup in the Activity Store
         if (addressToRemove) {
-          useDepositsAndWithdrawalsStore.getState().removeUserActivity(addressToRemove);
+          useDepositsAndWithdrawalsStore
+            .getState()
+            .removeUserActivity(addressToRemove);
         }
       },
 
       setActiveManualAddress: (index: number | null) => {
         const state = get();
-        if (index !== null && (index < 0 || index >= state.manualAddresses.length)) {
+        if (
+          index !== null &&
+          (index < 0 || index >= state.manualAddresses.length)
+        ) {
           return;
         }
         set({ activeManualAddressIndex: index });
@@ -145,8 +161,8 @@ export const useManualWalletStore = create<ManualWalletState>()(
         set((state) => ({
           walletLabels: {
             ...state.walletLabels,
-            [normalizedAddr]: label.trim()
-          }
+            [normalizedAddr]: label.trim(),
+          },
         }));
       },
 
@@ -163,10 +179,10 @@ export const useManualWalletStore = create<ManualWalletState>()(
         if (!address) return "";
         const labels = get().walletLabels;
         return labels[address.toLowerCase()] || "";
-      }
+      },
     }),
     {
-      name: 'yieldscan-manual-wallet',
+      name: "yieldscan-manual-wallet",
       partialize: (state) => ({
         manualAddresses: state.manualAddresses,
         activeManualAddressIndex: state.activeManualAddressIndex,
@@ -175,7 +191,7 @@ export const useManualWalletStore = create<ManualWalletState>()(
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
-      }
-    }
-  )
+      },
+    },
+  ),
 );

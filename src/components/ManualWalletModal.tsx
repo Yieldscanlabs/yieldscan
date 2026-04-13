@@ -23,9 +23,12 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
     addManualAddress,
     removeManualAddress,
     setActiveManualAddress,
+    setWalletLabel,
+    getWalletLabel,
   } = useManualWalletStore();
 
   const [input, setInput] = useState<string>("");
+  const [walletName, setWalletName] = useState<string>(""); // ✅ new field
   const [error, setError] = useState<string>("");
   const { address: metamaskAddress, isConnected } = useAccount();
 
@@ -72,13 +75,15 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
     try {
       addManualAddress(input.trim());
 
-      // Set the newly added wallet as active
-      // Since it's pushed to the end, its index is the length of the array *before* the UI re-renders with the new list.
-      // However, Zustand updates immediately, so using manualAddresses.length works because we just called addManualAddress.
-      // Wait, let's be safer: The index of the new item will be the current length.
+      // ✅ Save wallet name if provided
+      if (walletName.trim()) {
+        setWalletLabel(input.trim(), walletName.trim());
+      }
+
       setActiveManualAddress(manualAddresses.length);
 
       setInput("");
+      setWalletName(""); // ✅ reset name field
       setError("");
       onClose();
     } catch (err: any) {
@@ -105,6 +110,12 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
 
   const isMaxWallets = manualAddresses.length >= 5;
 
+  // ✅ Helper to display name or shortened address
+  const getDisplayName = (address: string) => {
+    const label = getWalletLabel(address);
+    return label || shortenAddress(address);
+  };
+
   return (
     <div className={styles.overlay} onClick={handleOverlayClick}>
       <div className={styles.modal} onClick={stopPropagation}>
@@ -120,6 +131,21 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
         </div>
 
         <div className={styles.content}>
+          {/* ✅ Wallet Name Input — NEW */}
+          <label style={{ display: "block", marginBottom: "8px" }}>
+            Wallet name (optional)
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. My Main Wallet"
+            value={walletName}
+            onChange={(e) => setWalletName(e.target.value)}
+            className={styles.input}
+            disabled={isMaxWallets}
+            style={{ marginBottom: "1rem" }}
+          />
+
+          {/* Wallet Address Input — existing */}
           <label style={{ display: "block", marginBottom: "8px" }}>
             Wallet address (EVM)
           </label>
@@ -148,7 +174,6 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
           )}
 
           {/* Existing Wallets List */}
-
           <div style={{ marginTop: "1.5rem", marginBottom: "0.75rem" }}>
             <label
               style={{
@@ -167,6 +192,7 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
                 gap: "0.5rem",
               }}
             >
+              {/* MetaMask wallet row */}
               <div
                 style={{
                   display: "flex",
@@ -179,16 +205,31 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
                   gap: "0.5rem",
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: "0.875rem",
-                    color: "var(--text-secondary)",
-                    flex: 1,
-                  }}
-                >
-                  {metamaskAddress ? shortenAddress(metamaskAddress) : ""}
-                </span>
+                <div style={{ flex: 1 }}>
+                  {/* ✅ Show MetaMask label if exists, else show address */}
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: "0.875rem",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    {metamaskAddress ? getDisplayName(metamaskAddress) : ""}
+                  </span>
+                  {/* ✅ Always show address below name as subtitle */}
+                  {metamaskAddress && getWalletLabel(metamaskAddress) && (
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "0.75rem",
+                        color: "var(--text-tertiary)",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {shortenAddress(metamaskAddress)}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -220,6 +261,7 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
                 </button>
               </div>
 
+              {/* Manual wallet rows */}
               {manualAddresses.length > 0 && (
                 <>
                   {manualAddresses.map((address, index) => (
@@ -236,16 +278,31 @@ const ManualWalletModal: React.FC<ManualWalletModalProps> = ({
                         gap: "0.5rem",
                       }}
                     >
-                      <span
-                        style={{
-                          fontFamily: "monospace",
-                          fontSize: "0.875rem",
-                          color: "var(--text-secondary)",
-                          flex: 1,
-                        }}
-                      >
-                        {shortenAddress(address)}
-                      </span>
+                      <div style={{ flex: 1 }}>
+                        {/* ✅ Show name if exists, else show address */}
+                        <span
+                          style={{
+                            fontFamily: "monospace",
+                            fontSize: "0.875rem",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          {getDisplayName(address)}
+                        </span>
+                        {/* ✅ Show address as subtitle if name exists */}
+                        {getWalletLabel(address) && (
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: "0.75rem",
+                              color: "var(--text-tertiary)",
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            {shortenAddress(address)}
+                          </span>
+                        )}
+                      </div>
                       <button
                         onClick={() => handleRemove(index)}
                         style={{
