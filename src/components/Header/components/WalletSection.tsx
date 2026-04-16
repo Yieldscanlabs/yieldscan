@@ -246,21 +246,20 @@ const WalletSection: React.FC<WalletSectionProps> = ({
                         <span></span>
                         {label}
                       </span>
-                      {label && (
-                        <span
-                          style={{
-                            display: "block",
-                            fontSize: "0.70rem",
-                            color: "var(--text-tertiary)",
-                            fontFamily: "monospace",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {shortenAddress(wallet.address)}
-                        </span>
-                      )}
+
+                      <span
+                        style={{
+                          display: "block",
+                          fontSize: "0.70rem",
+                          color: "var(--text-tertiary)",
+                          fontFamily: "monospace",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {shortenAddress(wallet.address)}
+                      </span>
                     </div>
 
                     <div className={styles.walletListItemActions}>
