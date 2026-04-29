@@ -1,14 +1,17 @@
-import type { Asset } from '../types';
-import { useUserPreferencesStore } from '../store/userPreferencesStore';
+import type { Asset } from "../types";
+import { useUserPreferencesStore } from "../store/userPreferencesStore";
 
-export const HARD_MIN_USD = 0.1; 
-export const SOFT_MIN_USD = 1.00; 
+export const HARD_MIN_USD = 0.01;
+export const SOFT_MIN_USD = 1.0;
 
 /**
  * Logic for the Wallet Page: Only looks at balanceUsd (dormant)
  */
-export const checkIsWalletAssetVisible = (asset: Asset, shouldHideLowValues: boolean) => {
-  const balanceUsd = parseFloat(asset.balanceUsd || '0');
+export const checkIsWalletAssetVisible = (
+  asset: Asset,
+  shouldHideLowValues: boolean,
+) => {
+  const balanceUsd = parseFloat(asset.balanceUsd || "0");
   if (balanceUsd < HARD_MIN_USD) return false;
   if (shouldHideLowValues && balanceUsd <= SOFT_MIN_USD) return false;
   return true;
@@ -17,9 +20,12 @@ export const checkIsWalletAssetVisible = (asset: Asset, shouldHideLowValues: boo
 /**
  * Logic for the Yield Page: Looks at the HIGHER of wallet or protocol balance
  */
-export const checkIsYieldAssetVisible = (asset: Asset, shouldHideLowValues: boolean) => {
-  const walletBal = parseFloat(asset.balanceUsd || '0');
-  const yieldBal = parseFloat(asset.currentBalanceInProtocolUsd || '0');
+export const checkIsYieldAssetVisible = (
+  asset: Asset,
+  shouldHideLowValues: boolean,
+) => {
+  const walletBal = parseFloat(asset.balanceUsd || "0");
+  const yieldBal = parseFloat(asset.currentBalanceInProtocolUsd || "0");
   const relevantBalance = Math.max(walletBal, yieldBal);
 
   if (relevantBalance < HARD_MIN_USD) return false;
@@ -41,19 +47,19 @@ export function useLowValueFilter() {
   };
 
   const isAboveHardDust = (asset: Asset) => {
-    return parseFloat(asset.balanceUsd || '0') >= HARD_MIN_USD;
+    return parseFloat(asset.balanceUsd || "0") >= HARD_MIN_USD;
   };
 
   const isAboveHardYieldDust = (asset: Asset) => {
-    return parseFloat(asset.currentBalanceInProtocolUsd || '0') >= HARD_MIN_USD;
+    return parseFloat(asset.currentBalanceInProtocolUsd || "0") >= HARD_MIN_USD;
   };
 
   return {
     hideLowValues,
     setHideLowValues,
     shouldShowWalletAsset, // Use this in WalletPage
-    shouldShowYieldAsset,  // Use this in MyYieldsPage
+    shouldShowYieldAsset, // Use this in MyYieldsPage
     isAboveHardDust,
-    isAboveHardYieldDust
+    isAboveHardYieldDust,
   };
 }
