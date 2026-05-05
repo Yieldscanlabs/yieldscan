@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { API_BASE_URL } from '../utils/constants';
+import { create } from "zustand";
+import { API_BASE_URL } from "../utils/constants";
 export interface LiquidityPosition {
   protocolName: string;
   protocolId: string;
@@ -7,6 +7,10 @@ export interface LiquidityPosition {
   balanceUsd: number;
   tokens: { symbol: string; amount: string }[];
   mappedProtocol: string;
+  isStaked?: boolean;
+  inRange?: boolean;
+  pendingAeroRewards?: number;
+  tokenId?: string;
 }
 export interface LiquidityData {
   walletAddress: string;
@@ -23,15 +27,29 @@ interface LiquidityStore {
   error: string | null;
   lastUpdated: number | null;
 
-  fetchLiquidityForSingle: (walletAddress: string, showLoading?: boolean) => Promise<void>;
-  fetchLiquidityForMultiple: (addresses: string[], showLoading?: boolean) => Promise<void>;
+  fetchLiquidityForSingle: (
+    walletAddress: string,
+    showLoading?: boolean,
+  ) => Promise<void>;
+  fetchLiquidityForMultiple: (
+    addresses: string[],
+    showLoading?: boolean,
+  ) => Promise<void>;
   clearData: () => void;
-  updateActiveView: (address: string | null, isConsolidated: boolean, addresses?: string[]) => void;
+  updateActiveView: (
+    address: string | null,
+    isConsolidated: boolean,
+    addresses?: string[],
+  ) => void;
 }
 
-const fetchLiquidity = async (walletAddress: string): Promise<LiquidityData> => {
-  const response = await fetch(`${API_BASE_URL}/api/liquidity/${walletAddress.toLowerCase()}`);
-  console.log('fetchLiquidity', response);  // For debugging
+const fetchLiquidity = async (
+  walletAddress: string,
+): Promise<LiquidityData> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/liquidity/${walletAddress.toLowerCase()}`,
+  );
+
   if (!response.ok) throw new Error(`API error: ${response.statusText}`);
   return await response.json();
 };
@@ -43,8 +61,10 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
   error: null,
   lastUpdated: null,
 
-  fetchLiquidityForSingle: async (walletAddress: string, showLoading = true) => {
-
+  fetchLiquidityForSingle: async (
+    walletAddress: string,
+    showLoading = true,
+  ) => {
     if (!walletAddress || walletAddress.trim().length === 0) {
       set({ data: null, error: null, isLoading: false });
       return;
@@ -68,20 +88,25 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         isLoading: false,
       });
     }
   },
 
-  fetchLiquidityForMultiple: async (addresses: string[], showLoading = true) => {
+  fetchLiquidityForMultiple: async (
+    addresses: string[],
+    showLoading = true,
+  ) => {
     if (!addresses || addresses.length === 0) {
       set({ liquidityDataByAddress: {}, error: null, isLoading: false });
       return;
     }
 
-    const validAddresses = addresses.filter(addr => addr && addr.trim().length > 0);
-    
+    const validAddresses = addresses.filter(
+      (addr) => addr && addr.trim().length > 0,
+    );
+
     if (validAddresses.length === 0) {
       set({ liquidityDataByAddress: {}, error: null, isLoading: false });
       return;
@@ -91,8 +116,8 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
     set({ error: null });
 
     try {
-      const fetchPromises = validAddresses.map(address => 
-        fetchLiquidity(address).catch(err => {
+      const fetchPromises = validAddresses.map((address) =>
+        fetchLiquidity(address).catch((err) => {
           console.error(`Error fetching liquidity for ${address}:`, err);
           return {
             walletAddress: address,
@@ -102,7 +127,7 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
             matrix: {},
             positions: [],
           };
-        })
+        }),
       );
 
       const results = await Promise.all(fetchPromises);
@@ -119,20 +144,25 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         isLoading: false,
       });
     }
   },
 
-  updateActiveView: (address: string | null, isConsolidated: boolean, addresses?: string[]) => {
+  updateActiveView: (
+    address: string | null,
+    isConsolidated: boolean,
+    addresses?: string[],
+  ) => {
     const state = get();
-    
+
     if (isConsolidated && addresses && addresses.length > 0) {
       set({ data: null });
     } else if (address) {
       const normalizedAddress = address.toLowerCase();
-      const walletData = state.liquidityDataByAddress[normalizedAddress] || null;
+      const walletData =
+        state.liquidityDataByAddress[normalizedAddress] || null;
       set({ data: walletData });
     } else {
       set({ data: null });
