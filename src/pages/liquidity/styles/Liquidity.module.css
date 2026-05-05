@@ -1,318 +1,328 @@
 /* Container */
 .container {
-    max-width: 1538px;
-    margin: 0 auto;
-    padding-top: 2rem;
-    margin-top: 15px;
-  }
-  
-  /* Connect Prompt */
-  .connectPrompt {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-  }
-  
-  .connectPrompt p {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
-  }
-  
-  .connectButton {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    padding: 0.75rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  
-  .connectButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(108, 92, 231, 0.35);
-  }
-  
-  /* Error Card */
-  .errorCard {
-    background-color: rgba(255, 94, 91, 0.1);
-    border: 1px solid rgba(255, 94, 91, 0.3);
-    border-radius: var(--radius-lg);
-    padding: 1rem;
-    margin-top: 1.25rem;
-    color: var(--error-color);
-    font-size: 0.9rem;
-  }
-  
-  /* ==================== */
-  /* Wallet Address Card  */
-  /* ==================== */
-  .walletCard {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-  
-  .walletAvatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  
-  .walletAvatar svg {
-    width: 18px;
-    height: 18px;
-    color: white;
-  }
-  
-  .walletAddress {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-  }
+  max-width: 1538px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  margin-top: 15px;
+}
 
-  .walletSection {
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .walletSection:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-  }
-  
-  .walletSectionHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .headerLeft {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  
-  .metamaskBadge {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    background: var(--surface-medium);
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-sm);
-  }
-  
-  /* ==================== */
-  /* Summary Stats Row    */
-  /* ==================== */
-  .summaryRow {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .summaryCard {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.5rem;
-    text-align: center;
-  }
-  
-  .summaryLabel {
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 0.5rem;
-  }
-  
-  .summaryValue {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-  }
-  
-  /* ==================== */
-  /* DeFi Positions       */
-  /* ==================== */
-  .sectionTitle {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-  }
-  
-  .positionsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .positionCard {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.5rem;
-    transition: border-color 0.2s;
-  }
-  
-  .positionCard:hover {
-    border-color: var(--border-hover);
-  }
-  
-  .positionHeader {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.85rem;
-  }
-  
-  .positionBadge {
-    display: inline-block;
-    padding: 0.3rem 0.75rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    margin-bottom: 0.6rem;
-  }
-  
-  .badgeSupplied {
-    background-color: rgba(46, 189, 133, 0.15);
-    color: var(--success-color);
-    border: 1px solid rgba(46, 189, 133, 0.3);
-  }
-  
-  .badgeBorrowed {
-    background-color: rgba(255, 94, 91, 0.15);
-    color: var(--error-color);
-    border: 1px solid rgba(255, 94, 91, 0.3);
-  }
-  
-  .positionTokens {
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-  
-  .positionTokens span {
-    color: var(--text-tertiary);
-  }
-  
-  /* ==================== */
-  /* Asset/Protocol Matrix*/
-  /* ==================== */
-  .matrixWrapper {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 2rem;
-  }
-  
-  .matrixScrollable {
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-color) transparent;
-  }
-  
-  .matrixScrollable::-webkit-scrollbar {
-    height: 6px;
-  }
-  
-  .matrixScrollable::-webkit-scrollbar-thumb {
-    background-color: var(--border-hover);
-    border-radius: 20px;
-  }
-  
-  .matrixScrollable::-webkit-scrollbar-thumb:hover {
-    background-color: var(--primary-color);
-  }
-  
-  .matrixTable {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-    min-width: 700px;
-  }
-  
-  .matrixTable thead th {
-    background: var(--surface-medium);
-    font-weight: 700;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--text-primary);
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border-color);
-    white-space: nowrap;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  
-  .matrixTable thead th:first-child {
-    text-align: left;
-    position: sticky;
-    left: 0;
-    z-index: 20;
-    background: var(--surface-medium);
-  }
-  
-  .matrixTable tbody td {
-    padding: 0.65rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    text-align: center;
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    white-space: nowrap;
-  }
-  
-  .matrixTable tbody td:first-child {
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-family: inherit;
-    position: sticky;
-    left: 0;
-    background: var(--surface-dark);
-    z-index: 5;
-  }
-  
-  .matrixTable tbody tr:last-child td {
-    border-bottom: none;
-  }
-  
-  .matrixTable tbody tr:hover td {
-    background: var(--surface-hover);
-  }
-  
-  .matrixTable tbody tr:hover td:first-child {
-    background: var(--surface-hover);
-  }
+/* Connect Prompt */
+.connectPrompt {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
 
-  /* Info Icon Tooltip Styles */
+.connectPrompt p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.connectButton {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.connectButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.35);
+}
+
+/* Error Card */
+.errorCard {
+  background-color: rgba(255, 94, 91, 0.1);
+  border: 1px solid rgba(255, 94, 91, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-top: 1.25rem;
+  color: var(--error-color);
+  font-size: 0.9rem;
+}
+
+/* ==================== */
+/* Wallet Address Card  */
+/* ==================== */
+.walletCard {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.walletAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.walletAvatar svg {
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+.walletAddress {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.walletSection {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.walletSection:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.walletSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.metamaskBadge {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--surface-medium);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+/* ==================== */
+/* Summary Stats Row    */
+/* ==================== */
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.summaryCard {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.summaryValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+/* ==================== */
+/* DeFi Positions       */
+/* ==================== */
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.positionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.positionCard {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.positionCard:hover {
+  border-color: var(--border-hover);
+}
+
+.positionHeader {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.85rem;
+}
+
+.positionBadge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  margin-bottom: 0.6rem;
+}
+
+.badgeSupplied {
+  background-color: rgba(46, 189, 133, 0.15);
+  color: var(--success-color);
+  border: 1px solid rgba(46, 189, 133, 0.3);
+}
+
+.badgeBorrowed {
+  background-color: rgba(255, 94, 91, 0.15);
+  color: var(--error-color);
+  border: 1px solid rgba(255, 94, 91, 0.3);
+}
+
+.positionTokens {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.positionTokens span {
+  color: var(--text-tertiary);
+}
+
+/* ==================== */
+/* Asset/Protocol Matrix*/
+/* ==================== */
+.matrixWrapper {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.matrixScrollable {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.matrixScrollable::-webkit-scrollbar {
+  height: 6px;
+}
+
+.matrixScrollable::-webkit-scrollbar-thumb {
+  background-color: var(--border-hover);
+  border-radius: 20px;
+}
+
+.matrixScrollable::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-color);
+}
+
+.matrixTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 700px;
+}
+
+.matrixTable thead th {
+  background: var(--surface-medium);
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.matrixTable thead th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: var(--surface-medium);
+}
+
+.matrixTable tbody td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.matrixTable tbody td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: inherit;
+  position: sticky;
+  left: 0;
+  background: var(--surface-dark);
+  z-index: 5;
+}
+
+.matrixTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.matrixTable tbody tr:hover td {
+  background: var(--surface-hover);
+}
+
+.matrixTable tbody tr:hover td:first-child {
+  background: var(--surface-hover);
+}
+
+/* Info Icon Tooltip Styles */
 .infoTooltipWrapper {
   position: relative;
   display: inline-flex;
@@ -341,8 +351,8 @@
   bottom: 135%;
   left: 50%;
   transform: translateX(-50%) translateY(-4px);
-  background: #2D3748;
-  color: #E2E8F0;
+  background: #2d3748;
+  color: #e2e8f0;
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md);
   font-size: 0.75rem;
@@ -350,7 +360,9 @@
   width: 200px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   pointer-events: none;
   white-space: normal;
 }
@@ -364,7 +376,7 @@
   margin-left: -6px;
   border-width: 6px;
   border-style: solid;
-  border-color: #2D3748 transparent transparent transparent;
+  border-color: #2d3748 transparent transparent transparent;
 }
 
 .infoTooltipWrapper:hover .infoTooltip {
@@ -375,7 +387,7 @@
 
 .infoTooltip strong {
   display: block;
-  color: #E2E8F0;
+  color: #e2e8f0;
   font-size: 0.8rem;
   margin-bottom: 4px;
 }
@@ -391,83 +403,139 @@
   width: 180px;
   font-size: 0.7rem;
 }
-  
-  .cellNonZero {
-    color: var(--text-primary) !important;
-    font-weight: 600;
-    background-color: rgba(46, 189, 133, 0.06);
+
+.cellNonZero {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  background-color: rgba(46, 189, 133, 0.06);
+}
+
+.cellZero {
+  color: var(--text-muted) !important;
+}
+
+/* Empty / Loading States */
+.emptyState {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-tertiary);
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.emptyText {
+  font-size: 0.9rem;
+}
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-medium) 25%,
+    var(--surface-light) 50%,
+    var(--surface-medium) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Aerodrome badges */
+.aerodromebadges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+
+.badgeStaked {
+  background: #1a3a5c;
+  color: #60a5fa;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #2563eb;
+}
+
+.badgeInRange {
+  background: #14532d;
+  color: #4ade80;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #16a34a;
+}
+
+.badgeOutRange {
+  background: #451a03;
+  color: #fb923c;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #ea580c;
+}
+
+.aeroRewards {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #a78bfa;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
   }
-  
-  .cellZero {
-    color: var(--text-muted) !important;
+  100% {
+    background-position: -200% 0;
   }
-  
-  /* Empty / Loading States */
-  .emptyState {
-    text-align: center;
-    padding: 3rem 1.5rem;
-    color: var(--text-tertiary);
+}
+
+.skeletonCard {
+  height: 120px;
+  border-radius: var(--radius-lg);
+}
+
+.skeletonRow {
+  height: 48px;
+  margin-bottom: 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .summaryRow {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
-  
-  .emptyIcon {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
+
+  .positionsGrid {
+    grid-template-columns: 1fr;
   }
-  
-  .emptyText {
-    font-size: 0.9rem;
+
+  .walletAddress {
+    font-size: 0.85rem;
   }
-  
-  /* Skeleton loader */
-  .skeleton {
-    background: linear-gradient(90deg, var(--surface-medium) 25%, var(--surface-light) 50%, var(--surface-medium) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: var(--radius-sm);
+
+  .summaryValue {
+    font-size: 1.4rem;
   }
-  
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-top: 1rem;
   }
-  
-  .skeletonCard {
-    height: 120px;
-    border-radius: var(--radius-lg);
+
+  .summaryCard {
+    padding: 1rem;
   }
-  
-  .skeletonRow {
-    height: 48px;
-    margin-bottom: 0.5rem;
-    border-radius: var(--radius-sm);
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .summaryRow {
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
-    }
-  
-    .positionsGrid {
-      grid-template-columns: 1fr;
-    }
-  
-    .walletAddress {
-      font-size: 0.85rem;
-    }
-  
-    .summaryValue {
-      font-size: 1.4rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .container {
-      padding-top: 1rem;
-    }
-  
-    .summaryCard {
-      padding: 1rem;
-    }
-  }
+}

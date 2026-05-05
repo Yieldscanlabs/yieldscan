@@ -1,10 +1,11 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.yieldscan.io';
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://api.yieldscan.io";
 
 export const CHAIN_NAMES = {
-  ETH: 'Ethereum',
-  BSC: 'BNB Chain',
-  ARBITRUM_ONE: 'Arbitrum One',
-  BASE: 'Base',
+  ETH: "Ethereum",
+  BSC: "BNB Chain",
+  ARBITRUM_ONE: "Arbitrum One",
+  BASE: "Base",
 };
 
 export const CHAIN_IDS = {
@@ -17,12 +18,11 @@ export const CHAIN_IDS = {
   Base: 8453,
 };
 
-
 export const TOKEN_NAMES = {
-  USDC: 'USD Coin',
-  USDT: 'Tether',
-  BTC: 'Bitcoin',
-  ETH: 'Ethereum'
+  USDC: "USD Coin",
+  USDT: "Tether",
+  BTC: "Bitcoin",
+  ETH: "Ethereum",
 };
 
 // export const PROTOCOL_NAMES = {
@@ -40,28 +40,27 @@ export const TOKEN_NAMES = {
 // };
 
 export const PROTOCOL_NAMES = {
-  AAVE: 'Aave',
-  COMPOUND: 'Compound',
+  AAVE: "Aave",
+  COMPOUND: "Compound",
   // VENUS: 'Venus',
-  RADIANT: 'Radiant',
+  RADIANT: "Radiant",
   // LIDO: 'Lido',
-  SPARK: 'Spark',
+  SPARK: "Spark",
   // MORPHO_BLUE: 'Morpho Blue',
   // FLUID: 'Fluid',
   // EIGENLAYER: 'EigenLayer',
   // ROCKET_POOL: 'Rocket Pool',
-  YEARN: 'Yearn V3',
+  YEARN: "Yearn V3",
 
-  dolomite: 'Dolomite',
-  EULER: 'Euler',
-  fluxFinance: 'fluxfinance',
-  sparklend: 'Sparklend',
-  zerolend: 'Zerolend',
-  kinzaFinance: 'kinzafinance',
-  ethena: 'Ethena',
-  creamFinance: 'creamfinance',
-  maple: 'Maple',
+  dolomite: "Dolomite",
+  EULER: "Euler",
+  fluxFinance: "fluxfinance",
+  sparklend: "Sparklend",
+  zerolend: "Zerolend",
+  kinzaFinance: "kinzafinance",
+  ethena: "Ethena",
+  creamFinance: "creamfinance",
+  maple: "Maple",
 };
-
 
 export const EXMPLE_VALUE = 10000.9876;
