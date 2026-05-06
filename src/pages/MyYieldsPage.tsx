@@ -36,6 +36,11 @@ import FilteredEmptyState from "../components/wallet-page/FilteredEmptyState";
 import WalletLabel from "../components/common/WalletLabel";
 import { useCurrencyFormatter } from "../hooks/useCurrencyFormatter";
 import InfoIcon from "../components/common/InfoIcon";
+import {
+  detectWalletType,
+  getWalletIcon,
+  getWalletLabel,
+} from "../utils/walletUtils";
 
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -672,7 +677,10 @@ const MyYieldsPage: React.FC = () => {
                     <WalletLabel address={address} />
 
                     {isMetamask && (
-                      <span className={styles.metamaskBadge}>🦊 MetaMask</span>
+                      <span className={styles.metamaskBadge}>
+                        {getWalletIcon(detectWalletType())}{" "}
+                        {getWalletLabel(detectWalletType())}
+                      </span>
                     )}
                   </div>
                 </div>

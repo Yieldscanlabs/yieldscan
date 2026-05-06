@@ -1,41 +1,51 @@
-import React, { useEffect } from 'react';
-import { useLiquidityStore } from '../../store/liquidityStore';
-import { useManualWalletStore } from '../../store/manualWalletStore';
-import { useAccount } from 'wagmi';
-import useWalletConnection from '../../hooks/useWalletConnection';
-import PageHeader from '../../components/PageHeader';
-import WalletModal from '../../components/WalletModal';
-import LiquiditySummary from './components/LiquiditySummary';
-import LiquidityMatrix from './components/LiquidityMatrix';
-import PositionsList from './components/PositionsList';
-import WalletLabel from '../../components/common/WalletLabel';
-import styles from './styles/Liquidity.module.css';
+import React, { useEffect } from "react";
+import { useLiquidityStore } from "../../store/liquidityStore";
+import { useManualWalletStore } from "../../store/manualWalletStore";
+import { useAccount } from "wagmi";
+import useWalletConnection from "../../hooks/useWalletConnection";
+import PageHeader from "../../components/PageHeader";
+import WalletModal from "../../components/WalletModal";
+import LiquiditySummary from "./components/LiquiditySummary";
+import LiquidityMatrix from "./components/LiquidityMatrix";
+import PositionsList from "./components/PositionsList";
+import WalletLabel from "../../components/common/WalletLabel";
+import styles from "./styles/Liquidity.module.css";
+import {
+  detectWalletType,
+  getWalletIcon,
+  getWalletLabel,
+} from "../../utils/walletUtils";
 
 const LiquidityPage: React.FC = () => {
-  const { wallet, isModalOpen, openConnectModal, closeConnectModal } = useWalletConnection();
+  const { wallet, isModalOpen, openConnectModal, closeConnectModal } =
+    useWalletConnection();
   const { manualAddresses, isConsolidated } = useManualWalletStore();
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } = useAccount();
-  const { 
-    data, 
+  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
+    useAccount();
+  const {
+    data,
     liquidityDataByAddress,
-    isLoading, 
-    error, 
-    fetchLiquidityForSingle, 
+    isLoading,
+    error,
+    fetchLiquidityForSingle,
     fetchLiquidityForMultiple,
-    updateActiveView 
+    updateActiveView,
   } = useLiquidityStore();
 
   useEffect(() => {
     if (isConsolidated) {
       // Consolidated mode: fetch all wallets
-      const allAddresses : string[] = [];
+      const allAddresses: string[] = [];
 
       if (isMetamaskConnected && metamaskAddress) {
         allAddresses.push(metamaskAddress);
       }
 
       manualAddresses.forEach((addr) => {
-        if (!metamaskAddress || addr.toLowerCase() !== metamaskAddress.toLowerCase()) {
+        if (
+          !metamaskAddress ||
+          addr.toLowerCase() !== metamaskAddress.toLowerCase()
+        ) {
           allAddresses.push(addr);
         }
       });
@@ -47,7 +57,11 @@ const LiquidityPage: React.FC = () => {
       }
     } else {
       // Single wallet mode: fetch active wallet
-        if (wallet.isConnected && wallet.address && wallet.address.trim().length > 0) {
+      if (
+        wallet.isConnected &&
+        wallet.address &&
+        wallet.address.trim().length > 0
+      ) {
         fetchLiquidityForSingle(wallet.address, true);
       } else {
         updateActiveView(null, false);
@@ -66,13 +80,16 @@ const LiquidityPage: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const allAddresses : string[] = [];
+    const allAddresses: string[] = [];
     if (isMetamaskConnected && metamaskAddress) {
       allAddresses.push(metamaskAddress);
     }
 
     manualAddresses.forEach((addr) => {
-      if (!metamaskAddress || addr.toLowerCase() !== metamaskAddress.toLowerCase()) {
+      if (
+        !metamaskAddress ||
+        addr.toLowerCase() !== metamaskAddress.toLowerCase()
+      ) {
         allAddresses.push(addr);
       }
     });
@@ -82,8 +99,15 @@ const LiquidityPage: React.FC = () => {
     } else {
       updateActiveView(wallet.address || null, false);
     }
-  }, [isConsolidated, manualAddresses, wallet.address, isMetamaskConnected, metamaskAddress, updateActiveView]);
-  
+  }, [
+    isConsolidated,
+    manualAddresses,
+    wallet.address,
+    isMetamaskConnected,
+    metamaskAddress,
+    updateActiveView,
+  ]);
+
   // Render single wallet view
   const renderSingleWallet = () => {
     if (isLoading && !data) {
@@ -91,7 +115,12 @@ const LiquidityPage: React.FC = () => {
         <>
           <LiquiditySummary data={null} isLoading={true} />
           <PositionsList positions={[]} isLoading={true} />
-          <LiquidityMatrix assets={[]} protocols={[]} matrix={{}} isLoading={true} />
+          <LiquidityMatrix
+            assets={[]}
+            protocols={[]}
+            matrix={{}}
+            isLoading={true}
+          />
         </>
       );
     }
@@ -100,7 +129,9 @@ const LiquidityPage: React.FC = () => {
       return (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📊</div>
-          <div className={styles.emptyText}>No liquidity data available for this wallet</div>
+          <div className={styles.emptyText}>
+            No liquidity data available for this wallet
+          </div>
         </div>
       );
     }
@@ -121,13 +152,16 @@ const LiquidityPage: React.FC = () => {
 
   // Render consolidated (multiple wallets) view
   const renderConsolidatedView = () => {
-    const allAddresses : string[] = [];
+    const allAddresses: string[] = [];
     if (isMetamaskConnected && metamaskAddress) {
       allAddresses.push(metamaskAddress);
     }
 
     manualAddresses.forEach((addr) => {
-      if (!metamaskAddress || addr.toLowerCase() !== metamaskAddress.toLowerCase()) {
+      if (
+        !metamaskAddress ||
+        addr.toLowerCase() !== metamaskAddress.toLowerCase()
+      ) {
         allAddresses.push(addr);
       }
     });
@@ -145,27 +179,50 @@ const LiquidityPage: React.FC = () => {
       <>
         {allAddresses.map((address) => {
           const walletData = liquidityDataByAddress[address.toLowerCase()];
-          const isMetamask = isMetamaskConnected && address.toLowerCase() === metamaskAddress?.toLowerCase();
+          const isMetamask =
+            isMetamaskConnected &&
+            address.toLowerCase() === metamaskAddress?.toLowerCase();
 
           return (
             <div key={address} className={styles.walletSection}>
               <div className={styles.walletSectionHeader}>
                 <div className={styles.headerLeft}>
                   <WalletLabel address={address} showEditButton={false} />
-                  {isMetamask && <span className={styles.metamaskBadge}>🦊 MetaMask</span>}
+                  {isMetamask && (
+                    <span className={styles.metamaskBadge}>
+                      {getWalletIcon(detectWalletType())}{" "}
+                      {getWalletLabel(detectWalletType())}
+                    </span>
+                  )}
                 </div>
               </div>
 
               {isLoading && !walletData ? (
                 <>
-                  <LiquiditySummary data={null} isLoading={true} showWalletCard={false} />
+                  <LiquiditySummary
+                    data={null}
+                    isLoading={true}
+                    showWalletCard={false}
+                  />
                   <PositionsList positions={[]} isLoading={true} />
-                  <LiquidityMatrix assets={[]} protocols={[]} matrix={{}} isLoading={true} />
+                  <LiquidityMatrix
+                    assets={[]}
+                    protocols={[]}
+                    matrix={{}}
+                    isLoading={true}
+                  />
                 </>
               ) : walletData ? (
                 <>
-                  <LiquiditySummary data={walletData} isLoading={false} showWalletCard={false} />
-                  <PositionsList positions={walletData.positions} isLoading={false} />
+                  <LiquiditySummary
+                    data={walletData}
+                    isLoading={false}
+                    showWalletCard={false}
+                  />
+                  <PositionsList
+                    positions={walletData.positions}
+                    isLoading={false}
+                  />
                   <LiquidityMatrix
                     assets={walletData.assets}
                     protocols={walletData.protocols}
@@ -176,7 +233,9 @@ const LiquidityPage: React.FC = () => {
               ) : (
                 <div className={styles.emptyState}>
                   <div className={styles.emptyIcon}>📊</div>
-                  <div className={styles.emptyText}>No liquidity data available for this wallet</div>
+                  <div className={styles.emptyText}>
+                    No liquidity data available for this wallet
+                  </div>
                 </div>
               )}
             </div>
