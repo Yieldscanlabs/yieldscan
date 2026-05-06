@@ -1,4 +1,4 @@
-import type { Asset } from '../../types';
+import type { Asset } from "../../types";
 
 // Optimization data for a yield-bearing asset
 export interface OptimizationData {
@@ -50,6 +50,7 @@ export interface YieldInfoProps {
   balanceNum: number;
   dailyYieldUsd: number;
   yearlyYieldUsd: number;
+  showAllPeriods: boolean;
 }
 
 // Props for YieldActions component
@@ -61,4 +62,4 @@ export interface YieldActionsProps {
   onWithdrawClick: () => void;
   onOptimize?: () => void;
   onLockAPYClick: () => void;
-} 
+}

@@ -41,6 +41,7 @@ import {
   getWalletIcon,
   getWalletLabel,
 } from "../utils/walletUtils";
+import { VIEW_TYPES } from "../constants/viewTypes";
 
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -698,7 +699,7 @@ const MyYieldsPage: React.FC = () => {
                   <>
                     {/* Only render the grid if there are ACTIVE yields */}
                     {activeYieldingAssets.length > 0 ? (
-                      viewType === "cards" ? (
+                      viewType === VIEW_TYPES.CARDS ? (
                         <div className={styles.yieldGrid}>
                           {activeYieldingAssets.map((asset) => (
                             <YieldCard
