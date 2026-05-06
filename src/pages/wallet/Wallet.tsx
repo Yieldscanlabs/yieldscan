@@ -109,8 +109,8 @@ function Wallet() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 900 && viewType !== "cards")
-        setViewType("cards");
+      if (window.innerWidth <= 900 && viewType !== VIEW_TYPES.CARDS)
+        setViewType(VIEW_TYPES.CARDS);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -418,7 +418,9 @@ function Wallet() {
                       <FilteredEmptyState onReset={handleResetFilters} />
                     ) : (
                       <div
-                        className={viewType === "cards" ? styles.assetGrid : ""}
+                        className={
+                          viewType === VIEW_TYPES.CARDS ? styles.assetGrid : ""
+                        }
                       >
                         <EmptyStateCard
                           onClick={() => handleRedirect("/explore")}
@@ -484,7 +486,7 @@ function Wallet() {
         ) : (
           <>
             {finalAssets.length > 0 ? (
-              viewType === "cards" ? (
+              viewType === VIEW_TYPES.CARDS ? (
                 <AssetList {...commonProps} assets={finalAssets} />
               ) : (
                 <AssetTable {...commonProps} assets={finalAssets} />
@@ -492,7 +494,11 @@ function Wallet() {
             ) : hasAnyTotal ? (
               <FilteredEmptyState onReset={handleResetFilters} />
             ) : (
-              <div className={viewType === "cards" ? styles.assetGrid : ""}>
+              <div
+                className={
+                  viewType === VIEW_TYPES.CARDS ? styles.assetGrid : ""
+                }
+              >
                 <EmptyStateCard onClick={() => handleRedirect("/explore")} />
               </div>
             )}
