@@ -38,6 +38,7 @@ import {
   getWalletIcon,
   getWalletLabel,
 } from "../../utils/walletUtils";
+import { VIEW_TYPES } from "../../constants/viewTypes";
 
 interface WalletState {
   selectedAsset: Asset | null;
@@ -401,7 +402,7 @@ function Wallet() {
                 ) : (
                   <>
                     {finalAssets.length > 0 ? (
-                      viewType === "cards" ? (
+                      viewType === VIEW_TYPES.CARDS ? (
                         <AssetList {...commonProps} assets={finalAssets} />
                       ) : (
                         <AssetTable {...commonProps} assets={finalAssets} />
