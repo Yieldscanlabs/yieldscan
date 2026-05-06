@@ -3,12 +3,13 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import type { WalletInfo } from "../types";
 import { useManualWalletStore } from "../store/manualWalletStore";
+import { useNavigate } from "react-router-dom";
 
 export default function useWalletConnection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { manualAddresses, activeManualAddressIndex, clearAllManualAddresses } =
     useManualWalletStore();
-
+  const navigate = useNavigate();
   // Use wagmi hooks for wallet connection
   const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
@@ -57,7 +58,8 @@ export default function useWalletConnection() {
   const disconnectWallet = useCallback(() => {
     disconnect();
     clearAllManualAddresses();
-  }, [disconnect, clearAllManualAddresses]);
+    navigate("/");
+  }, [disconnect, clearAllManualAddresses, navigate]);
 
   return {
     wallet,
