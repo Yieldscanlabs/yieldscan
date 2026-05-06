@@ -17,7 +17,6 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleConnectWallet = (connector: any) => {
-    console.log("Attempting to connect with connector:", { connector });
     setConnectingConnector(connector.id);
 
     // Bypass the readiness check and try to connect anyway
