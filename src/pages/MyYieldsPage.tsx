@@ -36,6 +36,11 @@ import FilteredEmptyState from "../components/wallet-page/FilteredEmptyState";
 import WalletLabel from "../components/common/WalletLabel";
 import { useCurrencyFormatter } from "../hooks/useCurrencyFormatter";
 import InfoIcon from "../components/common/InfoIcon";
+import {
+  detectWalletType,
+  getWalletIcon,
+  getWalletLabel,
+} from "../utils/walletUtils";
 
 const MyYieldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,8 +53,11 @@ const MyYieldsPage: React.FC = () => {
     protocols,
   } = useAssetStore();
   const { manualAddresses, isConsolidated } = useManualWalletStore();
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
-    useAccount();
+  const {
+    address: metamaskAddress,
+    isConnected: isMetamaskConnected,
+    connector,
+  } = useAccount();
   const formatValue = useCurrencyFormatter();
 
   // Persistent Filter Integration
@@ -672,7 +680,14 @@ const MyYieldsPage: React.FC = () => {
                     <WalletLabel address={address} />
 
                     {isMetamask && (
-                      <span className={styles.metamaskBadge}>🦊 MetaMask</span>
+                      <span className={styles.metamaskBadge}>
+                        {getWalletIcon(
+                          detectWalletType(connector?.id, connector?.name),
+                        )}{" "}
+                        {getWalletLabel(
+                          detectWalletType(connector?.id, connector?.name),
+                        )}
+                      </span>
                     )}
                   </div>
                 </div>
