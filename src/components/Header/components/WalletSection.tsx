@@ -43,8 +43,11 @@ const WalletSection: React.FC<WalletSectionProps> = ({
   } = useManualWalletStore();
   const navigate = useNavigate();
   const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
-    useAccount();
+  const {
+    address: metamaskAddress,
+    isConnected: isMetamaskConnected,
+    connector,
+  } = useAccount();
 
   const allWallets: Array<{
     address: string;
@@ -60,7 +63,11 @@ const WalletSection: React.FC<WalletSectionProps> = ({
     const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
 
     if (mm) {
-      wallets.push({ address: mm, type: detectWalletType(), index: null });
+      wallets.push({
+        address: mm,
+        type: detectWalletType(connector?.id, connector?.name),
+        index: null,
+      });
     }
 
     manualAddresses.forEach((addr, index) => {
@@ -171,7 +178,9 @@ const WalletSection: React.FC<WalletSectionProps> = ({
                 <span className={styles.walletIcon}>
                   {
                     activeManualAddressIndex === null
-                      ? getWalletIcon(detectWalletType()) // connected wallet (MetaMask/Rabby/Phantom)
+                      ? getWalletIcon(
+                          detectWalletType(connector?.id, connector?.name),
+                        ) // connected wallet (MetaMask/Rabby/Phantom)
                       : getWalletIcon(WALLET_TYPES.MANUAL) // manual wallet
                   }
                 </span>

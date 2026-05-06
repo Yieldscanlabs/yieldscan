@@ -2,13 +2,22 @@ import { Wallet } from "lucide-react";
 import React from "react";
 import { WALLET_TYPES, type WalletType } from "../constants/walletTypes";
 
-export function detectWalletType(): WalletType {
-  const provider = (window as any).ethereum;
-  if (!provider) return WALLET_TYPES.MANUAL;
+export function detectWalletType(
+  connectorId?: string,
+  connectorName?: string,
+): WalletType {
+  const id = (connectorId ?? "").toLowerCase();
+  const name = (connectorName ?? "").toLowerCase();
 
-  if (provider.isRabby) return WALLET_TYPES.RABBY;
-  if (provider.isPhantom) return WALLET_TYPES.PHANTOM;
-  if (provider.isMetaMask) return WALLET_TYPES.METAMASK;
+  if (id.includes(WALLET_TYPES.RABBY) || name.includes(WALLET_TYPES.RABBY))
+    return WALLET_TYPES.RABBY;
+  if (id.includes(WALLET_TYPES.PHANTOM) || name.includes(WALLET_TYPES.PHANTOM))
+    return WALLET_TYPES.PHANTOM;
+  if (
+    id.includes(WALLET_TYPES.METAMASK) ||
+    name.includes(WALLET_TYPES.METAMASK)
+  )
+    return WALLET_TYPES.METAMASK;
 
   return WALLET_TYPES.MANUAL;
 }

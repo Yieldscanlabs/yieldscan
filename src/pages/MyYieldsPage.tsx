@@ -53,8 +53,11 @@ const MyYieldsPage: React.FC = () => {
     protocols,
   } = useAssetStore();
   const { manualAddresses, isConsolidated } = useManualWalletStore();
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
-    useAccount();
+  const {
+    address: metamaskAddress,
+    isConnected: isMetamaskConnected,
+    connector,
+  } = useAccount();
   const formatValue = useCurrencyFormatter();
 
   // Persistent Filter Integration
@@ -678,8 +681,12 @@ const MyYieldsPage: React.FC = () => {
 
                     {isMetamask && (
                       <span className={styles.metamaskBadge}>
-                        {getWalletIcon(detectWalletType())}{" "}
-                        {getWalletLabel(detectWalletType())}
+                        {getWalletIcon(
+                          detectWalletType(connector?.id, connector?.name),
+                        )}{" "}
+                        {getWalletLabel(
+                          detectWalletType(connector?.id, connector?.name),
+                        )}
                       </span>
                     )}
                   </div>

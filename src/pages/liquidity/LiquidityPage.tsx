@@ -20,8 +20,11 @@ const LiquidityPage: React.FC = () => {
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } =
     useWalletConnection();
   const { manualAddresses, isConsolidated } = useManualWalletStore();
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
-    useAccount();
+  const {
+    address: metamaskAddress,
+    isConnected: isMetamaskConnected,
+    connector,
+  } = useAccount();
   const {
     data,
     liquidityDataByAddress,
@@ -190,8 +193,12 @@ const LiquidityPage: React.FC = () => {
                   <WalletLabel address={address} showEditButton={false} />
                   {isMetamask && (
                     <span className={styles.metamaskBadge}>
-                      {getWalletIcon(detectWalletType())}{" "}
-                      {getWalletLabel(detectWalletType())}
+                      {getWalletIcon(
+                        detectWalletType(connector?.id, connector?.name),
+                      )}{" "}
+                      {getWalletLabel(
+                        detectWalletType(connector?.id, connector?.name),
+                      )}
                     </span>
                   )}
                 </div>

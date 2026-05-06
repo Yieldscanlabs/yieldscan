@@ -65,8 +65,11 @@ function Wallet() {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { manualAddresses, isConsolidated } = useManualWalletStore();
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
-    useAccount();
+  const {
+    address: metamaskAddress,
+    isConnected: isMetamaskConnected,
+    connector,
+  } = useAccount();
   const { walletPageView: viewType, setWalletPageView: setViewType } =
     useUserPreferencesStore();
 
@@ -390,8 +393,12 @@ function Wallet() {
 
                     {isMetamask && (
                       <span className={styles.metamaskBadge}>
-                        {getWalletIcon(detectWalletType())}{" "}
-                        {getWalletLabel(detectWalletType())}
+                        {getWalletIcon(
+                          detectWalletType(connector?.id, connector?.name),
+                        )}{" "}
+                        {getWalletLabel(
+                          detectWalletType(connector?.id, connector?.name),
+                        )}
                       </span>
                     )}
                   </div>
