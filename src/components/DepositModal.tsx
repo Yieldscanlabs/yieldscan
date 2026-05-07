@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import styles from './DepositModal.module.css';
-import { formatNumber } from '../utils/helpers';
-import type { Asset } from '../types';
-import Protocol from './Protocol';
-import useDepositSteps from '../hooks/useDepositSteps';
-import useWalletConnection from '../hooks/useWalletConnection';
-import { useAssetStore } from '../store/assetStore';
+import React, { useState, useEffect } from "react";
+import styles from "./DepositModal.module.css";
+import { formatNumber } from "../utils/helpers";
+import type { Asset } from "../types";
+import Protocol from "./Protocol";
+import useDepositSteps from "../hooks/useDepositSteps";
+import useWalletConnection from "../hooks/useWalletConnection";
+import { useAssetStore } from "../store/assetStore";
+import { API_BASE_URL } from "../utils/constants";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
   amount,
   amountUsd,
   protocol,
-  yearlyYieldUsd
+  yearlyYieldUsd,
 }) => {
   const { wallet } = useWalletConnection();
   const { fetchAssets } = useAssetStore();
@@ -49,19 +50,25 @@ const DepositModal: React.FC<DepositModalProps> = ({
     executionError,
     isConfirming,
     executeAllSteps,
-    retryCurrentStep
+    retryCurrentStep,
   } = useDepositSteps({
     id: asset.id,
     contractAddress: asset.address,
     chainId: asset.chainId,
     protocol: protocol.toLowerCase(),
     amount,
-    tokenDecimals: asset.decimals
+    tokenDecimals: asset.decimals,
   });
 
   // Auto-start execution when modal opens and steps are loaded
   useEffect(() => {
-    if (isOpen && steps.length > 0 && !hasStarted && !isExecuting && !isCompleted) {
+    if (
+      isOpen &&
+      steps.length > 0 &&
+      !hasStarted &&
+      !isExecuting &&
+      !isCompleted
+    ) {
       setHasStarted(true);
 
       // Call onLockInitiate when starting
@@ -114,16 +121,20 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   const error = stepsError || executionError;
 
+  console.log(asset?.icon);
+
   return (
     <div className={styles.overlay} onClick={handleCloseAttempt}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>Deposit {asset.token}</h3>
           <button
-            className={`${styles.closeButton} ${isLocked ? styles.disabled : ''}`}
+            className={`${styles.closeButton} ${isLocked ? styles.disabled : ""}`}
             onClick={handleCloseAttempt}
             disabled={isLocked}
-          >×</button>
+          >
+            ×
+          </button>
         </div>
 
         <div className={styles.modalContent}>
@@ -131,14 +142,19 @@ const DepositModal: React.FC<DepositModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Asset</span>
               <span className={styles.detailValue}>
-                <img src={asset.icon} alt={asset.token} className={styles.assetIcon} />
+                <img
+                  src={`${API_BASE_URL}${asset.icon}`}
+                  alt={asset.token}
+                  className={styles.assetIcon}
+                />
                 {asset.token}
               </span>
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Amount</span>
               <span className={styles.detailValue}>
-                {formatNumber(parseFloat(amount), asset.maxDecimalsShow)} {asset.token}
+                {formatNumber(parseFloat(amount), asset.maxDecimalsShow)}{" "}
+                {asset.token}
                 <span className={styles.subDetail}>(${amountUsd})</span>
               </span>
             </div>
@@ -149,7 +165,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Expected Yield</span>
               <span className={styles.detailValue}>
-                <span className={styles.yieldValue}>${yearlyYieldUsd}/year</span>
+                <span className={styles.yieldValue}>
+                  ${yearlyYieldUsd}/year
+                </span>
               </span>
             </div>
           </div>
@@ -169,9 +187,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
                   return (
                     <div key={step.id}>
-                      <div className={`${styles.verticalProgressStep} ${isActive || isCompleted ? styles.active : ''} ${isCompleted ? styles.completed : ''}`}>
+                      <div
+                        className={`${styles.verticalProgressStep} ${isActive || isCompleted ? styles.active : ""} ${isCompleted ? styles.completed : ""}`}
+                      >
                         <div className={styles.stepDot}>
-                          {isCompleted ? '✓' : index + 1}
+                          {isCompleted ? "✓" : index + 1}
                         </div>
                         <div className={styles.stepContent}>
                           <div className={styles.stepLabel}>{step.title}</div>
@@ -179,14 +199,20 @@ const DepositModal: React.FC<DepositModalProps> = ({
                             {isCurrentlyExecuting ? (
                               <>Executing {step.description.toLowerCase()}...</>
                             ) : isCompleted ? (
-                              <span className={styles.successText}>{step.title} completed</span>
+                              <span className={styles.successText}>
+                                {step.title} completed
+                              </span>
                             ) : isActive && error ? (
-                              <span className={styles.errorText}>{step.title} failed. Please retry.</span>
+                              <span className={styles.errorText}>
+                                {step.title} failed. Please retry.
+                              </span>
                             ) : (
                               step.description
                             )}
                           </div>
-                          {isCurrentlyExecuting && <div className={styles.stepSpinner}></div>}
+                          {isCurrentlyExecuting && (
+                            <div className={styles.stepSpinner}></div>
+                          )}
                         </div>
                       </div>
 
@@ -210,7 +236,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
             {isLocked && (isExecuting || isConfirming) && (
               <div className={styles.lockWarning}>
-                Please wait for the transaction to complete. This modal cannot be closed.
+                Please wait for the transaction to complete. This modal cannot
+                be closed.
               </div>
             )}
           </div>
