@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; //   added useRef
 import styles from "./DepositModal.module.css";
 import { formatNumber } from "../utils/helpers";
 import type { Asset } from "../types";
@@ -36,10 +36,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
 }) => {
   const { wallet } = useWalletConnection();
   const { fetchAssets } = useAssetStore();
-  const [hasStarted, setHasStarted] = useState(false);
+  const hasStartedRef = useRef(false); //  use ref instead of state
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // Use the new dynamic steps hook
   const {
     steps,
     isLoading: isLoadingSteps,
@@ -60,68 +59,58 @@ const DepositModal: React.FC<DepositModalProps> = ({
     tokenDecimals: asset.decimals,
   });
 
-  // Auto-start execution when modal opens and steps are loaded
+  //   Auto-start with ref guard to prevent double trigger
   useEffect(() => {
     if (
       isOpen &&
       steps.length > 0 &&
-      !hasStarted &&
+      !hasStartedRef.current && //   check ref
       !isExecuting &&
       !isCompleted
     ) {
-      setHasStarted(true);
+      hasStartedRef.current = true; //   set immediately before async call
 
-      // Call onLockInitiate when starting
       if (onLockInitiate) {
         onLockInitiate();
       }
 
-      // Start executing all steps
       executeAllSteps().then((success) => {
         if (success) {
           setIsCompleted(true);
-          // Refresh assets after successful deposit
           if (wallet.address) {
             fetchAssets(wallet.address, false);
           }
-
-          // Complete after a brief delay
           setTimeout(() => {
             onComplete(true);
           }, 1500);
         }
       });
     }
-  }, [isOpen, steps.length, hasStarted, isExecuting, isCompleted]);
+  }, [isOpen, steps.length, isExecuting, isCompleted]); //   removed hasStarted from deps
 
-  // Reset state when modal closes/opens
+  //   Reset ref when modal opens
   useEffect(() => {
     if (isOpen) {
-      setHasStarted(false);
+      hasStartedRef.current = false;
       setIsCompleted(false);
     }
   }, [isOpen]);
 
-  // Handle retry
   const handleRetry = () => {
     retryCurrentStep();
   };
 
   if (!isOpen) return null;
 
-  // Create a handler that checks if modal can be closed
   const handleCloseAttempt = (e: React.MouseEvent) => {
     if (!isLocked) {
       onClose();
     } else {
-      // Prevent closing if locked
       e.stopPropagation();
     }
   };
 
   const error = stepsError || executionError;
-
-  console.log(asset?.icon);
 
   return (
     <div className={styles.overlay} onClick={handleCloseAttempt}>
