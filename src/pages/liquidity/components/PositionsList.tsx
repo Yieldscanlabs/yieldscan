@@ -1,7 +1,7 @@
-import React from 'react';
-import type { LiquidityPosition } from '../../../store/liquidityStore';
-import styles from '../styles/Liquidity.module.css';
-import InfoIcon from '../../../components/common/InfoIcon';
+import React from "react";
+import type { LiquidityPosition } from "../../../store/liquidityStore";
+import styles from "../styles/Liquidity.module.css";
+import InfoIcon from "../../../components/common/InfoIcon";
 
 interface Props {
   positions: LiquidityPosition[];
@@ -14,8 +14,11 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
       <div>
         <h2 className={styles.sectionTitle}>DeFi Positions</h2>
         <div className={styles.positionsGrid}>
-          {[1, 2].map(i => (
-            <div key={i} className={`${styles.skeletonCard} ${styles.skeleton}`} />
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className={`${styles.skeletonCard} ${styles.skeleton}`}
+            />
           ))}
         </div>
       </div>
@@ -34,10 +37,11 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
   }
 
   const isBorrowed = (label: string) =>
-    label.toLowerCase().includes('borrow') || label.toLowerCase().includes('debt');
+    label.toLowerCase().includes("borrow") ||
+    label.toLowerCase().includes("debt");
 
   const isAerodrome = (pos: LiquidityPosition) =>
-    pos.protocolName.toLowerCase().includes('aerodrome');
+    pos.protocolName.toLowerCase().includes("aerodrome");
 
   return (
     <div>
@@ -53,12 +57,6 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
             {/* Aerodrome-specific badges */}
             {isAerodrome(pos) && (
               <div className={styles.aerodromebadges}>
-                {pos.isStaked && (
-                  <span className={styles.badgeStaked}>⚡ Staked</span>
-                )}
-                {pos.inRange === true && (
-                  <span className={styles.badgeInRange}>✅ In Range</span>
-                )}
                 {pos.inRange === false && (
                   <span className={styles.badgeOutRange}>⚠️ Out of Range</span>
                 )}
@@ -68,10 +66,13 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
             {/* USD Value */}
             <div
               className={`${styles.positionBadge} ${
-                isBorrowed(pos.poolLabel) ? styles.badgeBorrowed : styles.badgeSupplied
+                isBorrowed(pos.poolLabel)
+                  ? styles.badgeBorrowed
+                  : styles.badgeSupplied
               }`}
             >
-              Total: ${pos.balanceUsd < 1
+              Total: $
+              {pos.balanceUsd < 1
                 ? pos.balanceUsd.toFixed(6)
                 : pos.balanceUsd.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -95,17 +96,6 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
                 </div>
               ))}
             </div>
-
-            {/* Pending AERO rewards */}
-            {isAerodrome(pos) && pos.pendingAeroRewards != null && pos.pendingAeroRewards > 0 && (
-              <div className={styles.aeroRewards}>
-                 Pending AERO: {pos.pendingAeroRewards.toFixed(6)}
-                <InfoIcon
-                  tooltipText="Unclaimed AERO token rewards from staking in the gauge."
-                  tooltipTitle="Pending Rewards"
-                />
-              </div>
-            )}
           </div>
         ))}
       </div>

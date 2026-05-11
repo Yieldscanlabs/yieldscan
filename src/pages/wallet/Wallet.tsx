@@ -135,13 +135,7 @@ function Wallet() {
     }));
   };
   const handleBackToAssets = () => {
-    setState((prev) => ({
-      ...prev,
-      selectedAsset: null,
-      bestApyData: null,
-      showDepositForm: false,
-      showDepositSuccess: false,
-    }));
+    window.location.reload();
   };
   const handleDeposit = ({
     amount,
