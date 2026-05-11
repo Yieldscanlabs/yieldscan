@@ -87,14 +87,10 @@ const GlobalWithdrawModal: React.FC = () => {
       const success = await executeAllSteps();
       if (success) {
         setIsCompleted(true);
-        // Refresh assets after successful withdrawal
-        if (wallet.address) {
-          fetchAssets(wallet.address, false);
-        }
 
         // Complete after a brief delay
         setTimeout(() => {
-          closeModal();
+          window.location.reload();
         }, 1500);
       }
     } catch (err) {

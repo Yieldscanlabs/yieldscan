@@ -7,6 +7,7 @@ import useDepositSteps from "../hooks/useDepositSteps";
 import useWalletConnection from "../hooks/useWalletConnection";
 import { useAssetStore } from "../store/assetStore";
 import { API_BASE_URL } from "../utils/constants";
+import { getReadableError } from "../utils/errorUtils";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -110,7 +111,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
     }
   };
 
-  const error = stepsError || executionError;
+  const rawError = stepsError || executionError;
+  const error = getReadableError(rawError);
 
   return (
     <div className={styles.overlay} onClick={handleCloseAttempt}>
