@@ -5,15 +5,34 @@
  */
 export const RPC_URLS: Record<number, string[]> = {
   56: [
+    "https://bsc-rpc.publicnode.com",
+    "https://bsc-dataseed2.defibit.io",
     "https://bsc-dataseed1.binance.org",
     "https://bsc-dataseed2.binance.org",
     "https://bsc-dataseed3.binance.org",
     "https://bsc-dataseed4.binance.org",
     "https://bsc-rpc.publicnode.com",
   ],
-  1: ["https://eth.rpc.blxrbdn.com", "https://cloudflare-eth.com"],
-  42161: ["https://arb1.arbitrum.io/rpc", "https://arbitrum.public-rpc.com"],
-  8453: ["https://mainnet.base.org", "https://base.publicnode.com"],
+  1: [
+    "https://rpc.ankr.com/eth",
+    "https://ethereum.publicnode.com",
+    "https://eth.drpc.org",
+    "https://eth.rpc.blxrbdn.com",
+    "https://cloudflare-eth.com",
+  ],
+  42161: [
+    "https://arb1.arbitrum.io/rpc",
+    "https://arbitrum-one-public.nodies.app",
+    "https://arbitrum.meowrpc.com",
+    "https://arbitrum.public-rpc.com",
+  ],
+  8453: [
+    "https://base-rpc.publicnode.com",
+    "https://base-public.nodies.app",
+    "https://base-mainnet.gateway.tatum.io",
+    "https://mainnet.base.org",
+    "https://base.publicnode.com",
+  ],
 };
 
 // Maximum uint256 value used for unlimited token approvals
