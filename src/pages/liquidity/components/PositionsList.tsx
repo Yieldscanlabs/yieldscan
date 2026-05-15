@@ -54,12 +54,58 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
               {pos.protocolName} – {pos.poolLabel}
             </div>
 
-            {/* Aerodrome-specific badges */}
+            {/* Aerodrome-specific badges and messages */}
             {isAerodrome(pos) && (
-              <div className={styles.aerodromebadges}>
-                {pos.inRange === false && (
-                  <span className={styles.badgeOutRange}>⚠️ Out of Range</span>
+              <div className={styles.aerodromeSection}>
+                {/* In Range badge */}
+                {pos.inRange === true && (
+                  <div className={styles.aerodromeBadgeRow}>
+                    <span className={styles.badgeInRange}>In Range</span>
+                    <span className={styles.badgeMessage}>
+                      This position is actively earning trading fees.
+                    </span>
+                  </div>
                 )}
+
+                {/* Out of Range badge with helpful message */}
+                {pos.inRange === false && (
+                  <div className={styles.aerodromeOutRangeSection}>
+                    <div className={styles.aerodromeBadgeRow}>
+                      <span className={styles.badgeOutRange}>
+                        ⚠️ Out of Range
+                      </span>
+                      <span className={styles.badgeMessage}>
+                        This position is not earning fees.
+                      </span>
+                    </div>
+                    <div className={styles.outRangeMessage}>
+                      The price has moved outside your selected range. Your
+                      funds are safe but idle. To resume earning, visit{" "}
+                      <a
+                        href="https://aerodrome.finance/liquidity"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.aerodromeLink}
+                      >
+                        Aerodrome
+                      </a>{" "}
+                      and rebalance your position by removing liquidity and
+                      adding it again with a new price range.
+                    </div>
+                  </div>
+                )}
+
+                {/* Pending AERO rewards */}
+                {pos.pendingAeroRewards != null &&
+                  pos.pendingAeroRewards > 0 && (
+                    <div className={styles.aeroRewards}>
+                      Pending AERO Rewards: {pos.pendingAeroRewards.toFixed(6)}
+                      <InfoIcon
+                        tooltipText="Unclaimed AERO token rewards from staking your LP position in the gauge."
+                        tooltipTitle="Pending Rewards"
+                      />
+                    </div>
+                  )}
               </div>
             )}
 
