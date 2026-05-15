@@ -7,6 +7,8 @@ import styles from "../Header.module.css";
 import ExplorerSelectionModal from "../../Modals/ExplorerSelectionModal";
 import { Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { WALLET_TYPES, type WalletType } from "../../../constants/walletTypes";
+import { detectWalletType, getWalletIcon } from "../../../utils/walletUtils";
 
 interface WalletSectionProps {
   isConnected: boolean;
@@ -41,29 +43,36 @@ const WalletSection: React.FC<WalletSectionProps> = ({
   } = useManualWalletStore();
   const navigate = useNavigate();
   const [isExplorerModalOpen, setExplorerModalOpen] = useState(false);
-  const { address: metamaskAddress, isConnected: isMetamaskConnected } =
-    useAccount();
+  const {
+    address: metamaskAddress,
+    isConnected: isMetamaskConnected,
+    connector,
+  } = useAccount();
 
   const allWallets: Array<{
     address: string;
-    type: "metamask" | "manual";
+    type: WalletType;
     index: number | null;
   }> = (() => {
     const wallets: Array<{
       address: string;
-      type: "metamask" | "manual";
+      type: WalletType;
       index: number | null;
     }> = [];
 
     const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
 
     if (mm) {
-      wallets.push({ address: mm, type: "metamask", index: null });
+      wallets.push({
+        address: mm,
+        type: detectWalletType(connector?.id, connector?.name),
+        index: null,
+      });
     }
 
     manualAddresses.forEach((addr, index) => {
       if (mm && addr.toLowerCase() === mm.toLowerCase()) return;
-      wallets.push({ address: addr, type: "manual", index });
+      wallets.push({ address: addr, type: WALLET_TYPES.MANUAL, index });
     });
 
     return wallets;
@@ -167,7 +176,13 @@ const WalletSection: React.FC<WalletSectionProps> = ({
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <span className={styles.walletIcon}>
-                  {activeManualAddressIndex === null ? "🦊" : "📝"}
+                  {
+                    activeManualAddressIndex === null
+                      ? getWalletIcon(
+                          detectWalletType(connector?.id, connector?.name),
+                        ) // connected wallet (MetaMask/Rabby/Phantom)
+                      : getWalletIcon(WALLET_TYPES.MANUAL) // manual wallet
+                  }
                 </span>
 
                 {/* ✅ Show name + address */}
@@ -221,7 +236,7 @@ const WalletSection: React.FC<WalletSectionProps> = ({
           <div className={styles.dropdownDivider}></div>
 
           {/* Other Wallets Section */}
-          {/* ✅ Check if there are actually non-active wallets to show */}
+          {/*  Check if there are actually non-active wallets to show */}
           {allWallets.some((w) => !isWalletActive(w.address, w.index)) && (
             <>
               <div className={styles.walletSectionLabel}>Other Wallets:</div>
@@ -238,7 +253,7 @@ const WalletSection: React.FC<WalletSectionProps> = ({
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     <span className={styles.walletIcon}>
-                      {wallet.type === "metamask" ? "🦊" : "📝"}
+                      {getWalletIcon(wallet.type)}
                     </span>
 
                     <div style={{ flex: 1, minWidth: 0 }}>

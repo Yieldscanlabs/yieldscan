@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import styles from './DepositModal.module.css';
-import { formatNumber } from '../utils/helpers';
-import type { Asset } from '../types';
-import Protocol from './Protocol';
-import useDepositSteps from '../hooks/useDepositSteps';
-import useWalletConnection from '../hooks/useWalletConnection';
-import { useAssetStore } from '../store/assetStore';
+import React, { useState, useEffect, useRef } from "react"; //   added useRef
+import styles from "./DepositModal.module.css";
+import { formatNumber } from "../utils/helpers";
+import type { Asset } from "../types";
+import Protocol from "./Protocol";
+import useDepositSteps from "../hooks/useDepositSteps";
+import useWalletConnection from "../hooks/useWalletConnection";
+import { useAssetStore } from "../store/assetStore";
+import { API_BASE_URL } from "../utils/constants";
+import { getReadableError } from "../utils/errorUtils";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -31,14 +33,13 @@ const DepositModal: React.FC<DepositModalProps> = ({
   amount,
   amountUsd,
   protocol,
-  yearlyYieldUsd
+  yearlyYieldUsd,
 }) => {
   const { wallet } = useWalletConnection();
   const { fetchAssets } = useAssetStore();
-  const [hasStarted, setHasStarted] = useState(false);
+  const hasStartedRef = useRef(false); //  use ref instead of state
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // Use the new dynamic steps hook
   const {
     steps,
     isLoading: isLoadingSteps,
@@ -49,70 +50,69 @@ const DepositModal: React.FC<DepositModalProps> = ({
     executionError,
     isConfirming,
     executeAllSteps,
-    retryCurrentStep
+    retryCurrentStep,
   } = useDepositSteps({
     id: asset.id,
     contractAddress: asset.address,
     chainId: asset.chainId,
     protocol: protocol.toLowerCase(),
     amount,
-    tokenDecimals: asset.decimals
+    tokenDecimals: asset.decimals,
   });
 
-  // Auto-start execution when modal opens and steps are loaded
+  //   Auto-start with ref guard to prevent double trigger
   useEffect(() => {
-    if (isOpen && steps.length > 0 && !hasStarted && !isExecuting && !isCompleted) {
-      setHasStarted(true);
+    if (
+      isOpen &&
+      steps.length > 0 &&
+      !hasStartedRef.current && //   check ref
+      !isExecuting &&
+      !isCompleted
+    ) {
+      hasStartedRef.current = true; //   set immediately before async call
 
-      // Call onLockInitiate when starting
       if (onLockInitiate) {
         onLockInitiate();
       }
 
-      // Start executing all steps
       executeAllSteps().then((success) => {
         if (success) {
           setIsCompleted(true);
-          // Refresh assets after successful deposit
           if (wallet.address) {
             fetchAssets(wallet.address, false);
           }
-
-          // Complete after a brief delay
           setTimeout(() => {
             onComplete(true);
           }, 1500);
         }
       });
     }
-  }, [isOpen, steps.length, hasStarted, isExecuting, isCompleted]);
+  }, [isOpen, steps.length, isExecuting, isCompleted]); //   removed hasStarted from deps
 
-  // Reset state when modal closes/opens
+  //   Reset ref when modal opens
   useEffect(() => {
     if (isOpen) {
-      setHasStarted(false);
+      hasStartedRef.current = false;
       setIsCompleted(false);
     }
   }, [isOpen]);
 
-  // Handle retry
   const handleRetry = () => {
     retryCurrentStep();
   };
 
   if (!isOpen) return null;
 
-  // Create a handler that checks if modal can be closed
   const handleCloseAttempt = (e: React.MouseEvent) => {
     if (!isLocked) {
       onClose();
     } else {
-      // Prevent closing if locked
       e.stopPropagation();
     }
   };
 
-  const error = stepsError || executionError;
+  const rawError = stepsError || executionError;
+  const error = getReadableError(rawError);
 
   return (
     <div className={styles.overlay} onClick={handleCloseAttempt}>
@@ -120,10 +120,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
         <div className={styles.modalHeader}>
           <h3>Deposit {asset.token}</h3>
           <button
-            className={`${styles.closeButton} ${isLocked ? styles.disabled : ''}`}
+            className={`${styles.closeButton} ${isLocked ? styles.disabled : ""}`}
             onClick={handleCloseAttempt}
             disabled={isLocked}
-          >×</button>
+          >
+            ×
+          </button>
         </div>
 
         <div className={styles.modalContent}>
@@ -131,14 +133,19 @@ const DepositModal: React.FC<DepositModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Asset</span>
               <span className={styles.detailValue}>
-                <img src={asset.icon} alt={asset.token} className={styles.assetIcon} />
+                <img
+                  src={`${API_BASE_URL}${asset.icon}`}
+                  alt={asset.token}
+                  className={styles.assetIcon}
+                />
                 {asset.token}
               </span>
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Amount</span>
               <span className={styles.detailValue}>
-                {formatNumber(parseFloat(amount), asset.maxDecimalsShow)} {asset.token}
+                {formatNumber(parseFloat(amount), asset.maxDecimalsShow)}{" "}
+                {asset.token}
                 <span className={styles.subDetail}>(${amountUsd})</span>
               </span>
             </div>
@@ -149,7 +156,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Expected Yield</span>
               <span className={styles.detailValue}>
-                <span className={styles.yieldValue}>${yearlyYieldUsd}/year</span>
+                <span className={styles.yieldValue}>
+                  ${yearlyYieldUsd}/year
+                </span>
               </span>
             </div>
           </div>
@@ -169,9 +178,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
                   return (
                     <div key={step.id}>
-                      <div className={`${styles.verticalProgressStep} ${isActive || isCompleted ? styles.active : ''} ${isCompleted ? styles.completed : ''}`}>
+                      <div
+                        className={`${styles.verticalProgressStep} ${isActive || isCompleted ? styles.active : ""} ${isCompleted ? styles.completed : ""}`}
+                      >
                         <div className={styles.stepDot}>
-                          {isCompleted ? '✓' : index + 1}
+                          {isCompleted ? "✓" : index + 1}
                         </div>
                         <div className={styles.stepContent}>
                           <div className={styles.stepLabel}>{step.title}</div>
@@ -179,14 +190,20 @@ const DepositModal: React.FC<DepositModalProps> = ({
                             {isCurrentlyExecuting ? (
                               <>Executing {step.description.toLowerCase()}...</>
                             ) : isCompleted ? (
-                              <span className={styles.successText}>{step.title} completed</span>
+                              <span className={styles.successText}>
+                                {step.title} completed
+                              </span>
                             ) : isActive && error ? (
-                              <span className={styles.errorText}>{step.title} failed. Please retry.</span>
+                              <span className={styles.errorText}>
+                                {step.title} failed. Please retry.
+                              </span>
                             ) : (
                               step.description
                             )}
                           </div>
-                          {isCurrentlyExecuting && <div className={styles.stepSpinner}></div>}
+                          {isCurrentlyExecuting && (
+                            <div className={styles.stepSpinner}></div>
+                          )}
                         </div>
                       </div>
 
@@ -210,7 +227,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
             {isLocked && (isExecuting || isConfirming) && (
               <div className={styles.lockWarning}>
-                Please wait for the transaction to complete. This modal cannot be closed.
+                Please wait for the transaction to complete. This modal cannot
+                be closed.
               </div>
             )}
           </div>

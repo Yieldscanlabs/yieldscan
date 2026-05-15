@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { formatNumber } from '../utils/helpers';
-import { useWithdrawModalStore } from '../store/withdrawModalStore';
-import { useAssetStore } from '../store/assetStore';
-import useWalletConnection from '../hooks/useWalletConnection';
-import useWithdrawSteps from '../hooks/useWithdrawSteps';
-import styles from './WithdrawModal.module.css';
-import Protocol from './Protocol';
-import ThumbSlider from './ThumbSlider';
-import { useChainId, useSwitchChain } from 'wagmi';
+import React, { useState, useEffect } from "react";
+import { formatNumber } from "../utils/helpers";
+import { useWithdrawModalStore } from "../store/withdrawModalStore";
+import { useAssetStore } from "../store/assetStore";
+import useWalletConnection from "../hooks/useWalletConnection";
+import useWithdrawSteps from "../hooks/useWithdrawSteps";
+import styles from "./WithdrawModal.module.css";
+import Protocol from "./Protocol";
+import ThumbSlider from "./ThumbSlider";
+import { useChainId, useSwitchChain } from "wagmi";
+import { API_BASE_URL } from "../utils/constants";
 
 const GlobalWithdrawModal: React.FC = () => {
   const {
@@ -17,16 +18,16 @@ const GlobalWithdrawModal: React.FC = () => {
     balance,
     maxDecimals,
     isNativeToken,
-    closeModal
+    closeModal,
   } = useWithdrawModalStore();
 
   const { wallet } = useWalletConnection();
   const { fetchAssets } = useAssetStore();
-  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState("");
   const [percentage, setPercentage] = useState(0);
   const [hasStartedWithdraw, setHasStartedWithdraw] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const { chains, switchChain, } = useSwitchChain()
+  const { chains, switchChain } = useSwitchChain();
   const chainId = useChainId();
 
   // Use the withdrawal steps hook
@@ -40,21 +41,21 @@ const GlobalWithdrawModal: React.FC = () => {
     executionError,
     isConfirming,
     executeAllSteps,
-    retryCurrentStep
+    retryCurrentStep,
   } = useWithdrawSteps({
-    id: asset?.id || '',
-    contractAddress: asset?.address || '',
+    id: asset?.id || "",
+    contractAddress: asset?.address || "",
     chainId: asset?.chainId || 1,
-    protocol: protocol || '',
+    protocol: protocol || "",
     amount: withdrawAmount,
     tokenDecimals: asset?.decimals || 18,
-    asset: asset || undefined
+    asset: asset || undefined,
   });
 
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setWithdrawAmount('');
+      setWithdrawAmount("");
       setPercentage(0);
       setHasStartedWithdraw(false);
       setIsCompleted(false);
@@ -69,7 +70,7 @@ const GlobalWithdrawModal: React.FC = () => {
     if (newPercentage === 100) {
       setWithdrawAmount(balance.toString());
     } else {
-      const calculatedAmount = (balance * newPercentage / 100).toFixed(6);
+      const calculatedAmount = ((balance * newPercentage) / 100).toFixed(6);
       setWithdrawAmount(calculatedAmount);
     }
   };
@@ -86,18 +87,14 @@ const GlobalWithdrawModal: React.FC = () => {
       const success = await executeAllSteps();
       if (success) {
         setIsCompleted(true);
-        // Refresh assets after successful withdrawal
-        if (wallet.address) {
-          fetchAssets(wallet.address, false);
-        }
 
         // Complete after a brief delay
         setTimeout(() => {
-          closeModal();
+          window.location.reload();
         }, 1500);
       }
     } catch (err) {
-      console.error('Withdrawal failed:', err);
+      console.error("Withdrawal failed:", err);
     }
   };
 
@@ -110,7 +107,7 @@ const GlobalWithdrawModal: React.FC = () => {
 
   // Calculate USD value
   const usdPrice = asset.usd;
-  const amountUsd = (parseFloat(withdrawAmount || '0') * usdPrice).toFixed(2);
+  const amountUsd = (parseFloat(withdrawAmount || "0") * usdPrice).toFixed(2);
 
   // Determine if we should show steps (only if more than 1 step)
   const shouldShowSteps = steps.length > 1 && hasStartedWithdraw;
@@ -121,7 +118,9 @@ const GlobalWithdrawModal: React.FC = () => {
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>Withdraw {asset.token}</h3>
-          <button className={styles.closeButton} onClick={closeModal}>×</button>
+          <button className={styles.closeButton} onClick={closeModal}>
+            ×
+          </button>
         </div>
 
         <div className={styles.modalContent}>
@@ -130,7 +129,8 @@ const GlobalWithdrawModal: React.FC = () => {
               <div className={styles.successIcon}>✓</div>
               <h4 className={styles.successTitle}>Withdrawal Successful!</h4>
               <p className={styles.successMessage}>
-                Your {asset.token} has been successfully withdrawn from {protocol}.
+                Your {asset.token} has been successfully withdrawn from{" "}
+                {protocol}.
               </p>
             </div>
           ) : (
@@ -140,13 +140,21 @@ const GlobalWithdrawModal: React.FC = () => {
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Asset</span>
                     <span className={styles.detailValue}>
-                      <img src={asset.icon} alt={asset.token} className={styles.assetIcon} />
+                      <img
+                        src={`${API_BASE_URL}${asset.icon}`}
+                        alt={asset.token}
+                        className={styles.assetIcon}
+                      />
                       {asset.token}
-                      {isNativeToken && <span className={styles.nativeBadge}>(Native)</span>}
+                      {isNativeToken && (
+                        <span className={styles.nativeBadge}>(Native)</span>
+                      )}
                     </span>
                   </div>
                   <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>Available Balance</span>
+                    <span className={styles.detailLabel}>
+                      Available Balance
+                    </span>
                     <span className={styles.detailValue}>
                       {formatNumber(balance, maxDecimals)}
                     </span>
@@ -164,7 +172,10 @@ const GlobalWithdrawModal: React.FC = () => {
                   <div className={styles.amountDisplay}>
                     <div>
                       <span className={styles.amountValue}>
-                        {formatNumber(parseFloat(withdrawAmount || '0'), maxDecimals)}
+                        {formatNumber(
+                          parseFloat(withdrawAmount || "0"),
+                          maxDecimals,
+                        )}
                       </span>
                       <span className={styles.amountToken}>{asset.token}</span>
                     </div>
@@ -179,18 +190,24 @@ const GlobalWithdrawModal: React.FC = () => {
                       className={styles.withdrawButton}
                       onClick={() => switchChain({ chainId: asset.chainId })}
                     >
-                      <span className={styles['button-icon']}>↺</span>
-                      Switch to {chains.find(chain => chain.id === asset.chainId)?.name || 'Correct Chain'}
+                      <span className={styles["button-icon"]}>↺</span>
+                      Switch to{" "}
+                      {chains.find((chain) => chain.id === asset.chainId)
+                        ?.name || "Correct Chain"}
                     </button>
                   ) : (
                     <button
                       className={styles.withdrawButton}
                       onClick={handleWithdraw}
-                      disabled={isLoadingSteps || parseFloat(withdrawAmount || '0') <= 0}
+                      disabled={
+                        isLoadingSteps || parseFloat(withdrawAmount || "0") <= 0
+                      }
                     >
                       <span className={styles.buttonIcon}>↓</span>
-                      {isLoadingSteps ? 'Loading...' : `Withdraw ${asset.token}`}
-                      {isNativeToken ? ' (Native)' : ''}
+                      {isLoadingSteps
+                        ? "Loading..."
+                        : `Withdraw ${asset.token}`}
+                      {isNativeToken ? " (Native)" : ""}
                     </button>
                   )}
                 </div>
@@ -205,8 +222,14 @@ const GlobalWithdrawModal: React.FC = () => {
                       <div className={styles.summaryRow}>
                         <span className={styles.summaryLabel}>Amount</span>
                         <span className={styles.summaryValue}>
-                          {formatNumber(parseFloat(withdrawAmount), maxDecimals)} {asset.token}
-                          <span className={styles.summaryUsd}>${amountUsd}</span>
+                          {formatNumber(
+                            parseFloat(withdrawAmount),
+                            maxDecimals,
+                          )}{" "}
+                          {asset.token}
+                          <span className={styles.summaryUsd}>
+                            ${amountUsd}
+                          </span>
                         </span>
                       </div>
                       <div className={styles.summaryRow}>
@@ -220,7 +243,12 @@ const GlobalWithdrawModal: React.FC = () => {
                         <span className={styles.summaryValue}>
                           <span className={styles.apyLost}>
                             {/* Calculate approximate APY based on asset data - this is a placeholder */}
-                            ~{((parseFloat(withdrawAmount || '0') / balance) * 100).toFixed(1)}%
+                            ~
+                            {(
+                              (parseFloat(withdrawAmount || "0") / balance) *
+                              100
+                            ).toFixed(1)}
+                            %
                           </span>
                           <span className={styles.apyNote}>of position</span>
                         </span>
@@ -237,29 +265,44 @@ const GlobalWithdrawModal: React.FC = () => {
 
                         return (
                           <div key={step.id}>
-                            <div className={`${styles.verticalProgressStep} ${isActive || isCompletedStep ? styles.active : ''} ${isCompletedStep ? styles.completed : ''}`}>
+                            <div
+                              className={`${styles.verticalProgressStep} ${isActive || isCompletedStep ? styles.active : ""} ${isCompletedStep ? styles.completed : ""}`}
+                            >
                               <div className={styles.stepDot}>
-                                {isCompletedStep ? '✓' : index + 1}
+                                {isCompletedStep ? "✓" : index + 1}
                               </div>
                               <div className={styles.stepContent}>
-                                <div className={styles.stepLabel}>{step.title}</div>
+                                <div className={styles.stepLabel}>
+                                  {step.title}
+                                </div>
                                 <div className={styles.stepDescription}>
                                   {isCurrentlyExecuting ? (
-                                    <>Executing {step.description.toLowerCase()}...</>
+                                    <>
+                                      Executing {step.description.toLowerCase()}
+                                      ...
+                                    </>
                                   ) : isCompletedStep ? (
-                                    <span className={styles.successText}>{step.title} completed</span>
+                                    <span className={styles.successText}>
+                                      {step.title} completed
+                                    </span>
                                   ) : isActive && error ? (
-                                    <span className={styles.errorText}>{step.title} failed. Please retry.</span>
+                                    <span className={styles.errorText}>
+                                      {step.title} failed. Please retry.
+                                    </span>
                                   ) : (
                                     step.description
                                   )}
                                 </div>
-                                {isCurrentlyExecuting && <div className={styles.stepSpinner}></div>}
+                                {isCurrentlyExecuting && (
+                                  <div className={styles.stepSpinner}></div>
+                                )}
                               </div>
                             </div>
 
                             {index < steps.length - 1 && (
-                              <div className={styles.verticalProgressLine}></div>
+                              <div
+                                className={styles.verticalProgressLine}
+                              ></div>
                             )}
                           </div>
                         );
@@ -279,7 +322,9 @@ const GlobalWithdrawModal: React.FC = () => {
                           {isExecuting || isConfirming ? (
                             <div className={styles.statusActive}>
                               <span className={styles.statusText}>
-                                {isConfirming ? 'Confirming transaction...' : `Withdrawing from ${protocol}...`}
+                                {isConfirming
+                                  ? "Confirming transaction..."
+                                  : `Withdrawing from ${protocol}...`}
                               </span>
                               <div className={styles.statusIndicator}>
                                 <div className={styles.progressDots}>
@@ -290,7 +335,9 @@ const GlobalWithdrawModal: React.FC = () => {
                               </div>
                             </div>
                           ) : (
-                            <span className={styles.statusText}>Preparing withdrawal...</span>
+                            <span className={styles.statusText}>
+                              Preparing withdrawal...
+                            </span>
                           )}
                         </div>
                       </div>
@@ -300,7 +347,10 @@ const GlobalWithdrawModal: React.FC = () => {
                   {error && (
                     <div className={styles.error}>
                       {error}
-                      <button className={styles.retryButton} onClick={handleRetry}>
+                      <button
+                        className={styles.retryButton}
+                        onClick={handleRetry}
+                      >
                         Retry
                       </button>
                     </div>
@@ -315,4 +365,4 @@ const GlobalWithdrawModal: React.FC = () => {
   );
 };
 
-export default GlobalWithdrawModal; 
+export default GlobalWithdrawModal;
