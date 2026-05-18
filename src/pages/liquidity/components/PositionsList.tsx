@@ -77,26 +77,17 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
                       <span className={styles.badgeMessage}>
                         This position is not earning fees.
                       </span>
-                    </div>
-                    <div className={styles.outRangeMessage}>
-                      The price has moved outside your selected range. Your
-                      funds are safe but idle. To resume earning, visit{" "}
-                      <a
-                        href="https://aerodrome.finance/liquidity"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.aerodromeLink}
-                      >
-                        Aerodrome
-                      </a>{" "}
-                      and rebalance your position by removing liquidity and
-                      adding it again with a new price range.
+                      <InfoIcon
+                        tooltipTitle="Out of Range"
+                        tooltipText="The price has moved outside your selected range. Your funds are safe but idle. To resume earning, visit aerodrome.finance/liquidity and rebalance your position by removing liquidity and adding it again with a new price range."
+                      />
                     </div>
                   </div>
                 )}
 
                 {/* Pending AERO rewards */}
-                {pos.pendingAeroRewards != null &&
+                {/* Commented it for now it can be uncommented in future */}
+                {/* {pos.pendingAeroRewards != null &&
                   pos.pendingAeroRewards > 0 && (
                     <div className={styles.aeroRewards}>
                       Pending AERO Rewards: {pos.pendingAeroRewards.toFixed(6)}
@@ -105,7 +96,7 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
                         tooltipTitle="Pending Rewards"
                       />
                     </div>
-                  )}
+                  )} */}
               </div>
             )}
 
