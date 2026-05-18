@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useConnect } from "wagmi";
 import { getWalletIcon } from "./WalletIcons";
 import styles from "./WalletModal.module.css";
+import { getReadableError } from "../utils/errorUtils";
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -84,7 +85,8 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => {
 
           {error && (
             <div className={styles.errorMessage}>
-              {error.message || "Failed to connect. Please try again."}
+              {getReadableError(error.message) ||
+                "Failed to connect. Please try again."}
             </div>
           )}
 

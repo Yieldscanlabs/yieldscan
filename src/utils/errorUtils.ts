@@ -8,6 +8,23 @@ export function getReadableError(error: string | null): string | null {
 
   const msg = error.toLowerCase();
 
+  if (
+    msg.includes("user rejected") ||
+    msg.includes("user denied") ||
+    msg.includes("action_rejected") ||
+    msg.includes("ethers-user-denied")
+  ) {
+    // Check if it's a connection rejection or transaction rejection
+    if (
+      msg.includes("connect") ||
+      msg.includes("account") ||
+      msg.includes("request")
+    ) {
+      return "Connection cancelled. Please try again and approve in your wallet.";
+    }
+    return "Transaction was cancelled. Please try again and confirm in MetaMask.";
+  }
+
   // User rejected the transaction in MetaMask
   if (
     msg.includes("user denied") ||
