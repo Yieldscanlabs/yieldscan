@@ -8,6 +8,49 @@ interface Props {
   isLoading: boolean;
 }
 
+// Group positions by protocol name so all tokens of the same protocol
+// appear in a single card instead of separate cards per token
+function groupPositionsByProtocol(
+  positions: LiquidityPosition[],
+): LiquidityPosition[] {
+  const grouped = new Map<string, LiquidityPosition>();
+
+  for (const pos of positions) {
+    // Aerodrome positions have unique pool labels so keep them separate
+    // Each Aerodrome position is a distinct LP pool with its own price range
+    const isAerodrome = pos.protocolName.toLowerCase().includes("aerodrome");
+    const groupKey = isAerodrome
+      ? `${pos.protocolName}-${pos.tokenId || pos.poolLabel}`
+      : pos.protocolName;
+
+    if (grouped.has(groupKey)) {
+      const existing = grouped.get(groupKey)!;
+
+      // Merge tokens into existing group
+      for (const token of pos.tokens) {
+        const alreadyExists = existing.tokens.find(
+          (t) => t.symbol === token.symbol,
+        );
+        if (!alreadyExists) {
+          existing.tokens.push(token);
+        }
+      }
+
+      // Add to total USD value
+      existing.balanceUsd += pos.balanceUsd;
+    } else {
+      // First time seeing this protocol - create a new group
+      grouped.set(groupKey, {
+        ...pos,
+        poolLabel: isAerodrome ? pos.poolLabel : "Supplied",
+        tokens: [...pos.tokens],
+      });
+    }
+  }
+
+  return Array.from(grouped.values());
+}
+
 const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
   if (isLoading) {
     return (
@@ -36,6 +79,9 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
     );
   }
 
+  // Group positions before rendering
+  const groupedPositions = groupPositionsByProtocol(positions);
+
   const isBorrowed = (label: string) =>
     label.toLowerCase().includes("borrow") ||
     label.toLowerCase().includes("debt");
@@ -47,7 +93,7 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
     <div>
       <h2 className={styles.sectionTitle}>DeFi Positions</h2>
       <div className={styles.positionsGrid}>
-        {positions.map((pos, idx) => (
+        {groupedPositions.map((pos, idx) => (
           <div key={idx} className={styles.positionCard}>
             {/* Header */}
             <div className={styles.positionHeader}>
@@ -57,7 +103,6 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
             {/* Aerodrome-specific badges and messages */}
             {isAerodrome(pos) && (
               <div className={styles.aerodromeSection}>
-                {/* In Range badge */}
                 {pos.inRange === true && (
                   <div className={styles.aerodromeBadgeRow}>
                     <span className={styles.badgeInRange}>In Range</span>
@@ -67,15 +112,11 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
                   </div>
                 )}
 
-                {/* Out of Range badge with helpful message */}
                 {pos.inRange === false && (
                   <div className={styles.aerodromeOutRangeSection}>
                     <div className={styles.aerodromeBadgeRow}>
                       <span className={styles.badgeOutRange}>
                         ⚠️ Out of Range
-                      </span>
-                      <span className={styles.badgeMessage}>
-                        This position is not earning fees.
                       </span>
                       <InfoIcon
                         tooltipTitle="Out of Range"
@@ -85,9 +126,7 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
                   </div>
                 )}
 
-                {/* Pending AERO rewards */}
-                {/* Commented it for now it can be uncommented in future */}
-                {/* {pos.pendingAeroRewards != null &&
+                {pos.pendingAeroRewards != null &&
                   pos.pendingAeroRewards > 0 && (
                     <div className={styles.aeroRewards}>
                       Pending AERO Rewards: {pos.pendingAeroRewards.toFixed(6)}
@@ -96,7 +135,7 @@ const PositionsList: React.FC<Props> = ({ positions, isLoading }) => {
                         tooltipTitle="Pending Rewards"
                       />
                     </div>
-                  )} */}
+                  )}
               </div>
             )}
 
