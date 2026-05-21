@@ -9,6 +9,7 @@ import Protocol from "./Protocol";
 import ThumbSlider from "./ThumbSlider";
 import { useChainId, useSwitchChain } from "wagmi";
 import { API_BASE_URL } from "../utils/constants";
+import { getReadableError } from "../utils/errorUtils";
 
 const GlobalWithdrawModal: React.FC = () => {
   const {
@@ -29,6 +30,7 @@ const GlobalWithdrawModal: React.FC = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const { chains, switchChain } = useSwitchChain();
   const chainId = useChainId();
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
 
   // Use the withdrawal steps hook
   const {
@@ -59,6 +61,7 @@ const GlobalWithdrawModal: React.FC = () => {
       setPercentage(0);
       setHasStartedWithdraw(false);
       setIsCompleted(false);
+      setWithdrawError(null); // ✅ clear error on reopen
     }
   }, [isOpen]);
 
@@ -77,24 +80,29 @@ const GlobalWithdrawModal: React.FC = () => {
 
   // Handle withdraw button click
   const handleWithdraw = async () => {
-    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
-      return;
-    }
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) return;
 
     setHasStartedWithdraw(true);
+    setWithdrawError(null);
 
     try {
-      const success = await executeAllSteps();
-      if (success) {
+      const result = await executeAllSteps();
+      if (result.success) {
         setIsCompleted(true);
-
-        // Complete after a brief delay
         setTimeout(() => {
           window.location.reload();
         }, 1500);
+      } else {
+        setHasStartedWithdraw(false);
+        // ✅ Use error returned directly from executeAllSteps
+        setWithdrawError(
+          result.error || "Withdrawal failed. Please try again.",
+        );
       }
-    } catch (err) {
-      console.error("Withdrawal failed:", err);
+    } catch (err: any) {
+      setHasStartedWithdraw(false);
+      const readable = getReadableError(err?.message || "");
+      setWithdrawError(readable || "Withdrawal failed. Please try again.");
     }
   };
 
@@ -185,6 +193,10 @@ const GlobalWithdrawModal: React.FC = () => {
                     value={percentage}
                     onChange={handleSliderChange}
                   />
+
+                  {withdrawError && (
+                    <div className={styles.errorMessage}>{withdrawError}</div>
+                  )}
                   {asset.chainId !== chainId ? (
                     <button
                       className={styles.withdrawButton}
