@@ -9,16 +9,20 @@ export function getReadableError(error: string | null): string | null {
   const msg = error.toLowerCase();
 
   if (
-    msg.includes("user rejected") ||
+    msg.includes("user denied transaction signature") ||
+    msg.includes("user rejected the request") ||
     msg.includes("user denied") ||
     msg.includes("action_rejected") ||
-    msg.includes("ethers-user-denied")
+    msg.includes("ethers-user-denied") ||
+    msg.includes("code: 4001") ||
+    msg.includes('"code":4001') ||
+    msg.includes("user cancelled")
   ) {
     // Check if it's a connection rejection or transaction rejection
     if (
       msg.includes("connect") ||
       msg.includes("account") ||
-      msg.includes("request")
+      msg.includes("request accounts")
     ) {
       return "Connection cancelled. Please try again and approve in your wallet.";
     }
