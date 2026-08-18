@@ -11,6 +11,14 @@ import { API_BASE_URL } from '../utils/constants';
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
 
+// Ticket counter guarding the store's shared active `assets` view. Both
+// fetchAssets (single wallet) and fetchAssetsForMultiple (consolidated view)
+// write to that same field, so both take a ticket here and only commit their
+// result if it's still the latest ticket when their work finishes -- this
+// covers a stale write from either function, including switching between
+// single-wallet and consolidated mode mid-fetch, not just switching wallets.
+let activeViewRequestId = 0;
+
 // API endpoint for fetching tokens/assets
 // const ASSETS_API_ENDPOINT = API_BASE_URL + '/api/assets?limit=100&includeDisabled=false';
 // const CHAINS_API_ENDPOINT = API_BASE_URL + '/api/chains?limit=100';
@@ -129,6 +137,12 @@ export const useAssetStore = create<AssetStore>()(
       autoRefreshEnabled: true,
       // 1. Single Wallet Fetch
       fetchAssets: async (walletAddress: string, showLoading = true) => {
+        // Ticket for this call. If a newer fetchAssets/fetchAssetsForMultiple
+        // call starts before this one finishes, activeViewRequestId will have
+        // moved on and this call's result gets discarded below instead of
+        // overwriting the screen with stale data.
+        const requestId = ++activeViewRequestId;
+
         if (!walletAddress || walletAddress === '0x') {
           set({ assets: [], error: null, isLoading: false });
           return;
@@ -141,6 +155,8 @@ export const useAssetStore = create<AssetStore>()(
           // Use the internal helper
           const { assets, dormantCapital, workingCapital } = await fetchWalletDataInternal(walletAddress, get, set);
 
+          if (requestId !== activeViewRequestId) return;
+
           // Update the Active View (because this is a single fetch)
           set({
             assets: assets,
@@ -150,6 +166,8 @@ export const useAssetStore = create<AssetStore>()(
             lastUpdated: Date.now()
           });
         } catch (error) {
+          if (requestId !== activeViewRequestId) return;
+
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false
@@ -164,6 +182,11 @@ export const useAssetStore = create<AssetStore>()(
 
       // 2. Multiple Wallet Fetch (Consolidated)
       fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
+        // Same ticket guard as fetchAssets, and shares the same counter --
+        // switching between single-wallet and consolidated mode mid-fetch
+        // must not let the losing side's stale result win.
+        const requestId = ++activeViewRequestId;
+
         if (!addresses || addresses.length === 0) {
           set({ assets: [], error: null, isLoading: false });
           return;
@@ -180,6 +203,8 @@ export const useAssetStore = create<AssetStore>()(
           );
 
           await Promise.all(fetchPromises);
+
+          if (requestId !== activeViewRequestId) return;
 
           // NOW calculate consolidated view and update state ONCE
           const state = get();
@@ -206,6 +231,8 @@ export const useAssetStore = create<AssetStore>()(
             isLoading: false // <--- Only turn off loading HERE at the very end
           });
         } catch (error) {
+          if (requestId !== activeViewRequestId) return;
+
           console.error('Error fetching assets for multiple addresses:', error);
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
