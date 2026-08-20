@@ -11,6 +11,17 @@ import { API_BASE_URL } from '../utils/constants';
 // Auto-refresh interval in milliseconds (60 seconds)
 const AUTO_REFRESH_INTERVAL = 60000;
 
+// Tracks what the store's shared active `assets` view is CURRENTLY supposed to
+// be showing. fetchAssets and fetchAssetsForMultiple both write that field, so
+// both check against this before committing their result. Unlike a simple
+// "last call wins" counter, this only invalidates a result when the actual
+// target (wallet address, or consolidated address set) changed -- two calls
+// for the SAME target never invalidate each other, so redundant duplicate
+// calls (e.g. an effect re-firing for the same wallet while other page state
+// settles) can't accidentally discard a real, correct result.
+let currentSingleTarget: string | null = null;
+let currentConsolidatedTargetKey: string | null = null;
+
 // API endpoint for fetching tokens/assets
 // const ASSETS_API_ENDPOINT = API_BASE_URL + '/api/assets?limit=100&includeDisabled=false';
 // const CHAINS_API_ENDPOINT = API_BASE_URL + '/api/chains?limit=100';
@@ -130,9 +141,16 @@ export const useAssetStore = create<AssetStore>()(
       // 1. Single Wallet Fetch
       fetchAssets: async (walletAddress: string, showLoading = true) => {
         if (!walletAddress || walletAddress === '0x') {
+          currentSingleTarget = null;
           set({ assets: [], error: null, isLoading: false });
           return;
         }
+
+        const normalizedTarget = walletAddress.toLowerCase();
+        // Switching to single-wallet mode means any pending consolidated
+        // fetch's result is no longer relevant to what's being shown.
+        currentSingleTarget = normalizedTarget;
+        currentConsolidatedTargetKey = null;
 
         if (showLoading) set({ isLoading: true });
         set({ error: null });
@@ -140,6 +158,8 @@ export const useAssetStore = create<AssetStore>()(
         try {
           // Use the internal helper
           const { assets, dormantCapital, workingCapital } = await fetchWalletDataInternal(walletAddress, get, set);
+
+          if (currentSingleTarget !== normalizedTarget) return;
 
           // Update the Active View (because this is a single fetch)
           set({
@@ -150,6 +170,8 @@ export const useAssetStore = create<AssetStore>()(
             lastUpdated: Date.now()
           });
         } catch (error) {
+          if (currentSingleTarget !== normalizedTarget) return;
+
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false
@@ -165,9 +187,17 @@ export const useAssetStore = create<AssetStore>()(
       // 2. Multiple Wallet Fetch (Consolidated)
       fetchAssetsForMultiple: async (addresses: string[], showLoading = true) => {
         if (!addresses || addresses.length === 0) {
+          currentConsolidatedTargetKey = null;
           set({ assets: [], error: null, isLoading: false });
           return;
         }
+
+        // Order-independent key identifying this exact set of wallets.
+        const targetKey = addresses.map(a => a.toLowerCase()).sort().join(',');
+        // Switching to consolidated mode means any pending single-wallet
+        // fetch's result is no longer relevant to what's being shown.
+        currentConsolidatedTargetKey = targetKey;
+        currentSingleTarget = null;
 
         if (showLoading) set({ isLoading: true });
         set({ error: null });
@@ -180,6 +210,8 @@ export const useAssetStore = create<AssetStore>()(
           );
 
           await Promise.all(fetchPromises);
+
+          if (currentConsolidatedTargetKey !== targetKey) return;
 
           // NOW calculate consolidated view and update state ONCE
           const state = get();
@@ -206,6 +238,8 @@ export const useAssetStore = create<AssetStore>()(
             isLoading: false // <--- Only turn off loading HERE at the very end
           });
         } catch (error) {
+          if (currentConsolidatedTargetKey !== targetKey) return;
+
           console.error('Error fetching assets for multiple addresses:', error);
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
