@@ -13,12 +13,13 @@ import LiveApyPage from './pages/live-apy';
 import AboutPage from './pages/AboutPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import LiquidityPage from './pages/liquidity';
+import RouteErrorBoundary from './components/RouteErrorBoundary';
 
 // Define the router configuration
 const router = createBrowserRouter([
   {
     path: '/',
-    errorElement: <NotFound />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         index: true,
