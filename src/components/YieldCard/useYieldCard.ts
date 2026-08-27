@@ -6,6 +6,7 @@ import useUnifiedYield from '../../hooks/useUnifiedYield';
 import useWalletConnection from '../../hooks/useWalletConnection';
 import tokens from '../../utils/tokens';
 import { PROTOCOL_NAMES } from '../../utils/constants';
+import { normalizeProtocolKey } from '../../utils/protocolUtils';
 import type { YieldCardProps, TokenWithLockYield } from './types';
 
 export function useYieldCard({ asset, onOptimize, onLockAPY }: YieldCardProps) {
@@ -76,7 +77,7 @@ export function useYieldCard({ asset, onOptimize, onLockAPY }: YieldCardProps) {
   const tokenApyData = apyData[asset.chainId]?.[asset.address.toLowerCase()];
   let protocolKey: string | undefined;
   if (asset.protocol) {
-    protocolKey = asset.protocol.toLowerCase();
+    protocolKey = normalizeProtocolKey(asset.protocol);
     try {
       apy = tokenApyData[protocolKey as keyof typeof tokenApyData] || 0;
     }
