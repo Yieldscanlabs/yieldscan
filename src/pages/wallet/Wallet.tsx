@@ -511,9 +511,11 @@ function Wallet() {
         state.bestApyData?.bestProtocol ||
         yieldOptions[0]?.protocol ||
         "Unknown";
+      const selectedAssetBalance = parseFloat(state.selectedAsset.balance);
       const usdPrice =
-        parseFloat(state.selectedAsset.balanceUsd) /
-        parseFloat(state.selectedAsset.balance);
+        selectedAssetBalance === 0
+          ? 0
+          : parseFloat(state.selectedAsset.balanceUsd) / selectedAssetBalance;
       const amountUsd = (
         parseFloat(state.depositData.amount) * usdPrice
       ).toFixed(2);
@@ -544,8 +546,10 @@ function Wallet() {
               onDeposit={handleDeposit}
               onBack={handleBackToAssets}
               usdPrice={
-                parseFloat(state.selectedAsset.balanceUsd) /
-                parseFloat(state.selectedAsset.balance)
+                parseFloat(state.selectedAsset.balance) === 0
+                  ? 0
+                  : parseFloat(state.selectedAsset.balanceUsd) /
+                    parseFloat(state.selectedAsset.balance)
               }
               bestApyData={state.bestApyData || undefined}
             />
