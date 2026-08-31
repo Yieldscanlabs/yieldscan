@@ -8,6 +8,7 @@ import type { Asset } from "../types";
 import { useManualWalletStore } from "../store/manualWalletStore";
 import { useAccount } from "wagmi";
 import { PROTOCOL_NAMES } from "../utils/constants";
+import { normalizeProtocolKey } from "../utils/protocolUtils";
 import YieldCard from "../components/YieldCard/YieldCard";
 import type { OptimizationData } from "../components/YieldCard/types";
 import { useAssetStore } from "../store/assetStore";
@@ -276,7 +277,7 @@ const MyYieldsPage: React.FC = () => {
       apyData[asset.chainId]?.[asset.address.toLowerCase()]
     ) {
       const apys = apyData[asset.chainId][asset.address.toLowerCase()] as any;
-      return apys[asset.protocol.toLowerCase()] || 0;
+      return apys[normalizeProtocolKey(asset.protocol)] || 0;
     }
     return 0;
   };
@@ -316,7 +317,7 @@ const MyYieldsPage: React.FC = () => {
     const currentApyEstimate =
       (currentProtocol &&
         apyData[token.chainId]?.[token.address.toLowerCase()]?.[
-          currentProtocol.toLowerCase()
+          normalizeProtocolKey(currentProtocol)
         ]) ||
       0;
     if (bestProtocol !== currentProtocol && bestApy > currentApyEstimate) {

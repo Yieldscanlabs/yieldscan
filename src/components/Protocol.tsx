@@ -79,8 +79,23 @@ const PROTOCOL_TOOLTIPS: Record<string, string> = {
   // Add more protocol descriptions as needed
 };
 
-
-
+// Converts a raw backend APY-table key (e.g. "kinzafinance") to its
+// display name (e.g. "Kinza Finance"). Exported so places that show a
+// protocol name as plain text, not through this component, stay consistent.
+export const formatProtocolName = (name: string) => {
+  switch (name) {
+    case 'fluxfinance':
+      return 'Flux Finance';
+    case 'kinzafinance':
+      return 'Kinza Finance';
+    case 'creamfinance':
+      return 'Cream Finance';
+    case 'Dolomite':
+      return 'dolomite';
+    default:
+      return name;
+  }
+};
 
 const Protocol: React.FC<ProtocolProps> = ({
   name,
@@ -123,20 +138,6 @@ const Protocol: React.FC<ProtocolProps> = ({
   // const logoUrl = name ? PROTOCOL_LOGOS[name] || null : null;
   const tooltipText = name ? PROTOCOL_TOOLTIPS[name] || `Information about ${name} ` : null;
   const tooltipId = name ? `protocol - tooltip - ${name.toLowerCase()} ` : 'protocol-tooltip';
-  const formatProtocolName = (name: string) => {
-    switch (name) {
-      case 'fluxfinance':
-        return 'Flux Finance';
-      case 'kinzafinance':
-        return 'Kinza Finance';
-      case 'creamfinance':
-        return 'Cream Finance';
-      case 'Dolomite':
-        return 'dolomite';
-      default:
-        return name;
-    }
-  };
   return (
     <>
       <div
