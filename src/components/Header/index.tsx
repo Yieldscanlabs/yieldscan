@@ -7,6 +7,7 @@ import type { ProtocolApys } from '../../store/apyStore';
 import DesktopHeader from './components/DesktopHeader';
 import MobileMenu from './components/MobileMenu';
 import { getExplorerUrl, copyToClipboard } from './utils';
+import { normalizeProtocolKey } from '../../utils/protocolUtils';
 
 interface HeaderProps {
   isConnected: boolean;
@@ -67,7 +68,7 @@ const Header: React.FC<HeaderProps> = ({
       let assetApy = 0;
       if (asset.protocol && apyData[asset.chainId]?.[asset.address.toLowerCase()]) {
         const apys = apyData[asset.chainId][asset.address.toLowerCase()] as ProtocolApys;
-        assetApy = apys[asset.protocol.toLowerCase() as keyof ProtocolApys] || 0;
+        assetApy = apys[normalizeProtocolKey(asset.protocol) as keyof ProtocolApys] || 0;
       }
 
       // If no APY found, use a default of 3%

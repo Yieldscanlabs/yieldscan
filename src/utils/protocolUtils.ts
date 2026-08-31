@@ -3,6 +3,15 @@ import { PROTOCOL_NAMES } from './constants';
 import { AAVE_V3_MARKETS, RADIANT_V3_MARKETS, VENUS_V3_MARKETS, COMPOUND_V3_MARKETS, SPARK_MARKETS, MORPHO_BLUE_MARKETS, FLUID_MARKETS, ROCKET_POOL_MARKETS } from './markets';
 import { EigenLayerUtils } from './eigenLayerUtils';
 
+// Mirrors the backend's normalizeKey in server/index.ts exactly -- must stay
+// in sync with that function. Multi-word protocol names (e.g. "Cream Finance")
+// are stored in the APY table under their space-stripped form ("creamfinance"),
+// except "Yearn V3" which is stored under "yearn", not "yearnv3".
+export const normalizeProtocolKey = (name: string): string => {
+  if (name === 'Yearn V3') return 'yearn';
+  return name.toLowerCase().replace(/\s+/g, '');
+};
+
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useAssetStore } from './assetStore';
 import { useApyStore } from './apyStore';
 import type { ProtocolApys as BaseProtocolApys } from './apyStore';
+import { normalizeProtocolKey } from '../utils/protocolUtils';
 
 // Extended version of ProtocolApys with an index signature
 interface ProtocolApysWithIndex extends BaseProtocolApys {
@@ -138,7 +139,7 @@ export const useEarnStore = create<EarnStore>()(
             }
             
             // Make non-null assertion for protocol since we've filtered for it
-            const protocolKey = protocol!.toLowerCase();
+            const protocolKey = normalizeProtocolKey(protocol!);
             
             // Get APY for this token from apyStore
             const tokenApys = apyData[chainId]?.[address.toLowerCase()] as ProtocolApysWithIndex | undefined;
@@ -209,7 +210,7 @@ export const useEarnStore = create<EarnStore>()(
           }
           
           // Get APY for the token's protocol
-          const protocolKey = asset.protocol.toLowerCase();
+          const protocolKey = normalizeProtocolKey(asset.protocol);
           const apy = tokenApys[protocolKey];
           
           if (apy === undefined) {
@@ -268,7 +269,7 @@ export const useEarnStore = create<EarnStore>()(
             
             assets.filter(a => a.yieldBearingToken && a.protocol).forEach(a => {
               const tokenApy = apyData[a.chainId]?.[a.address.toLowerCase()] as ProtocolApysWithIndex | undefined;
-              const protocolKey = a.protocol!.toLowerCase();
+              const protocolKey = normalizeProtocolKey(a.protocol!);
               if (tokenApy && tokenApy[protocolKey] !== undefined) {
                 const tokenApyValue = tokenApy[protocolKey]!;
                 const tokenBalanceNum = parseFloat(a.balance);

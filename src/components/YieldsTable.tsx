@@ -3,7 +3,7 @@ import type { Asset } from '../types';
 import AssetIcon from './AssetIcon';
 import styles from './YieldsTable.module.css';
 import { formatNumber } from '../utils/helpers';
-import Protocol from './Protocol';
+import Protocol, { formatProtocolName } from './Protocol';
 import type { OptimizationData } from './YieldCard/types';
 import tokens from '../utils/tokens';
 import { useOptimizationStore } from '../store/optimizationStore';
@@ -13,6 +13,7 @@ import { useWithdrawModalStore } from '../store/withdrawModalStore';
 import LockAPYInformationModal from './LockAPYInformationModal';
 import { useApyStore } from '../store/apyStore';
 import { API_BASE_URL } from '../utils/constants';
+import { normalizeProtocolKey } from '../utils/protocolUtils';
 
 interface YieldsTableProps {
   assets: Asset[];
@@ -57,7 +58,7 @@ const YieldsTableRow: React.FC<{
   const tokenApyData = apyData[asset.chainId]?.[asset.address.toLowerCase()];
   let protocolKey: string | undefined;
   if (asset.protocol) {
-    protocolKey = asset.protocol.toLowerCase();
+    protocolKey = normalizeProtocolKey(asset.protocol);
     currentApy = tokenApyData[protocolKey as keyof typeof tokenApyData] || 0;
   } else {
     currentApy = 0;
@@ -208,7 +209,7 @@ const YieldsTableRow: React.FC<{
               <button
                 className={`${styles.actionButton} ${styles.optimizeButton}`}
                 onClick={handleOptimizeClick}
-                title={`Switch to ${optimizationData.betterProtocol} for ${optimizationData.betterApy.toFixed(2)}% APY (+${optimizationData.apyImprovement}%)`}
+                title={`Switch to ${formatProtocolName(optimizationData.betterProtocol)} for ${optimizationData.betterApy.toFixed(2)}% APY (+${optimizationData.apyImprovement}%)`}
               >
                 <span>Optimize</span>
               </button>

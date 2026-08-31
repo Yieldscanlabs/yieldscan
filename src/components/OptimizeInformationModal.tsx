@@ -4,7 +4,7 @@ import { formatNumber } from '../utils/helpers';
 import type { Asset } from '../types';
 import type { OptimizationData } from './YieldCard/types';
 import { getNetworkIcon, getNetworkName } from '../utils/networkIcons';
-import Protocol from './Protocol';
+import Protocol, { formatProtocolName } from './Protocol';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { API_BASE_URL } from '../utils/constants';
 
@@ -76,7 +76,7 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
                 <strong>1.</strong> Withdraw from {optimizationData.currentProtocol} ({optimizationData.currentApy.toFixed(2)}% APY)
               </p>
               <p>
-                <strong>2.</strong> Approve and deposit into {optimizationData.betterProtocol} ({optimizationData.betterApy.toFixed(2)}% APY)
+                <strong>2.</strong> Approve and deposit into {formatProtocolName(optimizationData.betterProtocol)} ({optimizationData.betterApy.toFixed(2)}% APY)
               </p>
               <p>
                 This optimization will increase your annual yield by <strong>+{optimizationData.apyImprovement.toFixed(2)}%</strong>, earning you an additional <strong>${formatNumber(optimizationData.additionalYearlyUsd, 2)}</strong> per year.
