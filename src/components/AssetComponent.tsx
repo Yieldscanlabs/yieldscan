@@ -4,7 +4,7 @@ import { formatNumber } from '../utils/helpers';
 import AssetIcon from './AssetIcon';
 import YieldOptionComponent from './YieldOption';
 import styles from './AssetList.module.css';
-import { type BestApyResult } from '../hooks/useBestApy';
+import { type BestApyResult } from '../types/bestApy';
 import { useApyStore } from '../store/apyStore';
 import { getBestYield } from '../utils/getBestYield';
 import { API_BASE_URL } from '../utils/constants';
