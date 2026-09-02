@@ -6,7 +6,7 @@ import { formatNumber } from '../utils/helpers';
 import { usePriceStore } from '../store/priceStore';
 import { useApyStore } from '../store/apyStore';
 import { getBestYield } from '../utils/getBestYield';
-import { type BestApyResult } from '../hooks/useBestApy';
+import { type BestApyResult } from '../types/bestApy';
 import Protocol from './Protocol';
 
 interface AssetTableProps {
