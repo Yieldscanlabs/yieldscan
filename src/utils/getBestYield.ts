@@ -1,4 +1,4 @@
-import type { BestApyResult } from '../hooks/useBestApy';
+import type { BestApyResult } from '../types/bestApy';
 import type { ApiResponseStructure } from '../store/apyStore';
 import { PROTOCOL_NAMES } from './constants';
 

@@ -16,7 +16,7 @@ import SearchBar from "../../components/SearchBar";
 import useWalletConnection from "../../hooks/useWalletConnection";
 import useYieldOptions from "../../hooks/useYieldOptions";
 import type { Asset, YieldOption } from "../../types";
-import type { BestApyResult } from "../../hooks/useBestApy";
+import type { BestApyResult } from "../../types/bestApy";
 import { useAssetStore } from "../../store/assetStore";
 import { AVAILABLE_NETWORKS } from "../../utils/markets";
 import WalletWelcome from "./WalletWelcome";

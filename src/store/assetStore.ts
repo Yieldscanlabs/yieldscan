@@ -1,15 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 // import { formatUnits } from 'viem';
-import { useEffect } from 'react';
 // import Moralis from 'moralis';
 import type { Asset, Protocol } from '../types';
 import { API_BASE_URL } from '../utils/constants';
 // import { ethers } from 'ethers';
 // import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
-
-// Auto-refresh interval in milliseconds (60 seconds)
-const AUTO_REFRESH_INTERVAL = 60000;
 
 // Tracks what the store's shared active `assets` view is CURRENTLY supposed to
 // be showing. fetchAssets and fetchAssetsForMultiple both write that field, so
@@ -456,61 +452,6 @@ let totalWorkingCapital = 0;
     }
   )
 );
-
-// Track if auto-refresh has been set up already using a module-level variable
-let autoRefreshInitialized = false;
-
-/**
- * Hook that sets up auto-refresh for asset data
- * @param address The wallet address to fetch assets for
- */
-export function useAssetAutoRefresh(address: string) {
-  const { fetchAssets, autoRefreshEnabled } = useAssetStore();
-
-  useEffect(() => {
-    if (!address || address === '0x' || autoRefreshInitialized) {
-      return;
-    }
-
-    autoRefreshInitialized = true;
-
-    // Initial fetch
-    fetchAssets(address, true);
-
-    // Track if the tab is visible
-    let isTabVisible = !document.hidden;
-
-    // Handle visibility change
-    const handleVisibilityChange = () => {
-      isTabVisible = !document.hidden;
-
-      // If tab becomes visible and auto-refresh is enabled, do an immediate refresh
-      if (isTabVisible && useAssetStore.getState().autoRefreshEnabled) {
-        fetchAssets(address, false);
-      }
-    };
-
-    // Register visibility change event listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Set up auto-refresh interval
-    const intervalId = setInterval(() => {
-      // Only fetch if auto-refresh is enabled AND tab is visible
-      if (useAssetStore.getState().autoRefreshEnabled && isTabVisible) {
-        // Use silent refresh (no loading state)
-        fetchAssets(address, false);
-      }
-    }, AUTO_REFRESH_INTERVAL);
-
-    // Clean up interval and event listener on unmount
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      autoRefreshInitialized = false;
-    };
-  }, [address, fetchAssets, autoRefreshEnabled]);
-}
-
 
 // Protocols counted toward workingCapital -- mirrors the backend's PROTOCOLS
 // list in calculateWalletCapitals exactly (constants/protocols.ts), minus
