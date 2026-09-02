@@ -24,6 +24,13 @@ export interface Asset {
   currentBalanceInProtocol?: number;
   currentBalanceInProtocolUsd?: string;
   walletAddress?: string;  // Source wallet address (for consolidated view)
+  // True when the backend's balance check for this specific value genuinely
+  // failed this run (RPC error), as opposed to a real, confirmed zero.
+  // balanceCheckFailed covers `balance`/`balanceUsd`; protocolBalanceCheckFailed
+  // covers `currentBalanceInProtocol`/`currentBalanceInProtocolUsd`, since the
+  // two are looked up independently and can fail independently.
+  balanceCheckFailed?: boolean;
+  protocolBalanceCheckFailed?: boolean;
 }
 
 export interface Chain {
