@@ -1,6 +1,7 @@
 import type { BestApyResult } from '../types/bestApy';
 import type { ApiResponseStructure } from '../store/apyStore';
 import { PROTOCOL_NAMES } from './constants';
+import { resolveProtocolDisplayName } from './protocolUtils';
 
 /**
  * Gets the best yield option (highest APY) for a given token on a specific chain
@@ -76,9 +77,7 @@ export function getBestYield(
     // Update best APY if this one is better
     if (bestApy === null || apy > bestApy) {
       bestApy = apy;
-      // Map protocol name to PROTOCOL_NAMES constant if available
-      const upperProtocol = protocol.toUpperCase() as keyof typeof PROTOCOL_NAMES;
-      bestProtocol = PROTOCOL_NAMES[upperProtocol] || protocol;
+      bestProtocol = resolveProtocolDisplayName(protocol);
     }
   });
   

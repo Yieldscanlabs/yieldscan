@@ -12,6 +12,19 @@ export const normalizeProtocolKey = (name: string): string => {
   return name.toLowerCase().replace(/\s+/g, '');
 };
 
+// Reverse of normalizeProtocolKey: turns a raw backend APY-table key (e.g.
+// "creamfinance") back into its display name (e.g. "Cream Finance"), for UI
+// code that only has the raw key (from Object.entries on APY data) and needs
+// something presentable. Matches by running normalizeProtocolKey on every
+// PROTOCOL_NAMES value rather than comparing key casing directly, since
+// PROTOCOL_NAMES itself mixes ALL_CAPS and camelCase keys inconsistently.
+export const resolveProtocolDisplayName = (rawKey: string): string => {
+  const match = Object.values(PROTOCOL_NAMES).find(
+    (displayName) => normalizeProtocolKey(displayName) === rawKey.toLowerCase(),
+  );
+  return match ?? rawKey;
+};
+
 export const setupProtocol = (protocol: string, token: SupportedToken, chainId: number) => {
     if(protocol === PROTOCOL_NAMES.COMPOUND) {
         return COMPOUND_V3_MARKETS[chainId][token] as `0x${string}`;

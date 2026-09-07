@@ -54,12 +54,12 @@ export const PROTOCOL_NAMES = {
 
   dolomite: "Dolomite",
   EULER: "Euler",
-  fluxFinance: "fluxfinance",
+  fluxFinance: "Flux Finance",
   sparklend: "Sparklend",
   zerolend: "Zerolend",
-  kinzaFinance: "kinzafinance",
+  kinzaFinance: "Kinza Finance",
   ethena: "Ethena",
-  creamFinance: "creamfinance",
+  creamFinance: "Cream Finance",
   maple: "Maple",
 };
 
