@@ -1,15 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 // import { formatUnits } from 'viem';
-import { useEffect } from 'react';
 // import Moralis from 'moralis';
 import type { Asset, Protocol } from '../types';
 import { API_BASE_URL } from '../utils/constants';
 // import { ethers } from 'ethers';
 // import { useDepositsAndWithdrawalsStore } from './depositsAndWithdrawalsStore';
-
-// Auto-refresh interval in milliseconds (60 seconds)
-const AUTO_REFRESH_INTERVAL = 60000;
 
 // Tracks what the store's shared active `assets` view is CURRENTLY supposed to
 // be showing. fetchAssets and fetchAssetsForMultiple both write that field, so
@@ -444,84 +440,116 @@ let totalWorkingCapital = 0;
         assets: state.assets,
         lastUpdated: state.lastUpdated,
         autoRefreshEnabled: state.autoRefreshEnabled,
+        // Needed so mergeWithLastKnownGood has something to fall back to
+        // after a page reload or a fresh visit, not just during in-tab
+        // auto-refresh polling -- the original problem this fixes (a
+        // balance check failing and flashing to $0) was first observed
+        // across separate page loads, not just while one tab stayed open.
+        assetsByAddress: state.assetsByAddress,
+        dormantCapitalByAddress: state.dormantCapitalByAddress,
+        workingCapitalByAddress: state.workingCapitalByAddress,
       }),
     }
   )
 );
 
-// Track if auto-refresh has been set up already using a module-level variable
-let autoRefreshInitialized = false;
+// Protocols counted toward workingCapital -- mirrors the backend's PROTOCOLS
+// list in calculateWalletCapitals exactly (constants/protocols.ts), minus
+// Aerodrome, which that function's own filter also excludes.
+const WORKING_CAPITAL_PROTOCOLS = new Set([
+  'Aave', 'Compound', 'Radiant', 'Dolomite', 'Euler', 'Maple', 'Zerolend',
+  'Sparklend', 'Ethena', 'Cream Finance', 'Flux Finance', 'Kinza Finance',
+  'Yearn V3',
+]);
 
-/**
- * Hook that sets up auto-refresh for asset data
- * @param address The wallet address to fetch assets for
- */
-export function useAssetAutoRefresh(address: string) {
-  const { fetchAssets, autoRefreshEnabled } = useAssetStore();
+// For any asset whose balance check genuinely failed this run, keep showing
+// whatever was last confirmed for that exact same position instead of the
+// backend's unconfirmed placeholder value. Anything the backend confirmed,
+// even a real, lower number, passes through untouched -- only a value
+// explicitly marked "couldn't check" gets held back, so a real deposit or
+// withdrawal always shows immediately and correctly. See project memory
+// entry on this fix for the full reasoning.
+const mergeWithLastKnownGood = (freshAssets: Asset[], previousAssets: Asset[] | undefined): Asset[] => {
+  if (!previousAssets || previousAssets.length === 0) return freshAssets;
 
-  useEffect(() => {
-    if (!address || address === '0x' || autoRefreshInitialized) {
-      return;
+  const previousByKey = new Map<string, Asset>();
+  for (const asset of previousAssets) {
+    previousByKey.set(`${asset.token}-${asset.chainId}-${asset.protocol}`, asset);
+  }
+
+  return freshAssets.map((asset) => {
+    if (!asset.balanceCheckFailed && !asset.protocolBalanceCheckFailed) return asset;
+
+    const previous = previousByKey.get(`${asset.token}-${asset.chainId}-${asset.protocol}`);
+    if (!previous) return asset;
+
+    const merged = { ...asset };
+    if (asset.balanceCheckFailed) {
+      merged.balance = previous.balance;
+      merged.balanceUsd = previous.balanceUsd;
     }
+    if (asset.protocolBalanceCheckFailed) {
+      merged.currentBalanceInProtocol = previous.currentBalanceInProtocol;
+      merged.currentBalanceInProtocolUsd = previous.currentBalanceInProtocolUsd;
+    }
+    return merged;
+  });
+};
 
-    autoRefreshInitialized = true;
+// Recomputes dormantCapital/workingCapital from a (possibly merged) asset
+// list, mirroring the backend's calculateWalletCapitals exactly (same dedup
+// rules), since the backend's own totals exclude anything it couldn't
+// confirm this run -- after merging in last-known-good values here, those
+// need to be added back in the same way the backend would have counted them.
+const recalculateCapitals = (assets: Asset[]): { dormantCapital: number; workingCapital: number } => {
+  const seenTokenChains = new Set<string>();
+  let dormantCapital = 0;
+  for (const asset of assets) {
+    const key = `${asset.token}-${asset.chain}`;
+    if (seenTokenChains.has(key)) continue;
+    seenTokenChains.add(key);
+    const value = parseFloat(asset.balanceUsd || '0');
+    if (!isNaN(value)) dormantCapital += value;
+  }
 
-    // Initial fetch
-    fetchAssets(address, true);
+  const seenPositions = new Set<string>();
+  let workingCapital = 0;
+  for (const asset of assets) {
+    if (!asset.yieldBearingToken || !asset.protocol || !WORKING_CAPITAL_PROTOCOLS.has(asset.protocol)) continue;
+    if (asset.underlyingAsset) {
+      const positionKey = `${asset.protocol}:${asset.chainId}:${asset.underlyingAsset.toLowerCase()}`;
+      if (seenPositions.has(positionKey)) continue;
+      seenPositions.add(positionKey);
+    }
+    const value = parseFloat(asset.currentBalanceInProtocolUsd || '0');
+    if (!isNaN(value)) workingCapital += value;
+  }
 
-    // Track if the tab is visible
-    let isTabVisible = !document.hidden;
-
-    // Handle visibility change
-    const handleVisibilityChange = () => {
-      isTabVisible = !document.hidden;
-
-      // If tab becomes visible and auto-refresh is enabled, do an immediate refresh
-      if (isTabVisible && useAssetStore.getState().autoRefreshEnabled) {
-        fetchAssets(address, false);
-      }
-    };
-
-    // Register visibility change event listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Set up auto-refresh interval
-    const intervalId = setInterval(() => {
-      // Only fetch if auto-refresh is enabled AND tab is visible
-      if (useAssetStore.getState().autoRefreshEnabled && isTabVisible) {
-        // Use silent refresh (no loading state)
-        fetchAssets(address, false);
-      }
-    }, AUTO_REFRESH_INTERVAL);
-
-    // Clean up interval and event listener on unmount
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      autoRefreshInitialized = false;
-    };
-  }, [address, fetchAssets, autoRefreshEnabled]);
-}
-
+  return { dormantCapital, workingCapital };
+};
 
 // Helper to just fetch data without messing with the View State (isLoading/assets)
 const fetchWalletDataInternal = async (walletAddress: string, get: () => AssetStore, set: any) => {
   try {
-    const { assets, dormantCapital, workingCapital } = await getWalletYields(walletAddress);
+    const { assets: freshAssets } = await getWalletYields(walletAddress);
     const state = get();
+    const addressKey = walletAddress.toLowerCase();
+
+    const assets = mergeWithLastKnownGood(freshAssets, state.assetsByAddress[addressKey]);
+    const { dormantCapital, workingCapital } = recalculateCapitals(assets);
 
     const newAssetsByAddress = {
       ...state.assetsByAddress,
-      [walletAddress.toLowerCase()]: assets
+      [addressKey]: assets
     };
     const newDormantCapitalByAddress = {
       ...state.dormantCapitalByAddress,
-      [walletAddress.toLowerCase()]: dormantCapital
+      [addressKey]: dormantCapital
     };
 
     const newWorkingCapitalByAddress = {
       ...state.workingCapitalByAddress,
-      [walletAddress.toLowerCase()]: workingCapital
+      [addressKey]: workingCapital
     };
     // Only update the data cache, NOT the active view 'assets' or 'isLoading'
     set({

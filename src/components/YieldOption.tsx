@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Asset } from '../types';
 import styles from './AssetList.module.css';
-import type { BestApyResult } from '../hooks/useBestApy';
+import type { BestApyResult } from '../types/bestApy';
 import Protocol from './Protocol';
 
 interface YieldOptionProps {
