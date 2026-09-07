@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
-import { API_BASE_URL, PROTOCOL_NAMES } from '../utils/constants';
+import { API_BASE_URL } from '../utils/constants';
+import { resolveProtocolDisplayName } from '../utils/protocolUtils';
 // @ts-ignore
 import { ethers } from "ethers";
 
@@ -211,7 +212,7 @@ export const useApyStore = create<ApyStore>()(
         Object.entries(apys).forEach(([protocol, apy]) => {
           if (apy !== undefined && (bestApy === null || apy > bestApy)) {
             bestApy = apy;
-            bestProtocol = PROTOCOL_NAMES[protocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] || protocol;
+            bestProtocol = resolveProtocolDisplayName(protocol);
           }
         });
 

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from '../styles/LiveApy.module.css';
 import tokens from '../../../utils/tokens';
 import { PROTOCOL_NAMES } from '../../../utils/constants';
+import { resolveProtocolDisplayName } from '../../../utils/protocolUtils';
 import { formatNumber } from '../../../utils/helpers';
 import NetworkSelector from '../../../components/NetworkSelector';
 import Protocol from '../../../components/Protocol';
@@ -149,7 +150,7 @@ const ApyTable: React.FC<ApyTableProps> = ({ apyData, isLoading, error, selected
     });
     return {
       apy: bestApy || null,
-      protocol: bestProtocol ? PROTOCOL_NAMES[bestProtocol.toUpperCase() as keyof typeof PROTOCOL_NAMES] || bestProtocol : null
+      protocol: bestProtocol ? resolveProtocolDisplayName(bestProtocol) : null
     };
   };
 
