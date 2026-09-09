@@ -7,7 +7,11 @@ export interface OptimizationData {
   betterProtocol: string;
   betterApy: number;
   additionalYearlyUsd: string;
-  apyImprovement: number;
+  // null when currentApy is 0 -- "percent improvement" from zero is
+  // mathematically undefined (division by zero), not a real number to show.
+  // Consumers should treat null as "new yield opportunity" rather than
+  // rendering a percentage.
+  apyImprovement: number | null;
 }
 
 // Common interface for YieldCard props
