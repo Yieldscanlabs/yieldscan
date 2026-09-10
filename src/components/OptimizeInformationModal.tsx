@@ -79,7 +79,11 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
                 <strong>2.</strong> Approve and deposit into {formatProtocolName(optimizationData.betterProtocol)} ({optimizationData.betterApy.toFixed(2)}% APY)
               </p>
               <p>
-                This optimization will increase your annual yield by <strong>+{optimizationData.apyImprovement.toFixed(2)}%</strong>, earning you an additional <strong>${formatNumber(optimizationData.additionalYearlyUsd, 2)}</strong> per year.
+                {optimizationData.apyImprovement !== null ? (
+                  <>This optimization will increase your annual yield by <strong>+{optimizationData.apyImprovement.toFixed(2)}%</strong>, earning you an additional <strong>${formatNumber(optimizationData.additionalYearlyUsd, 2)}</strong> per year.</>
+                ) : (
+                  <>This position isn't earning yield yet. Optimizing will start earning you an additional <strong>${formatNumber(optimizationData.additionalYearlyUsd, 2)}</strong> per year.</>
+                )}
               </p>
             </div>
 
@@ -101,7 +105,9 @@ const OptimizeInformationModal: React.FC<OptimizeInformationModalProps> = ({
               <div className={styles.lockDetailRow}>
                 <span className={styles.lockDetailLabel}>APY Improvement:</span>
                 <span className={styles.lockDetailValue} style={{ color: 'var(--success-color)', fontWeight: '700' }}>
-                  +{optimizationData.apyImprovement.toFixed(2)}%
+                  {optimizationData.apyImprovement !== null
+                    ? `+${optimizationData.apyImprovement.toFixed(2)}%`
+                    : 'New'}
                 </span>
               </div>
               <div className={styles.lockDetailRow}>

@@ -462,36 +462,62 @@ const WORKING_CAPITAL_PROTOCOLS = new Set([
   'Yearn V3',
 ]);
 
+// A retained "last known good" value only covers genuine short-lived RPC
+// blips -- it must not become a permanent stand-in for a value that was
+// only ever confirmed once, a long time ago. 24 hours comfortably covers
+// someone leaving a tab open or bouncing between pages during an RPC
+// provider's bad stretch, while still forcing a value to prove itself
+// again well within the same day.
+const MAX_RETAIN_AGE_MS = 24 * 60 * 60 * 1000;
+
 // For any asset whose balance check genuinely failed this run, keep showing
 // whatever was last confirmed for that exact same position instead of the
-// backend's unconfirmed placeholder value. Anything the backend confirmed,
-// even a real, lower number, passes through untouched -- only a value
-// explicitly marked "couldn't check" gets held back, so a real deposit or
-// withdrawal always shows immediately and correctly. See project memory
-// entry on this fix for the full reasoning.
+// backend's unconfirmed placeholder value -- but only while that last
+// confirmation is still recent (see MAX_RETAIN_AGE_MS). Without an age
+// check, a value that was only ever right once could be trusted forever,
+// since a failed check always retains whatever came before it. Anything the
+// backend confirmed this run, even a real, lower number, passes through
+// untouched -- only a value explicitly marked "couldn't check" is ever held
+// back, so a real deposit or withdrawal always shows immediately and
+// correctly. See project memory entry on this fix for the full reasoning.
 const mergeWithLastKnownGood = (freshAssets: Asset[], previousAssets: Asset[] | undefined): Asset[] => {
-  if (!previousAssets || previousAssets.length === 0) return freshAssets;
-
   const previousByKey = new Map<string, Asset>();
-  for (const asset of previousAssets) {
-    previousByKey.set(`${asset.token}-${asset.chainId}-${asset.protocol}`, asset);
+  if (previousAssets) {
+    for (const asset of previousAssets) {
+      previousByKey.set(`${asset.token}-${asset.chainId}-${asset.protocol}`, asset);
+    }
   }
 
+  const now = Date.now();
+
   return freshAssets.map((asset) => {
-    if (!asset.balanceCheckFailed && !asset.protocolBalanceCheckFailed) return asset;
-
     const previous = previousByKey.get(`${asset.token}-${asset.chainId}-${asset.protocol}`);
-    if (!previous) return asset;
-
     const merged = { ...asset };
+
     if (asset.balanceCheckFailed) {
-      merged.balance = previous.balance;
-      merged.balanceUsd = previous.balanceUsd;
+      const confirmedAt = previous?.balanceLastConfirmedAt;
+      if (previous && confirmedAt && now - confirmedAt <= MAX_RETAIN_AGE_MS) {
+        merged.balance = previous.balance;
+        merged.balanceUsd = previous.balanceUsd;
+        merged.balanceLastConfirmedAt = confirmedAt;
+      }
+      // else: too stale (or never actually confirmed) to retain -- let the
+      // fresh, unconfirmed value pass through instead of trusting it forever.
+    } else {
+      merged.balanceLastConfirmedAt = now;
     }
+
     if (asset.protocolBalanceCheckFailed) {
-      merged.currentBalanceInProtocol = previous.currentBalanceInProtocol;
-      merged.currentBalanceInProtocolUsd = previous.currentBalanceInProtocolUsd;
+      const confirmedAt = previous?.protocolBalanceLastConfirmedAt;
+      if (previous && confirmedAt && now - confirmedAt <= MAX_RETAIN_AGE_MS) {
+        merged.currentBalanceInProtocol = previous.currentBalanceInProtocol;
+        merged.currentBalanceInProtocolUsd = previous.currentBalanceInProtocolUsd;
+        merged.protocolBalanceLastConfirmedAt = confirmedAt;
+      }
+    } else {
+      merged.protocolBalanceLastConfirmedAt = now;
     }
+
     return merged;
   });
 };

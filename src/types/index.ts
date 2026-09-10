@@ -31,6 +31,15 @@ export interface Asset {
   // two are looked up independently and can fail independently.
   balanceCheckFailed?: boolean;
   protocolBalanceCheckFailed?: boolean;
+  // Frontend-only bookkeeping (never set by the backend): when this specific
+  // value was last independently confirmed (not retained from an earlier
+  // failed check). Lets the "retain last known good value" logic in
+  // assetStore.ts tell a recently-confirmed value apart from one that's been
+  // unconfirmed for a long time -- without this, a value that was ever wrong
+  // even once could be trusted forever, since a failed check always retains
+  // whatever came before it with no expiry.
+  balanceLastConfirmedAt?: number;
+  protocolBalanceLastConfirmedAt?: number;
 }
 
 export interface Chain {

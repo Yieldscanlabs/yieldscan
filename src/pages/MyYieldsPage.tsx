@@ -327,8 +327,14 @@ const MyYieldsPage: React.FC = () => {
         balanceNum * (currentApyEstimate / 100) * usdPrice;
       const betterYearlyUsd = balanceNum * (bestApy / 100) * usdPrice;
       const additionalYearlyUsd = betterYearlyUsd - currentYearlyUsd;
+      // currentApyEstimate can legitimately be 0 (no APY data yet for the
+      // current protocol/token), which would otherwise divide by zero and
+      // produce Infinity. Not a real percentage to show -- null means "new
+      // yield opportunity" instead of "X% better".
       const apyImprovement =
-        ((bestApy - currentApyEstimate) / currentApyEstimate) * 100;
+        currentApyEstimate > 0
+          ? ((bestApy - currentApyEstimate) / currentApyEstimate) * 100
+          : null;
       const betterProtocolName =
         bestProtocol && bestProtocol.toUpperCase() in PROTOCOL_NAMES
           ? PROTOCOL_NAMES[
@@ -341,7 +347,10 @@ const MyYieldsPage: React.FC = () => {
         betterProtocol: betterProtocolName,
         betterApy: bestApy,
         additionalYearlyUsd: formatValue(additionalYearlyUsd),
-        apyImprovement: parseFloat(apyImprovement.toFixed(0)),
+        apyImprovement:
+          apyImprovement === null
+            ? null
+            : parseFloat(apyImprovement.toFixed(0)),
       };
     }
     return undefined;
