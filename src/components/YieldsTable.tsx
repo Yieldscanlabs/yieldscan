@@ -209,7 +209,7 @@ const YieldsTableRow: React.FC<{
               <button
                 className={`${styles.actionButton} ${styles.optimizeButton}`}
                 onClick={handleOptimizeClick}
-                title={`Switch to ${formatProtocolName(optimizationData.betterProtocol)} for ${optimizationData.betterApy.toFixed(2)}% APY (+${optimizationData.apyImprovement}%)`}
+                title={`Switch to ${formatProtocolName(optimizationData.betterProtocol)} for ${optimizationData.betterApy.toFixed(2)}% APY${optimizationData.apyImprovement !== null ? ` (+${optimizationData.apyImprovement}%)` : ' (new yield opportunity)'}`}
               >
                 <span>Optimize</span>
               </button>
