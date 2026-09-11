@@ -56,17 +56,52 @@ const PROTOCOLS_API_ENDPOINT = API_BASE_URL + '/api/protocols';
 //   return data.assets;
 // }
 
-async function getWalletYields(walletAddress: string) {
-  const response = await fetch(`${WALLET_YIELDS_API_ENDPOINT}/${walletAddress}`);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  const data = await response.json();
+// A scan for a wallet with a lot of on-chain activity can take longer than
+// the hosting gateway's own timeout, so the browser sees a raw network
+// failure ("Failed to fetch") even though the backend keeps working and
+// finishes moments later -- confirmed directly: retrying the exact same
+// request right after one of these failures reliably succeeds immediately,
+// served from the backend's own cache. Retrying automatically here, a
+// couple of times with a short pause, means a real user gets the correct
+// data without needing to notice the error and reload manually. This does
+// NOT retry a normal error response (like an invalid address) -- only a
+// genuine network-level failure, which a real data problem wouldn't produce.
+const WALLET_YIELDS_MAX_RETRIES = 2;
+const WALLET_YIELDS_RETRY_DELAY_MS = 2000;
 
-  if (!data.assets || !Array.isArray(data.assets)) {
-    throw new Error('Invalid response format: expected assets array');
+async function getWalletYields(walletAddress: string) {
+  let lastNetworkError: unknown;
+
+  for (let attempt = 0; attempt <= WALLET_YIELDS_MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      await new Promise((resolve) => setTimeout(resolve, WALLET_YIELDS_RETRY_DELAY_MS));
+    }
+
+    try {
+      const response = await fetch(`${WALLET_YIELDS_API_ENDPOINT}/${walletAddress}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      if (!data.assets || !Array.isArray(data.assets)) {
+        throw new Error('Invalid response format: expected assets array');
+      }
+      return data;
+    } catch (error) {
+      // A thrown TypeError here (not an HTTP error status) means the request
+      // never got a response at all -- exactly what a gateway timeout looks
+      // like from the browser's side. Worth retrying. An actual HTTP error
+      // response (bad address, server said no) means the backend answered
+      // clearly, so retrying it would just get the same answer again.
+      if (!(error instanceof TypeError)) {
+        throw error;
+      }
+      lastNetworkError = error;
+    }
   }
-  return data;
+
+  throw lastNetworkError;
 }
 
 async function getProtocols() {
