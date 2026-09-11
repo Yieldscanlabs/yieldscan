@@ -506,3 +506,12 @@
   width: 100%;
   padding: 1rem 0;
 }
+
+.error {
+  background-color: rgba(255, 94, 91, 0.1);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  color: var(--error-color);
+  margin: 2rem 0;
+  text-align: center;
+}

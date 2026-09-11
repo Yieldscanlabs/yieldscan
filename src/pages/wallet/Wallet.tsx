@@ -60,7 +60,7 @@ function Wallet() {
   const location = useLocation();
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } =
     useWalletConnection();
-  const { assets, isLoading: assetsLoading } = useAssetStore();
+  const { assets, isLoading: assetsLoading, error: assetsError } = useAssetStore();
   const { apyData } = useApyStore();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -588,6 +588,13 @@ function Wallet() {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  if (assetsError)
+    return (
+      <div className={styles.error}>
+        <p>Error loading wallet data: {assetsError}</p>
+      </div>
+    );
 
   return (
     <div className={styles.appWrapper}>

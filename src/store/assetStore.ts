@@ -80,7 +80,17 @@ async function getWalletYields(walletAddress: string) {
     try {
       const response = await fetch(`${WALLET_YIELDS_API_ENDPOINT}/${walletAddress}`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // The backend sends a clear message for a real problem (e.g. "Invalid
+        // wallet address") in the response body -- show that instead of a
+        // bare status code whenever it's there.
+        let message = `HTTP error! status: ${response.status}`;
+        try {
+          const errorBody = await response.json();
+          if (errorBody?.error) message = errorBody.error;
+        } catch {
+          // Body wasn't JSON -- keep the generic status message.
+        }
+        throw new Error(message);
       }
       const data = await response.json();
 
