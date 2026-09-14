@@ -78,11 +78,12 @@ export function useYieldCard({ asset, onOptimize, onLockAPY }: YieldCardProps) {
   let protocolKey: string | undefined;
   if (asset.protocol) {
     protocolKey = normalizeProtocolKey(asset.protocol);
-    try {
-      apy = tokenApyData[protocolKey as keyof typeof tokenApyData] || 0;
-    }
-    catch (ex) {
-    }
+    // tokenApyData is genuinely undefined for a moment on first load, before
+    // apyData has populated for this chain/address -- that's expected and
+    // self-corrects once it arrives, so it's not logged as a warning. Only
+    // fall back to 0 when there's really nothing to read yet, instead of
+    // indexing into undefined and silently swallowing the resulting crash.
+    apy = tokenApyData?.[protocolKey as keyof typeof tokenApyData] || 0;
   } else {
     apy = 0;
   }

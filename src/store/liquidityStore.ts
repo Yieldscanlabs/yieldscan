@@ -1,5 +1,15 @@
 import { create } from "zustand";
 import { API_BASE_URL } from "../utils/constants";
+
+// Tracks what the store's shared `data` view is CURRENTLY supposed to be
+// showing. fetchLiquidityForSingle and fetchLiquidityForMultiple both write
+// that field, so both check against this before committing their result --
+// same fix, same reasoning, as the identical race already fixed in
+// assetStore.ts. Without this, switching wallets quickly (A -> B) could let
+// A's slower-resolving response overwrite B's data if A's request happens
+// to finish after B's.
+let currentSingleTarget: string | null = null;
+let currentConsolidatedTargetKey: string | null = null;
 export interface LiquidityPosition {
   protocolName: string;
   protocolId: string;
@@ -66,16 +76,24 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
     showLoading = true,
   ) => {
     if (!walletAddress || walletAddress.trim().length === 0) {
+      currentSingleTarget = null;
       set({ data: null, error: null, isLoading: false });
       return;
     }
+
+    const normalizedAddress = walletAddress.toLowerCase();
+    // Switching to single-wallet mode means any pending consolidated
+    // fetch's result is no longer relevant to what's being shown.
+    currentSingleTarget = normalizedAddress;
+    currentConsolidatedTargetKey = null;
 
     if (showLoading) set({ isLoading: true });
     set({ error: null });
 
     try {
       const data = await fetchLiquidity(walletAddress);
-      const normalizedAddress = walletAddress.toLowerCase();
+
+      if (currentSingleTarget !== normalizedAddress) return;
 
       set((state) => ({
         data,
@@ -87,6 +105,8 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
         lastUpdated: Date.now(),
       }));
     } catch (error) {
+      if (currentSingleTarget !== normalizedAddress) return;
+
       set({
         error: error instanceof Error ? error.message : "Unknown error",
         isLoading: false,
@@ -99,6 +119,7 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
     showLoading = true,
   ) => {
     if (!addresses || addresses.length === 0) {
+      currentConsolidatedTargetKey = null;
       set({ liquidityDataByAddress: {}, error: null, isLoading: false });
       return;
     }
@@ -108,9 +129,17 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
     );
 
     if (validAddresses.length === 0) {
+      currentConsolidatedTargetKey = null;
       set({ liquidityDataByAddress: {}, error: null, isLoading: false });
       return;
     }
+
+    // Order-independent key identifying this exact set of wallets.
+    const targetKey = validAddresses.map((a) => a.toLowerCase()).sort().join(",");
+    // Switching to consolidated mode means any pending single-wallet
+    // fetch's result is no longer relevant to what's being shown.
+    currentConsolidatedTargetKey = targetKey;
+    currentSingleTarget = null;
 
     if (showLoading) set({ isLoading: true });
     set({ error: null });
@@ -132,6 +161,8 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
 
       const results = await Promise.all(fetchPromises);
 
+      if (currentConsolidatedTargetKey !== targetKey) return;
+
       const newLiquidityDataByAddress: Record<string, LiquidityData> = {};
       results.forEach((data) => {
         newLiquidityDataByAddress[data.walletAddress.toLowerCase()] = data;
@@ -143,6 +174,8 @@ export const useLiquidityStore = create<LiquidityStore>()((set, get) => ({
         lastUpdated: Date.now(),
       });
     } catch (error) {
+      if (currentConsolidatedTargetKey !== targetKey) return;
+
       set({
         error: error instanceof Error ? error.message : "Unknown error",
         isLoading: false,
