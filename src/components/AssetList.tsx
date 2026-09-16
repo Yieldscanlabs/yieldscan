@@ -42,7 +42,9 @@ const AssetList: React.FC<AssetListProps> = ({
     }> = {};
 
     assets.forEach(asset => {
-      const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
+      // Include walletAddress so two tracked wallets holding the same token
+      // in the same protocol/chain (consolidated view) don't collide.
+      const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}${asset.walletAddress ? `-${asset.walletAddress}` : ''}`;
       initialYieldState[assetKey] = {
         loading: true,
         yearlyYieldUsd: '0.00'
@@ -77,7 +79,7 @@ const AssetList: React.FC<AssetListProps> = ({
         {assets
           .filter(asset => Number(asset.balance) > HARD_MIN_USD)
           .map((asset) => {
-            const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
+            const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}${asset.walletAddress ? `-${asset.walletAddress}` : ''}`;
             const yieldInfo = assetYields[assetKey];
             const price = getPrice(asset.token.toLowerCase());
 
