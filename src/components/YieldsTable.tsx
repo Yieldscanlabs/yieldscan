@@ -299,7 +299,10 @@ const YieldsTable: React.FC<YieldsTableProps> = ({
           </thead>
           <tbody>
             {assets.map((asset) => {
-              const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
+              // Include walletAddress so two tracked wallets holding the same
+              // token in the same protocol/chain (consolidated view) don't
+              // collide on the same key and silently hide one row.
+              const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}${asset.walletAddress ? `-${asset.walletAddress}` : ''}`;
               const optimizationData = getOptimizationDataForAsset(asset);
               if (asset.currentBalanceInProtocolUsd && Number(asset.currentBalanceInProtocolUsd) > 0) {
                 return (

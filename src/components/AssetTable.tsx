@@ -65,7 +65,10 @@ const AssetTable: React.FC<AssetTableProps> = ({
             {assets
               .filter(asset => Number(asset.balance) > 0)
               .map((asset) => {
-                const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}`;
+                // Include walletAddress so two tracked wallets holding the same
+                // token in the same protocol/chain (consolidated view) don't
+                // collide on the same key and silently hide one row.
+                const assetKey = `${asset.token}-${asset.chain}-${asset.protocol}${asset.walletAddress ? `-${asset.walletAddress}` : ''}`;
                 const price = getPrice(asset.token.toLowerCase());
                 const bestApyData = getBestYield(apyData, asset.chainId, asset.address);
                 const isSelected = selectedAsset === asset;
