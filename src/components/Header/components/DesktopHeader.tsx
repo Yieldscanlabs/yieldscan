@@ -48,7 +48,10 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
 
         <div className={styles.headerLeft}>
           <Link to="/" className={styles.titleLink}>
-            <Logo />
+            {/* linkTo="" disables Logo's own internal link -- this Link
+                already wraps it, and a link nested inside another link is
+                invalid HTML and can cause double-navigation. */}
+            <Logo linkTo="" />
           </Link>
 
           <Navigation

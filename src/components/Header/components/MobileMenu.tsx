@@ -46,7 +46,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       >
         <div className={styles.mobileMenuHeader}>
           <Link to="/" className={styles.mobileMenuLogo} onClick={closeMobileMenu}>
-            <Logo />
+            {/* linkTo="" disables Logo's own internal link -- this Link
+                already wraps it, and a link nested inside another link is
+                invalid HTML and can cause double-navigation. */}
+            <Logo linkTo="" />
           </Link>
           <button
             className={styles.mobileMenuCloseButton}
