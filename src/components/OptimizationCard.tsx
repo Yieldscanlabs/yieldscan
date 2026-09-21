@@ -37,8 +37,14 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
     openModal
   } = useOptimizationStore();
   
-  // Calculate percentage improvement
-  const apyImprovement = ((betterApy - currentApy) / currentApy * 100).toFixed(0);
+  // Calculate percentage improvement. Guard against currentApy being 0 (no
+  // real current position/APY to compare against), which would otherwise
+  // divide by zero and produce Infinity -- matches the same guard already
+  // applied to this identical calculation in MyYieldsPage.tsx.
+  const apyImprovement =
+    currentApy > 0
+      ? ((betterApy - currentApy) / currentApy * 100).toFixed(0)
+      : null;
   
   const handleOpenModal = async () => {
     if (chainId !== asset.chainId) {
@@ -94,7 +100,9 @@ const OptimizationCard: React.FC<OptimizationCardProps> = ({
           </div>
           <span className={styles.assetNameBold}>{asset.token}</span>
         </div>
-        <div className={styles.improvementBadge}>+{apyImprovement}%</div>
+        <div className={styles.improvementBadge}>
+          {apyImprovement === null ? 'New' : `+${apyImprovement}%`}
+        </div>
       </div>
       
       <div className={styles.protocolComparison}>
