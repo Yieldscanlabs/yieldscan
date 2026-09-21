@@ -45,6 +45,7 @@ export interface DepositsAndWithdrawalsStore {
   progress: number;
   scanStatus: string;
   isScanning: boolean;
+  progressWalletAddress: string | null;
 
   fetchUserActivity: (walletAddress: string, showLoading?: boolean) => Promise<void>;
   updateWalletLabel: (walletAddress: string, label: string) => Promise<void>; // New Action
@@ -82,6 +83,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
       progress: 0,
       scanStatus: '',
       isScanning: false,
+      progressWalletAddress: null,
 
       updateWalletLabel: async (walletAddress: string, label: string) => {
         const normalizedAddress = walletAddress.toLowerCase();
@@ -161,7 +163,8 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           lastUpdated: null,
           progress: 0,
           scanStatus: '',
-          isScanning: false
+          isScanning: false,
+          progressWalletAddress: null
         });
       },
 
@@ -193,10 +196,24 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
           let progressTimer: NodeJS.Timeout | null = null;
           let eventSource: EventSource | null = null;
 
+          // Only this wallet's own progress/scanStatus/isScanning writes below
+          // are allowed to apply -- if the user switches to another wallet
+          // while this one is still scanning, both fetches run concurrently,
+          // and without this guard whichever one writes last would flash the
+          // wrong progress/status for the wallet actually on screen.
+          const isStillActiveProgressTarget = () =>
+            get().progressWalletAddress === normalizedAddress;
+
           if (shouldShowProgressBar) {
-            set({ isScanning: true, progress: 5, scanStatus: `Initializing scan for ${normalizedAddress.slice(0, 6)}...` });
+            set({
+              isScanning: true,
+              progress: 5,
+              scanStatus: `Initializing scan for ${normalizedAddress.slice(0, 6)}...`,
+              progressWalletAddress: normalizedAddress
+            });
 
             progressTimer = setInterval(() => {
+              if (!isStillActiveProgressTarget()) return;
               set((state) => ({
                 // 📈 Smooth increment logic
                 progress: state.progress >= 90 ? state.progress : state.progress + (Math.random() * 2)
@@ -207,6 +224,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
               eventSource = new EventSource(`${API_BASE_URL}/api/long-task/progress?requestId=${requestId}`);
               eventSource.onmessage = (event) => {
                 if (controller.signal.aborted) return;
+                if (!isStillActiveProgressTarget()) return;
                 if (event.data === "done") {
                   eventSource?.close();
                   set({ scanStatus: 'Finalizing data calculation...' });
@@ -251,8 +269,9 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
                 },
                 isLoading: false,
                 lastUpdated: Date.now(),
-                progress: 100,
-                scanStatus: 'Scan Complete!'
+                ...(isStillActiveProgressTarget()
+                  ? { progress: 100, scanStatus: 'Scan Complete!' }
+                  : {})
               }));
             }
           } catch (error: any) {
@@ -268,8 +287,9 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
               },
               error: "Sync failed. Showing last cached data.",
               isLoading: false,
-              isScanning: false,
-              progress: 0
+              ...(isStillActiveProgressTarget()
+                ? { isScanning: false, progress: 0 }
+                : {})
             }));
           } finally {
             // 🏁 FINAL CLEANUP
@@ -279,7 +299,7 @@ export const useDepositsAndWithdrawalsStore = create<DepositsAndWithdrawalsStore
             // Added for DEBUGGING purpose
             console.log("inFlightRequests: ", inFlightRequests)
             setTimeout(() => {
-              if (inFlightRequests.size === 0) {
+              if (inFlightRequests.size === 0 && isStillActiveProgressTarget()) {
                 get().resetProgress();
               }
             }, 1500);
