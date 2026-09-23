@@ -20,9 +20,10 @@ const Navigation: React.FC<NavigationProps> = ({ isConnected, location }) => {
       
       {/* Only show My Yields when connected */}
       {isConnected && (
-        <Link 
-          to="/yields" 
+        <Link
+          to="/yields"
           className={`${styles.navLink} ${location.pathname === '/yields' ? styles.activeLink : ''}`}
+          data-tour="nav-my-yields"
         >
           My Yields
         </Link>
@@ -43,9 +44,10 @@ const Navigation: React.FC<NavigationProps> = ({ isConnected, location }) => {
       </Link>
 
       {isConnected && (
-        <Link 
-          to="/liquidity" 
+        <Link
+          to="/liquidity"
           className={`${styles.navLink} ${location.pathname === '/liquidity' ? styles.activeLink : ''}`}
+          data-tour="nav-liquidity"
         >
           Liquidity
         </Link>

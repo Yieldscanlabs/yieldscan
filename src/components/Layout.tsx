@@ -18,6 +18,7 @@ import { useManualWalletStore } from '../store/manualWalletStore';
 import { useAccount } from 'wagmi';
 import ScanProgressBar from './loaders/ScanProgressBar';
 import { Toaster } from 'react-hot-toast';
+import GlobalOnboardingTour from './GlobalOnboardingTour';
 
 const Layout = () => {
   const { wallet, disconnectWallet } = useWalletConnection();
@@ -174,6 +175,7 @@ const Layout = () => {
         }}
       />
       <ScanProgressBar />
+      <GlobalOnboardingTour />
       <Header
         isConnected={wallet.isConnected}
         address={wallet.address}
