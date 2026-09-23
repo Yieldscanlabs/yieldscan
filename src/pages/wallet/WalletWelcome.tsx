@@ -19,9 +19,10 @@ function WalletWelcome({ onConnect }: WalletWelcomeProps) {
         <p>Find the best yield opportunities for your assets across multiple chains</p>
 
         <div className={styles.centerWalletConnect}>
-          <button 
+          <button
             onClick={onConnect}
             className={styles.connectButtonLarge}
+            data-tour="connect-wallet"
           >
             Connect Wallet
           </button>
