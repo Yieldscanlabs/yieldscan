@@ -9,12 +9,14 @@ interface UserPreferencesState {
   walletPageView: ViewType;
   hideLowValues: boolean;
   activeDecimalDigits: number;
+  hasSeenOnboardingTour: boolean;
   // Actions
   setYieldsPageView: (view: ViewType) => void;
   setWalletPageView: (view: ViewType) => void;
   resetPreferences: () => void;
   setHideLowValues: (hide: boolean) => void;
   setActiveDecimalDigits: (digits: number) => void;
+  setHasSeenOnboardingTour: (seen: boolean) => void;
 }
 
 export const useUserPreferencesStore = create<UserPreferencesState>()(
@@ -24,7 +26,8 @@ export const useUserPreferencesStore = create<UserPreferencesState>()(
       yieldsPageView: 'cards',
       walletPageView: 'cards',
       hideLowValues: true,
-      activeDecimalDigits: 2, 
+      activeDecimalDigits: 2,
+      hasSeenOnboardingTour: false,
 
       // Actions
       setYieldsPageView: (view: ViewType) =>
@@ -40,6 +43,7 @@ export const useUserPreferencesStore = create<UserPreferencesState>()(
         }),
       setHideLowValues: (hide) => set({ hideLowValues: hide }),
       setActiveDecimalDigits: (digits) => set({ activeDecimalDigits: digits }),
+      setHasSeenOnboardingTour: (seen) => set({ hasSeenOnboardingTour: seen }),
     }),
     {
       name: 'yieldscan-user-preferences',
@@ -48,7 +52,8 @@ export const useUserPreferencesStore = create<UserPreferencesState>()(
         walletPageView: state.walletPageView,
         hideLowValues: state.hideLowValues,
         activeDecimalDigits: state.activeDecimalDigits,
+        hasSeenOnboardingTour: state.hasSeenOnboardingTour,
       }),
     }
   )
-); 
+);
