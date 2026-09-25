@@ -501,6 +501,40 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* "Couldn't load" version of the empty card: an inline text link rather
+   than a boxed button like .exploreButton, since retrying reads more
+   naturally as part of the sentence than as a separate, competing action. */
+.loadFailedIcon {
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.reloadLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: -3px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: inherit;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.reloadLinkIcon {
+  flex-shrink: 0;
+}
+
+.reloadLink:hover {
+  color: var(--primary-hover);
+}
+
 /* 7. Container Wrapper (Optional, depends if you wrap the card) */
 .container {
   width: 100%;
