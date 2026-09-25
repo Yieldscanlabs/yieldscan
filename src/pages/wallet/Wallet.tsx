@@ -60,7 +60,13 @@ function Wallet() {
   const location = useLocation();
   const { wallet, isModalOpen, openConnectModal, closeConnectModal } =
     useWalletConnection();
-  const { assets, isLoading: assetsLoading, error: assetsError } = useAssetStore();
+  const {
+    assets,
+    isLoading: assetsLoading,
+    error: assetsError,
+    fetchAssets,
+    fetchAssetsForMultiple,
+  } = useAssetStore();
   const { apyData } = useApyStore();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -116,6 +122,35 @@ function Wallet() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [viewType, setViewType]);
+
+  // Same set of wallets Layout fetches in consolidated mode: the connected
+  // wallet (if any) plus every manually-added one, without duplicates.
+  const getConsolidatedAddresses = (): string[] => {
+    const allAddresses: string[] = [];
+    const mm = isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
+    if (mm) {
+      allAddresses.push(mm);
+    }
+    manualAddresses.forEach((addr) => {
+      if (!mm || addr.toLowerCase() !== mm.toLowerCase()) {
+        allAddresses.push(addr);
+      }
+    });
+    return allAddresses;
+  };
+
+  // Retries only this page's asset data (not earnings/activity, and not a
+  // full page refresh), using the same fetch Layout runs for the current
+  // view. Fetching sets isLoading, so the normal loading skeleton shows
+  // while it retries.
+  const handleReloadAssets = () => {
+    if (isConsolidated) {
+      const addresses = getConsolidatedAddresses();
+      if (addresses.length > 0) fetchAssetsForMultiple(addresses, true);
+    } else if (wallet.address) {
+      fetchAssets(wallet.address, true);
+    }
+  };
 
   const handleRedirect = (path: string) => {
     const navigationState =
@@ -304,19 +339,7 @@ function Wallet() {
     };
 
     if (isConsolidated) {
-      const allAddresses: string[] = [];
-
-      const mm =
-        isMetamaskConnected && metamaskAddress ? metamaskAddress : null;
-      if (mm) {
-        allAddresses.push(mm);
-      }
-
-      manualAddresses.forEach((addr) => {
-        if (!mm || addr.toLowerCase() !== mm.toLowerCase()) {
-          allAddresses.push(addr);
-        }
-      });
+      const allAddresses = getConsolidatedAddresses();
 
       const assetsByWallet = new Map<string, Asset[]>();
       assets.forEach((asset) => {
@@ -419,6 +442,8 @@ function Wallet() {
                         <EmptyStateCard
                           onClick={() => handleRedirect("/explore")}
                           walletAddress={address}
+                          loadFailed={!!assetsError}
+                          onRetry={handleReloadAssets}
                         />
                       </div>
                     )}
@@ -493,7 +518,11 @@ function Wallet() {
                   viewType === VIEW_TYPES.CARDS ? styles.assetGrid : ""
                 }
               >
-                <EmptyStateCard onClick={() => handleRedirect("/explore")} />
+                <EmptyStateCard
+                  onClick={() => handleRedirect("/explore")}
+                  loadFailed={!!assetsError}
+                  onRetry={handleReloadAssets}
+                />
               </div>
             )}
           </>
@@ -589,13 +618,10 @@ function Wallet() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  if (assetsError)
-    return (
-      <div className={styles.error}>
-        <p>Error loading wallet data: {assetsError}</p>
-      </div>
-    );
-
+  // A failed load is shown inside the "No Assets Found" card (see
+  // EmptyStateCard's loadFailed mode), not as a page takeover -- that used
+  // to replace the entire page, filters and all, with one line of raw error
+  // text and no way to retry.
   return (
     <div className={styles.appWrapper}>
       <div className={styles.appContainer}>
